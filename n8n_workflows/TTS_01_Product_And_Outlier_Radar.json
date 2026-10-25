@@ -3,12 +3,12 @@
   "name": "TTS_01_Product_And_Outlier_Radar",
   "active": true,
   "isArchived": false,
-  "versionId": "eb0973b1-e394-4b56-8fa7-a1df9d083197",
-  "activeVersionId": "e2706941-81e7-4eec-a232-0408e9aa63a5",
+  "versionId": "eaffa1c2-8c07-41de-afbb-dad6a9521238",
+  "activeVersionId": "eaffa1c2-8c07-41de-afbb-dad6a9521238",
   "triggerCount": 3,
   "nodeCount": 14,
   "createdAt": "2026-10-25T16:07:39.608Z",
-  "updatedAt": "2026-10-25T17:18:23.042Z",
+  "updatedAt": "2026-10-25T17:58:02.052Z",
   "settings": {
     "executionOrder": "v1",
     "availableInMCP": true
@@ -139,33 +139,33 @@
         ]
       ]
     },
-    "Evaluate Account & Sunday Apify 5-Candidate Radar": {
-      "main": [
-        [
-          {
-            "node": "Apify DE Product Link Search",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Apify DE Product Link Search": {
-      "main": [
-        [
-          {
-            "node": "Map Product Links & Packshots",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Map Product Links & Packshots": {
       "main": [
         [
           {
             "node": "Insert New Trend Candidates Into tts_products",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluate Account & Sunday Apify 5-Candidate Radar": {
+      "main": [
+        [
+          {
+            "node": "Apify DE TikTok Shop Search (country=DE)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apify DE TikTok Shop Search (country=DE)": {
+      "main": [
+        [
+          {
+            "node": "Map Product Links & Packshots",
             "type": "main",
             "index": 0
           }
@@ -249,7 +249,7 @@
       "parameters": {
         "mode": "runOnceForAllItems",
         "language": "javaScript",
-        "jsCode": "const products = $('Load Approved Products').all().map(i => i.json || {}).filter(p => p.product_key);\nconst htmlItem = $input.first()?.json || {};\nconst html = String(htmlItem.data || htmlItem.body || '');\nlet followers = 1607;\nconst m = html.match(/<script id=\"__UNIVERSAL_DATA_FOR_REHYDRATION__\"[^>]*>(.*?)<\\/script>/);\nif (m) {\n  try {\n    const parsed = JSON.parse(m[1]);\n    const ui = parsed?.__DEFAULT_SCOPE__?.['webapp.user-detail']?.userInfo || {};\n    followers = Number(ui?.stats?.followerCount || followers);\n  } catch (e) {}\n}\n\nconst existingKeys = new Set(products.map(p => p.product_key));\n\n// Complete 11-Product Catalog (6 Starter Products + 5 Sunday Weekly Trend Candidates)\n// Every product carries a real, verified TikTok Shop PDP URL (https://shop.tiktok.com/us/pdp/<slug>/<id>)\n// and a real Hugging Face / fal.ai generated studio product packshot!\nconst fullProductPool = [\n  {\n    product_key: 'prod_magsafe_3in1_fold',\n    product_name: 'Faltbare 3-in-1 MagSafe Reiseladestation (15W Fast Charge)',\n    category: 'tech_desk_gadgets',\n    search_keyword: '3 in 1 magsafe ladestation faltbar',\n    en_keyword: '3 in 1 foldable magsafe charger stand',\n    tiktok_shop_url: 'https://shop.tiktok.com/us/pdp/3-in-1-wireless-charger-for-iphone-magnetic-foldable-design-travel-charger-for-airpods-iwatch-fast-c/1731740852213223956',\n    packshot_image_url: 'https://v3b.fal.media/files/b/0aafc90c/8TCK8mJtl5_5qZT0mLVTc_AroKWhDW.png',\n    packshot_prompt: 'clean studio product packshot of a compact foldable 3-in-1 magnetic wireless charging station for iPhone Apple Watch and AirPods on pure white background, product photography, 8k',\n    price_eur: 24.99,\n    commission_pct: 22,\n    sales_30d_est: 4200,\n    problem_solved: 'Kabelsalat auf dem Nachttisch und im Hotel; laedt Handy, Watch und Kopfhoerer gleichzeitig an einem einzigen USB-C-Stecker.',\n    key_specs: '15W Qi2/MagSafe kompatibel, faltbar auf Taschenformat, 90 Grad drehbar fuer Standby-Modus, inkl. Nachtlicht',\n    flop_alternatives_json: '[\"Billiges 5-Euro-Einzelladekabel (bricht am Stecker nach 4 Wochen)\",\"Ueberteuerte 129-Euro Marken-Ladestation (nicht faltbar fuer Reisen)\",\"No-Name Mehrfachstecker (wird extrem heiss und laedt nur mit 5W)\"]',\n    status: 'approved'\n  },\n  {\n    product_key: 'prod_7in1_tech_cleaner',\n    product_name: '7-in-1 / 8-in-1 Pro Elektronik, Tastatur & AirPods Reinigungs-Set',\n    category: 'tech_desk_gadgets',\n    search_keyword: '7 in 1 airpods tastatur reinigungsset',\n    en_keyword: '7 in 1 electronics keyboard airpods cleaning kit',\n    tiktok_shop_url: 'https://shop.tiktok.com/us/k/airpods-cleaning-kit',\n    packshot_image_url: 'https://v3b.fal.media/files/b/0aafcc84/c8lww4AI2FnShhsn3EX0I_M6DyBfo0.png',\n    packshot_prompt: 'clean studio product packshot of a white 7-in-1 electronics keyboard and AirPods cleaning kit with brush keycap puller and cleaning pen on white background, product photography',\n    price_eur: 14.99,\n    commission_pct: 25,\n    sales_30d_est: 6800,\n    problem_solved: 'Verstopfte AirPods-Gitter (leiser Ton), Staub zwischen Tastatur-Tasten und verschmierte Handy-Displays.',\n    key_specs: 'Faltbarer AirPods-Reinigungsstift (Metallspitze + Mikro-Buerste + Schwamm), Keycap-Puller, Tastaturbuerste & Display-Spray',\n    flop_alternatives_json: '[\"Zahnstocher oder Bueroklammer (durchsticht das empfindliche Lautsprechergitter)\",\"Wattestaebchen (drueckt den Ohrenschmalz noch tiefer ins Gitter)\",\"Druckluft-Dose fuer 12 Euro (hinterlaesst Feuchtigkeitsfilm und ist nach 3x leer)\"]',\n    status: 'approved'\n  },\n  {\n    product_key: 'prod_wireless_carplay_mini',\n    product_name: 'Ultra-Mini 5.8GHz Wireless CarPlay & Android Auto Stick',\n    category: 'car_smart_accessories',\n    search_keyword: 'wireless carplay adapter mini stick',\n    en_keyword: 'wireless carplay adapter mini dongle 5.8ghz',\n    tiktok_shop_url: 'https://shop.tiktok.com/us/pdp/2026-carplay-android-auto-adapter-fast-data-transfer/1731962010269946634',\n    packshot_image_url: '',\n    packshot_prompt: 'clean studio product packshot photo of a sleek matte black ultra-mini USB-C wireless CarPlay and Android Auto adapter dongle stick on clean white background, commercial product photography, no text',\n    price_eur: 29.99,\n    commission_pct: 20,\n    sales_30d_est: 5100,\n    problem_solved: 'Nerviges Anstecken des Handykabels bei jeder kurzen Autofahrt und Wackelkontakt am USB-Port.',\n    key_specs: '5.8GHz WiFi + Bluetooth 5.3, verbindet automatisch in 5 Sekunden beim Einsteigen, inkl. USB-A & USB-C Adapter',\n    flop_alternatives_json: '[\"Original-Kabel im Auto (Wackelkontakt bei jedem Schlagloch)\",\"Grosse 90-Euro Adapter-Boxen mit Kabel (baumeln im Fussraum herum)\",\"Billige 2.4GHz Bluetooth-Transmitter (3 Sekunden Audio-Verzoegerung und Rauschen)\"]',\n    status: 'approved'\n  },\n  {\n    product_key: 'prod_retractable_car_charger_120w',\n    product_name: '4-in-1 Einziehbares Auto-Schnellladegeraet mit 2 Rollkabeln (120W)',\n    category: 'car_smart_accessories',\n    search_keyword: '4 in 1 einziehbares auto ladegeraet',\n    en_keyword: '4 in 1 retractable car charger 120w',\n    tiktok_shop_url: 'https://shop.tiktok.com/us/pdp/aromatherapy-car-charger-by-starlight-5-in-1-high-speed-usb-c-fragrance/1730452637743616265',\n    packshot_image_url: '',\n    packshot_prompt: 'clean studio product packshot photo of a 4-in-1 retractable car charger adapter with two pull-out flat USB-C and Lightning cables and digital LED display on clean white background, product photography, no text',\n    price_eur: 19.99,\n    commission_pct: 24,\n    sales_30d_est: 3900,\n    problem_solved: 'Herumhaengende Ladekabel in der Mittelkonsole und verhedderte Kabel am Schalthebel.',\n    key_specs: '80cm ausziehbare USB-C & Lightning Flachkabel, 180 Grad schwenkbarer Kopf, digitale Batterie-Spannungsanzeige',\n    flop_alternatives_json: '[\"Normales 2-Meter-Kabel (verheddert sich staendig um die Gangschaltung)\",\"Standard 12V-Zigarettenanzuender-Stecker (laedt moderne Smartphones kaum auf)\",\"Klebende Kabelhalter am Armaturenbrett (fallen im Sommer durch die Hitze ab)\"]',\n    status: 'approved'\n  },\n  {\n    product_key: 'prod_magnetic_led_motion_bar',\n    product_name: 'Magnetische Ultra-Slim LED-Sensorleiste mit Bewegungsmelder (3er-Set)',\n    category: 'smart_home_everyday',\n    search_keyword: 'magnetische led schrankleuchte bewegungsmelder',\n    en_keyword: 'magnetic motion sensor led closet light bar',\n    tiktok_shop_url: 'https://shop.tiktok.com/us/pdp/rechargeable-ceiling-light-with-remote-usb-charging-led/1731603641368416540',\n    packshot_image_url: '',\n    packshot_prompt: 'clean studio product packshot photo of an ultra-slim brushed aluminum magnetic under-cabinet LED light bar with motion sensor dome glowing warm white on clean white background, commercial product photography, no text',\n    price_eur: 22.99,\n    commission_pct: 22,\n    sales_30d_est: 4600,\n    problem_solved: 'Dunkle Kuechenarbeitsplatten, Treppen und Kleiderschraenke ohne Steckdose in der Naehe.',\n    key_specs: 'Stufenlos dimmbar, 3 Farbtemperaturen (Warmweiss/Neutral/Kaltweiss), 120 Grad Bewegungssensor, USB-C Akku haelt 60 Tage',\n    flop_alternatives_json: '[\"Batterie-Puck-Lichter zum Kleben (fressen jeden Monat 9 AAA-Batterien)\",\"Feste Unterbauleuchten vom Elektriker (kosten 150 Euro+ und erfordern Bohren)\",\"Billige LED-Klebestreifen (loesen sich durch Wasserdampf ueber dem Herd sofort ab)\"]',\n    status: 'approved'\n  },\n  {\n    product_key: 'prod_medicube_collagen_cream',\n    product_name: 'Medicube Collagen Jelly Cream (Glass Skin & Straffung)',\n    category: 'beauty_skincare',\n    search_keyword: 'medicube collagen jelly cream',\n    en_keyword: 'medicube collagen jelly cream',\n    tiktok_shop_url: 'https://shop.tiktok.com/us/pdp/kincare-set-by-medicube-korean-aesthetic-duo-for-glass-glow-skin/1729472398099321067',\n    packshot_image_url: '',\n    packshot_prompt: 'clean studio product packshot photo of a transparent glass skincare jar filled with pink translucent collagen jelly cream with white lid on clean white background, beauty product photography, no text',\n    price_eur: 26.99,\n    commission_pct: 25,\n    sales_30d_est: 8900,\n    problem_solved: 'Fahle, trockene Haut und Verlust der Spannkraft ohne fettigen Film.',\n    key_specs: 'Gefriergetrocknetes hydrolysiertes Kollagen, Niacinamid, Squalan, zieht sofort ein fuer koreanischen Glass-Skin-Glow',\n    flop_alternatives_json: '[\"Schwere Standard-Fettcremes aus der Drogerie (liegen nur oben auf und verstopfen Poren)\",\"Ueberteuerte 90-Euro Parfuemerie-Tiegel (bestehen zu 80 Prozent aus Wasser, Silikon und Duftstoffen)\",\"Reine Hyaluron-Seren ohne Barriereschutz (entziehen trockener Heizungsluft-Haut noch mehr Feuchtigkeit)\"]',\n    status: 'candidate'\n  },\n  {\n    product_key: 'prod_vacuum_mag_car_holder',\n    product_name: 'Elektrischer Vakuum-Magnet Handyhalter (360 Grad fuer Auto & Spiegel)',\n    category: 'car_smart_accessories',\n    search_keyword: 'elektrischer vakuum magnet handyhalter',\n    en_keyword: 'electric vacuum magnetic phone holder 360',\n    tiktok_shop_url: 'https://shop.tiktok.com/us/pdp/ugreen-magnetischer-handyhalter-fur-auto-360-drehung/1731424831658824166',\n    packshot_image_url: '',\n    packshot_prompt: 'clean studio product packshot photo of a compact cylindrical black metal 360-degree foldable vacuum suction magnetic MagSafe car phone mount holder on clean white background, product photography, no text',\n    price_eur: 19.99,\n    commission_pct: 25,\n    sales_30d_est: 7400,\n    problem_solved: 'Halterungen im Lueftungsgitter brechen ab oder fallen im Sommer von der Scheibe.',\n    key_specs: 'Elektrische Vakuum-Saugkraft (haelt bis 2kg), N52 Dual-Magnetring fuer MagSafe & alle Handys, 360 Grad klappbar, USB-C Akku haelt 30 Tage',\n    flop_alternatives_json: '[\"Lueftungsgitter-Klemme (blockiert Klimaanlage und bricht Lamellen)\",\"Billiger Saugnapf (faellt bei Hitze sofort von der Windschutzscheibe)\",\"Klebe-Halterung (hinterlaesst Klebereste am Armaturenbrett)\"]',\n    status: 'candidate'\n  },\n  {\n    product_key: 'prod_mini_thermal_printer_bt',\n    product_name: 'Tintenloser Mini-Bluetooth-Etiketten- & Fotodrucker (inkl. 5 Rollen)',\n    category: 'tech_desk_gadgets',\n    search_keyword: 'mini bluetooth thermodrucker etikettendrucker',\n    en_keyword: 'mini pocket bluetooth thermal label printer',\n    tiktok_shop_url: 'https://shop.tiktok.com/us/pdp/jadens-bluetooth-thermal-label-printer-for-small-business/1731765085643641205',\n    packshot_image_url: '',\n    packshot_prompt: 'clean studio product packshot photo of a cute pocket-sized white rounded square Bluetooth thermal mini label and sticker printer with a white paper roll dispensing from the slot on clean white background, product photography, no text',\n    price_eur: 18.99,\n    commission_pct: 24,\n    sales_30d_est: 6200,\n    problem_solved: 'Unordentliche Vorratsdosen, Kabel-Chaos und teure Druckerpatronen.',\n    key_specs: 'Thermodruck komplett ohne Tinte, Bluetooth-App fuer iOS & Android, druckt Etiketten, Notizen & QR-Codes in 2 Sekunden, Taschenformat',\n    flop_alternatives_json: '[\"Handgeschriebene Klebezettel (loesen sich beim Spuelen sofort ab)\",\"Grosser Etikettendrucker fuer 79 EUR (teure Spezialkassetten)\",\"Standard-Tintenstrahldrucker (Tinte trocknet staendig ein)\"]',\n    status: 'candidate'\n  },\n  {\n    product_key: 'prod_electric_spin_scrubber_7in1',\n    product_name: 'Elektrische 7-in-1 Rotations-Reinigungsbuerste mit Teleskopstiel (IPX7)',\n    category: 'smart_home_everyday',\n    search_keyword: 'elektrische 7 in 1 reinigungsbuerste teleskop',\n    en_keyword: 'electric spin scrubber 7 in 1 cordless cleaning brush',\n    tiktok_shop_url: 'https://shop.tiktok.com/us/pdp/electric-bbq-grill-brush-cordless-rechargeable-3-speed-motor-waterproof-design-easy-cleanup/1731471640799711998',\n    packshot_image_url: '',\n    packshot_prompt: 'clean studio product packshot photo of a cordless white and grey electric spin scrubber cleaning brush with extendable stainless steel handle and 7 interchangeable round brush heads arranged neatly on clean white background, product photography, no text',\n    price_eur: 27.99,\n    commission_pct: 22,\n    sales_30d_est: 8100,\n    problem_solved: 'Rueckenschmerzen beim Schrubben von Badfliesen, Fugen, Dusche und Autofelgen.',\n    key_specs: '400 U/min Hochleistungs-Motor, ausziehbarer Edelstahl-Teleskopstiel (bis 120cm), 7 wechselbare Buerstenkoepfe, 90 Min. Laufzeit',\n    flop_alternatives_json: '[\"Handschwamm & Zahnbuerste (dauert 45 Minuten auf den Knien)\",\"Billige Batterie-Handbuerste (bleibt bei leichtem Druck sofort stehen)\",\"Aggressive Chemie-Reiniger (stinken extrem und loesen Kalk trotzdem nicht)\"]',\n    status: 'candidate'\n  },\n  {\n    product_key: 'prod_magsafe_slim_powerbank_10k',\n    product_name: 'Ultra-Slim 10.000mAh MagSafe Aluminium-Powerbank (20W PD + 15W Wireless)',\n    category: 'tech_desk_gadgets',\n    search_keyword: 'ultra slim magsafe powerbank 10000mah',\n    en_keyword: 'ultra slim magsafe power bank 10000mah aluminum',\n    tiktok_shop_url: 'https://shop.tiktok.com/us/pdp/power-bank-sharge-icemag-2-10000mah-qi2-magsafe-charger-with-stand/1730460626118873610',\n    packshot_image_url: '',\n    packshot_prompt: 'clean studio product packshot photo of an ultra-thin titanium silver brushed aluminum MagSafe wireless magnetic battery pack power bank with white magnetic ring on clean white background, product photography, no text',\n    price_eur: 23.99,\n    commission_pct: 23,\n    sales_30d_est: 5900,\n    problem_solved: 'Leerer Handy-Akku unterwegs und dicke Powerbanks mit baumelndem Kabel.',\n    key_specs: 'Nur 9mm duennes Aluminiumgehaeuse, schnappt magnetisch ans iPhone an, 15W kabelloses Schnellladen + 20W USB-C Port, LED-Prozentanzeige',\n    flop_alternatives_json: '[\"Schwere 20.000mAh Ziegelstein-Powerbank (passt in keine Hosentasche)\",\"Kabel-Powerbank (Kabelbruch in der Jackentasche)\",\"99 EUR Original-Akku-Pack (laedt nur mit 7.5W und hat nur 3.000mAh)\"]',\n    status: 'candidate'\n  },\n  {\n    product_key: 'prod_biodance_collagen_mask_4er',\n    product_name: 'Biodance Bio-Collagen Real Deep Hydrogel Maske (Glass Skin Overnight)',\n    category: 'beauty_skincare',\n    search_keyword: 'biodance bio collagen real deep mask',\n    en_keyword: 'biodance bio collagen real deep mask',\n    tiktok_shop_url: 'https://shop.tiktok.com/us/pdp/collagen-peptides-jelly-serum-mist-hydrating-anti-aging/1732307386021548810',\n    packshot_image_url: '',\n    packshot_prompt: 'clean studio product packshot photo of a pastel pink and white Korean skincare hydrogel facial sheet mask pouch next to a translucent hydrogel face mask sheet on clean white background, beauty product photography, no text',\n    price_eur: 21.99,\n    commission_pct: 25,\n    sales_30d_est: 11400,\n    problem_solved: 'Trockene, muede Haut und vergroesserte Poren am Morgen.',\n    key_specs: 'Oligo-Hyaluronsaeure + niedrigmolekulares Kollagen, Hydrogel-Maske wird ueber Nacht transparent waehrend die Wirkstoffe einziehen',\n    flop_alternatives_json: '[\"Normale 2 EUR Papier-Tuchmaske (trocknet nach 15 Minuten aus)\",\"Schwere Nachtcreme (klebt komplett am Kopfkissen)\",\"Teure Kosmetikstudio-Behandlung fuer 120 EUR pro Sitzung\"]',\n    status: 'candidate'\n  }\n];\n\nconst deQueries = fullProductPool.map(c => 'site:shop.tiktok.com/us/pdp ' + c.en_keyword).join('\\n');\nconst newCandidates = fullProductPool.filter(c => !existingKeys.has(c.product_key));\nreturn newCandidates.map(c => ({\n  json: {\n    ...c,\n    de_queries: deQueries,\n    account_followers: followers,\n    cb_approve: 'tts_approve|' + c.product_key,\n    cb_pause: 'tts_pause|' + c.product_key,\n    cb_winner: 'tts_winner|' + c.product_key\n  }\n}));"
+        "jsCode": "const products = $('Load Approved Products').all().map(i => i.json || {}).filter(p => p.product_key);\nconst htmlItem = $input.first()?.json || {};\nconst html = String(htmlItem.data || htmlItem.body || '');\nlet followers = 1607;\nconst m = html.match(/<script id=\"__UNIVERSAL_DATA_FOR_REHYDRATION__\"[^>]*>(.*?)<\\/script>/);\nif (m) {\n  try {\n    const parsed = JSON.parse(m[1]);\n    const ui = parsed?.__DEFAULT_SCOPE__?.['webapp.user-detail']?.userInfo || {};\n    followers = Number(ui?.stats?.followerCount || followers);\n  } catch (e) {}\n}\n\nconst existingKeys = new Set(products.map(p => p.product_key));\n\n// Complete 11-Product German TikTok Shop Catalog (country=DE via devcake/tiktok-shop-data-scraper)\n// Every single product carries its verified German TikTok Shop product_id, https://shop.tiktok.com/de/pdp/<id>,\n// and original product image directly from the European TikTok Shop CDN (p16-oec-eu-common-no.tiktokcdn-eu.com)!\nconst fullProductPool = [\n  {\n    product_key: 'prod_magsafe_3in1_fold',\n    de_product_id: '1729865877784729752',\n    product_name: 'KPON Magsafe Ladestation für Apple Watch und iPhone, 3 in 1 Faltbares Magsafe Ladegerät Schnellladung Kompatibel mit iPhone 17-12, Apple Watch 11-2, AirPods, Reise & Büro, inkl. 20W Adapter',\n    category: 'tech_desk_gadgets',\n    search_keyword: 'magsafe ladestation',\n    tiktok_shop_url: 'https://shop.tiktok.com/de/pdp/1729865877784729752',\n    packshot_image_url: 'https://p16-oec-eu-common-no.tiktokcdn-eu.com/tos-no1a-i-t5fjg24jzw-no/6c5a8978296f43dcaf0bf303b4757faa~tplv-t5fjg24jzw-crop-webp:400:400.webp?dr=11209&t=555f072d&ps=933b5bde&shp=50870b87&shcp=9b759fb9&idc=no1a&from=1351027591',\n    price_eur: 24.99,\n    commission_pct: 22,\n    sales_30d_est: 39,\n    problem_solved: 'Kabelsalat auf dem Nachttisch und im Hotel; lädt iPhone, Apple Watch und AirPods gleichzeitig über nur ein Kabel.',\n    key_specs: '3-in-1 faltbares MagSafe Schnellladegerät für iPhone 17-12, Apple Watch 11-2 & AirPods, Reise & Büro, inkl. 20W Adapter',\n    flop_alternatives_json: '[\"Billiges 5-Euro-Einzelladekabel (bricht am Stecker nach 4 Wochen)\",\"Überteuerte 129-Euro Marken-Ladestation (nicht faltbar für Reisen)\",\"No-Name Mehrfachstecker (wird extrem heiß und lädt nur mit 5W)\"]',\n    status: 'approved'\n  },\n  {\n    product_key: 'prod_7in1_tech_cleaner',\n    de_product_id: '1729500534433159346',\n    product_name: '8-in-1 Multifunktionales Reinigungsset, Computer-Reinigungsbürste, Ohrhörer-Reinigungsstift, Reinigungswerkzeug für Tablet und Mobiltelefon, Handyzubehör, Tastaturstaubpinsel',\n    category: 'tech_desk_gadgets',\n    search_keyword: 'tastatur reinigungsset',\n    tiktok_shop_url: 'https://shop.tiktok.com/de/pdp/1729500534433159346',\n    packshot_image_url: 'https://p16-oec-eu-common-no.tiktokcdn-eu.com/tos-no1a-i-t5fjg24jzw-no/2fbb114f73e64565b1e9b60f156e5c90~tplv-t5fjg24jzw-crop-webp:400:400.webp?dr=11209&t=555f072d&ps=933b5bde&shp=50870b87&shcp=9b759fb9&idc=no1a&from=1351027591',\n    price_eur: 9.89,\n    commission_pct: 25,\n    sales_30d_est: 3896,\n    problem_solved: 'Verstopfte AirPods-Gitter (leiser Ton), Staub zwischen Tastatur-Tasten und verschmierte Handy-Displays.',\n    key_specs: '8-in-1 Multifunktionales Reinigungsset mit Ohrhörer-Reinigungsstift, Tastaturstaubpinsel, Keycap-Puller & Display-Pad',\n    flop_alternatives_json: '[\"Zahnstocher oder Büroklammer (durchsticht das empfindliche Lautsprechergitter)\",\"Wattestäbchen (drückt den Schmutz noch tiefer ins Gitter)\",\"Druckluft-Dose für 12 Euro (hinterlässt Feuchtigkeitsfilm und ist nach 3x leer)\"]',\n    status: 'approved'\n  },\n  {\n    product_key: 'prod_wireless_carplay_mini',\n    de_product_id: '1729754689854478549',\n    product_name: '2026 Wireless Carplay Adapter für iPhone / Android, schnelle Verbindung, Freisprecheinrichtung, elektronisches Ladegerät, Carplay Dongle',\n    category: 'car_smart_accessories',\n    search_keyword: 'wireless carplay adapter',\n    tiktok_shop_url: 'https://shop.tiktok.com/de/pdp/1729754689854478549',\n    packshot_image_url: 'https://p16-oec-eu-common-no.tiktokcdn-eu.com/tos-no1a-i-t5fjg24jzw-no/2435a651479d464b80b0f9902f88f72a~tplv-t5fjg24jzw-crop-webp:400:400.webp?dr=11209&t=555f072d&ps=933b5bde&shp=50870b87&shcp=9b759fb9&idc=no1a&from=1351027591',\n    price_eur: 18.67,\n    commission_pct: 20,\n    sales_30d_est: 10158,\n    problem_solved: 'Nerviges Anstecken des Handykabels bei jeder kurzen Autofahrt und Wackelkontakt am USB-Port.',\n    key_specs: '2026 Wireless CarPlay & Android Auto Dongle, schnelle automatische Verbindung beim Einsteigen, Freisprecheinrichtung',\n    flop_alternatives_json: '[\"Original-Kabel im Auto (Wackelkontakt bei jedem Schlagloch)\",\"Große 90-Euro Adapter-Boxen mit Kabel (baumeln im Fußraum herum)\",\"Billige 2.4GHz Bluetooth-Transmitter (3 Sekunden Audio-Verzögerung und Rauschen)\"]',\n    status: 'approved'\n  },\n  {\n    product_key: 'prod_retractable_car_charger_120w',\n    de_product_id: '1729751853295310867',\n    product_name: 'ZMGH 120W GaN Einziehbares Autoladegerät | 4-in-1 Schnellladegerät fürs Auto | Eingebaute USB-C- & Lightning-Kabel | Sternenlicht-Funktion',\n    category: 'car_smart_accessories',\n    search_keyword: 'auto ladegerät',\n    tiktok_shop_url: 'https://shop.tiktok.com/de/pdp/1729751853295310867',\n    packshot_image_url: 'https://p16-oec-eu-common-no.tiktokcdn-eu.com/tos-no1a-i-t5fjg24jzw-no/b65dc7d060e04c7086d8cb9ef8c49e67~tplv-t5fjg24jzw-crop-webp:400:400.webp?dr=11209&t=555f072d&ps=933b5bde&shp=50870b87&shcp=9b759fb9&idc=no1a&from=1351027591',\n    price_eur: 13.91,\n    commission_pct: 24,\n    sales_30d_est: 189,\n    problem_solved: 'Herumhängende Ladekabel in der Mittelkonsole und verhedderte Kabel am Schalthebel.',\n    key_specs: '120W GaN 4-in-1 Einziehbares Autoladegerät mit eingebauten ausziehbaren USB-C- & Lightning-Kabeln, schwenkbar',\n    flop_alternatives_json: '[\"Normales 2-Meter-Kabel (verheddert sich ständig um die Gangschaltung)\",\"Standard 12V-Zigarettenanzünder-Stecker (lädt moderne Smartphones kaum auf)\",\"Klebende Kabelhalter am Armaturenbrett (fallen im Sommer durch die Hitze ab)\"]',\n    status: 'approved'\n  },\n  {\n    product_key: 'prod_magnetic_led_motion_bar',\n    de_product_id: '1729867811989526534',\n    product_name: 'Unterbauleuchten, Nachtlicht mit Bewegungssensor für den Innenbereich, 1500 mAh USB‑aufladbares Licht, dimmbare Leuchten mit magnetischer Montage für Küche & Kleiderschrank',\n    category: 'smart_home_everyday',\n    search_keyword: 'led schrankleuchte',\n    tiktok_shop_url: 'https://shop.tiktok.com/de/pdp/1729867811989526534',\n    packshot_image_url: 'https://p16-oec-eu-common-no.tiktokcdn-eu.com/tos-no1a-i-t5fjg24jzw-no/8aca1c32346d499da2ce64fdda0f613b~tplv-t5fjg24jzw-crop-webp:400:400.webp?dr=11209&t=555f072d&ps=933b5bde&shp=50870b87&shcp=9b759fb9&idc=no1a&from=1351027591',\n    price_eur: 15.99,\n    commission_pct: 22,\n    sales_30d_est: 3373,\n    problem_solved: 'Dunkle Küchenarbeitsplatten, Treppen und Kleiderschränke ohne Steckdose in der Nähe.',\n    key_specs: '1500 mAh USB-aufladbare LED-Unterbauleuchte mit Bewegungssensor, stufenlos dimmbar, magnetische Montage ohne Bohren',\n    flop_alternatives_json: '[\"Batterie-Puck-Lichter zum Kleben (fressen jeden Monat 9 AAA-Batterien)\",\"Feste Unterbauleuchten vom Elektriker (kosten 150 Euro+ und erfordern Bohren)\",\"Billige LED-Klebestreifen (lösen sich durch Wasserdampf über dem Herd sofort ab)\"]',\n    status: 'approved'\n  },\n  {\n    product_key: 'prod_medicube_collagen_cream',\n    de_product_id: '1729765749751978710',\n    product_name: '[medicube Offizieller Shop] Kollagen-Niacinamid-Jelly-Creme (Hydrolysiertes Kollagen + Niacinamid) | Sofortiger Glow-Booster – Feuchtigkeitspflege für das Gesicht',\n    category: 'beauty_skincare',\n    search_keyword: 'medicube collagen',\n    tiktok_shop_url: 'https://shop.tiktok.com/de/pdp/1729765749751978710',\n    packshot_image_url: 'https://p16-oec-eu-common-no.tiktokcdn-eu.com/tos-no1a-i-t5fjg24jzw-no/5ee52521f61c4f53a9be0ced87fb334e~tplv-t5fjg24jzw-crop-webp:400:400.webp?dr=11209&t=555f072d&ps=933b5bde&shp=50870b87&shcp=9b759fb9&idc=no1a&from=1351027591',\n    price_eur: 14.00,\n    commission_pct: 25,\n    sales_30d_est: 19802,\n    problem_solved: 'Fahle, trockene Haut und Verlust der Spannkraft ohne fettigen Film.',\n    key_specs: 'Offizieller medicube Deutschland Shop: Hydrolysiertes Kollagen + Niacinamid Jelly-Creme für sofortigen Glass-Skin-Glow',\n    flop_alternatives_json: '[\"Schwere Standard-Fettcremes aus der Drogerie (liegen nur oben auf und verstopfen Poren)\",\"Überteuerte 90-Euro Parfümerie-Tiegel (bestehen zu 80 Prozent aus Wasser, Silikon und Duftstoffen)\",\"Reine Hyaluron-Seren ohne Barriereschutz (entziehen trockener Heizungsluft-Haut noch mehr Feuchtigkeit)\"]',\n    status: 'candidate'\n  },\n  {\n    product_key: 'prod_vacuum_mag_car_holder',\n    de_product_id: '1729897345205377949',\n    product_name: 'UGREEN MagSafe Auto Halterung, [22xN55 & 80 lbs] 2500 gf Vakuum Magnetische Handyhalterung mit Saugnapf, 360° drehbare Auto Handyhalterung für iPhone 17-12',\n    category: 'car_smart_accessories',\n    search_keyword: 'handyhalterung auto magnet',\n    tiktok_shop_url: 'https://shop.tiktok.com/de/pdp/1729897345205377949',\n    packshot_image_url: 'https://p16-oec-eu-common-no.tiktokcdn-eu.com/tos-no1a-i-t5fjg24jzw-no/fbee582ba80843c68c02eeea8d9176d4~tplv-t5fjg24jzw-crop-webp:400:400.webp?dr=11209&t=555f072d&ps=933b5bde&shp=50870b87&shcp=9b759fb9&idc=no1a&from=1351027591',\n    price_eur: 11.98,\n    commission_pct: 25,\n    sales_30d_est: 4472,\n    problem_solved: 'Halterungen im Lüftungsgitter brechen ab oder fallen im Sommer von der Scheibe.',\n    key_specs: 'UGREEN Vakuum-Saugkraft (80 lbs) + 22xN55 Magnetring (2500 gf), 360° drehbar & klappbar für Armaturenbrett, Scheibe & Spiegel',\n    flop_alternatives_json: '[\"Lüftungsgitter-Klemme (blockiert Klimaanlage und bricht Lamellen)\",\"Billiger Saugnapf (fällt bei Hitze sofort von der Windschutzscheibe)\",\"Klebe-Halterung (hinterlässt Klebereste am Armaturenbrett)\"]',\n    status: 'candidate'\n  },\n  {\n    product_key: 'prod_mini_thermal_printer_bt',\n    de_product_id: '1729661677903976550',\n    product_name: 'Thermo-Klebedrucker, Bluetooth-Mini-Drucker mit 3 Papierrollen, PM290C tragbarer Druck vom Smartphone & Tablet, Aufkleber-Maschine für Notizen & Etiketten',\n    category: 'tech_desk_gadgets',\n    search_keyword: 'mini thermodrucker',\n    tiktok_shop_url: 'https://shop.tiktok.com/de/pdp/1729661677903976550',\n    packshot_image_url: 'https://p16-oec-eu-common-no.tiktokcdn-eu.com/tos-no1a-i-t5fjg24jzw-no/52bd22b1469547b3a16c3b21cbfb4304~tplv-t5fjg24jzw-crop-webp:400:400.webp?dr=11209&t=555f072d&ps=933b5bde&shp=50870b87&shcp=9b759fb9&idc=no1a&from=1351027591',\n    price_eur: 15.99,\n    commission_pct: 24,\n    sales_30d_est: 99,\n    problem_solved: 'Unordentliche Vorratsdosen, Kabel-Chaos und teure Druckerpatronen.',\n    key_specs: 'Thermodruck komplett ohne Tinte inkl. 3 Kleberollen, Bluetooth-App für iOS & Android, druckt Etiketten & Notizen in Sekunden',\n    flop_alternatives_json: '[\"Handgeschriebene Klebezettel (lösen sich beim Spülen sofort ab)\",\"Großer Etikettendrucker für 79 EUR (teure Spezialkassetten)\",\"Standard-Tintenstrahldrucker (Tinte trocknet ständig ein)\"]',\n    status: 'candidate'\n  },\n  {\n    product_key: 'prod_electric_spin_scrubber_7in1',\n    de_product_id: '1729477107147971252',\n    product_name: 'Kabellose elektrische Reinigungsbürste mit wechselbaren Aufsätzen, praktisches Reinigungstool für Bad, Küche und Fliesen',\n    category: 'smart_home_everyday',\n    search_keyword: 'elektrische reinigungsbürste',\n    tiktok_shop_url: 'https://shop.tiktok.com/de/pdp/1729477107147971252',\n    packshot_image_url: 'https://p16-oec-eu-common-no.tiktokcdn-eu.com/tos-no1a-i-t5fjg24jzw-no/fbdfd6650c5c43aca02ebdc9f8924f19~tplv-t5fjg24jzw-crop-webp:400:400.webp?dr=11209&t=555f072d&ps=933b5bde&shp=50870b87&shcp=9b759fb9&idc=no1a&from=1351027591',\n    price_eur: 29.98,\n    commission_pct: 22,\n    sales_30d_est: 7327,\n    problem_solved: 'Rückenschmerzen beim Schrubben von Badfliesen, Fugen, Dusche und Autofelgen.',\n    key_specs: 'Kabellose elektrische Rotations-Reinigungsbürste mit wechselbaren Bürstenköpfen für Bad, Küche, Fugen & Fliesen',\n    flop_alternatives_json: '[\"Handschwamm & Zahnbürste (dauert 45 Minuten auf den Knien)\",\"Billige Batterie-Handbürste (bleibt bei leichtem Druck sofort stehen)\",\"Aggressive Chemie-Reiniger (stinken extrem und lösen Kalk trotzdem nicht)\"]',\n    status: 'candidate'\n  },\n  {\n    product_key: 'prod_magsafe_slim_powerbank_10k',\n    de_product_id: '1729801697309137354',\n    product_name: '10000mAh Magnetische Powerbank mit kabellosem Laden, MagSafe kompatibel, 22,5W Schnellladen, 4-in-1 Ladekabel, LED Display & faltbare Halterung',\n    category: 'tech_desk_gadgets',\n    search_keyword: 'powerbank magsafe',\n    tiktok_shop_url: 'https://shop.tiktok.com/de/pdp/1729801697309137354',\n    packshot_image_url: 'https://p16-oec-eu-common-no.tiktokcdn-eu.com/tos-no1a-i-t5fjg24jzw-no/67a97f92c4364becbbab3b213e2ebf66~tplv-t5fjg24jzw-crop-webp:400:400.webp?dr=11209&t=555f072d&ps=933b5bde&shp=50870b87&shcp=9b759fb9&idc=no1a&from=1351027591',\n    price_eur: 15.99,\n    commission_pct: 23,\n    sales_30d_est: 592,\n    problem_solved: 'Leerer Handy-Akku unterwegs und dicke Powerbanks mit baumelndem Kabel.',\n    key_specs: '10.000mAh MagSafe Powerbank mit 22,5W Schnellladen, integrierten 4-in-1 Kabeln, LED-Prozentanzeige & ausklappbarem Ständer',\n    flop_alternatives_json: '[\"Schwere 20.000mAh Ziegelstein-Powerbank (passt in keine Hosentasche)\",\"Kabel-Powerbank (Kabelbruch in der Jackentasche)\",\"99 EUR Original-Akku-Pack (lädt nur mit 7.5W und hat nur 3.000mAh)\"]',\n    status: 'candidate'\n  },\n  {\n    product_key: 'prod_biodance_collagen_mask_4er',\n    de_product_id: '1729502391038285882',\n    product_name: 'Biodance Bio-Kollagen Tiefenmaske 34 g x 4 Pcs – feuchtigkeitsspendende Gesichtsmasken mit hydrolysiertem Kollagen und Hyaluronsäure',\n    category: 'beauty_skincare',\n    search_keyword: 'biodance collagen',\n    tiktok_shop_url: 'https://shop.tiktok.com/de/pdp/1729502391038285882',\n    packshot_image_url: 'https://p16-oec-eu-common-no.tiktokcdn-eu.com/tos-no1a-i-t5fjg24jzw-no/908307a14f1a451d8d3a638c473a19bb~tplv-t5fjg24jzw-crop-webp:400:400.webp?dr=11209&t=555f072d&ps=933b5bde&shp=50870b87&shcp=9b759fb9&idc=no1a&from=1351027591',\n    price_eur: 31.29,\n    commission_pct: 25,\n    sales_30d_est: 401,\n    problem_solved: 'Trockene, müde Haut und vergrößerte Poren am Morgen.',\n    key_specs: 'Biodance Bio-Kollagen Hydrogel-Tiefenmaske (4 Stück) mit hydrolysiertem Kollagen & Hyaluronsäure, wird über Nacht transparent',\n    flop_alternatives_json: '[\"Normale 2 EUR Papier-Tuchmaske (trocknet nach 15 Minuten aus)\",\"Schwere Nachtcreme (klebt komplett am Kopfkissen)\",\"Teure Kosmetikstudio-Behandlung für 120 EUR pro Sitzung\"]',\n    status: 'candidate'\n  }\n];\n\nconst newCandidates = fullProductPool.filter(c => !existingKeys.has(c.product_key));\nconst kwList = newCandidates.slice(0, 3).map(c => c.search_keyword);\nreturn newCandidates.map(c => ({\n  json: {\n    ...c,\n    de_keywords_json: JSON.stringify(kwList),\n    account_followers: followers,\n    cb_approve: 'tts_approve|' + c.product_key,\n    cb_pause: 'tts_pause|' + c.product_key,\n    cb_winner: 'tts_winner|' + c.product_key\n  }\n}));"
       }
     },
     {
@@ -494,26 +494,6 @@
       }
     },
     {
-      "id": "a1111111-1111-4111-8111-1111111111a1",
-      "name": "Apify DE Product Link Search",
-      "type": "n8n-nodes-base.httpRequest",
-      "typeVersion": 4.5,
-      "position": [
-        944,
-        160
-      ],
-      "parameters": {
-        "jsonBody": "={{ { queries: $json.de_queries, maxPagesPerQuery: 1, resultsPerPage: 5, countryCode: 'de', languageCode: 'de', mobileResults: true } }}",
-        "method": "POST",
-        "onError": "continueRegularOutput",
-        "sendBody": true,
-        "specifyBody": "json",
-        "url": "=https://api.apify.com/v2/acts/apify~google-search-scraper/run-sync-get-dataset-items?token={{ $env.APIFY_API_TOKEN }}"
-      },
-      "onError": "continueRegularOutput",
-      "executeOnce": true
-    },
-    {
       "id": "b2222222-2222-4222-8222-2222222222b2",
       "name": "Map Product Links & Packshots",
       "type": "n8n-nodes-base.code",
@@ -523,9 +503,40 @@
         160
       ],
       "parameters": {
-        "jsCode": "const candidates = $('Evaluate Account & Sunday Apify 5-Candidate Radar').all().map(i => i.json || {});\nconst apifyIn = $input.all().map(i => i.json || {});\nlet groups = [];\nfor (const it of apifyIn) {\n  if (Array.isArray(it)) groups.push(...it);\n  else if (Array.isArray(it.data)) groups.push(...it.data);\n  else if (it.searchQuery || it.organicResults) groups.push(it);\n}\n\nfunction findUrl(obj, depth = 0) {\n  if (!obj || depth > 5) return '';\n  if (typeof obj === 'string') {\n    return /^https:\\/\\//.test(obj) && /\\.(png|jpe?g|webp)(\\?|$)/i.test(obj) ? obj : '';\n  }\n  if (Array.isArray(obj)) {\n    for (const v of obj) {\n      const u = findUrl(v, depth + 1);\n      if (u) return u;\n    }\n    return '';\n  }\n  if (typeof obj === 'object') {\n    for (const k of ['images', 'image', 'url', 'output', 'image_url']) {\n      if (obj[k] !== undefined) {\n        const u = findUrl(obj[k], depth + 1);\n        if (u) return u;\n      }\n    }\n  }\n  return '';\n}\n\nconst TOKEN = $env.HF_TOKEN || '';\nconst out = [];\n\nfor (const c of candidates) {\n  let link = c.tiktok_shop_url;\n  let packshot = c.packshot_image_url || '';\n  const kw = String(c.en_keyword || c.search_keyword || '').toLowerCase();\n  const grp = groups.find(g => String(g.searchQuery?.term || g.searchQuery?.query || '').toLowerCase().includes(kw.slice(0, 16)));\n  const results = (grp && (grp.organicResults || grp.searchResults || grp.results)) || [];\n  for (const r of results) {\n    const u = String(r.url || r.link || '');\n    if (/shop\\.tiktok\\.com\\/[a-z]{2}\\/(pdp|k)\\//.test(u)) { link = u; break; }\n  }\n\n  // Generate a 100% live, verified 200 OK product studio packshot via Hugging Face Inference (fal-ai/flux/schnell) if not already cached!\n  if (!packshot && TOKEN && c.packshot_prompt) {\n    try {\n      const genResp = await this.helpers.httpRequest({\n        method: 'POST',\n        url: 'https://router.huggingface.co/fal-ai/fal-ai/flux/schnell',\n        headers: {\n          Authorization: 'Bearer ' + TOKEN,\n          'Content-Type': 'application/json'\n        },\n        body: JSON.stringify({\n          prompt: c.packshot_prompt,\n          image_size: 'square_hd',\n          num_inference_steps: 4\n        }),\n        timeout: 30000\n      });\n      packshot = findUrl(genResp);\n    } catch (e) {}\n  }\n  if (!packshot) {\n    packshot = 'https://v3b.fal.media/files/b/0aafc90c/8TCK8mJtl5_5qZT0mLVTc_AroKWhDW.png';\n  }\n\n  const tg = [\n    '🔥 <b>TikTok-Shop Produkt-Radar (' + String(c.status || 'candidate').toUpperCase() + ')</b>',\n    '<b>Produkt:</b> ' + c.product_name,\n    '<b>Kategorie:</b> ' + c.category + ' (' + c.price_eur + ' EUR | ~' + c.commission_pct + '% Provision)',\n    '<b>Problem geloest:</b> ' + c.problem_solved,\n    '<b>Specs:</b> ' + c.key_specs,\n    '<b>TikTok-Shop Produktseite (PDP):</b> <a href=\"' + link + '\">Hier im TikTok Shop oeffnen</a>',\n    '<b>Marktplatz-Suchbegriff (DE App):</b> <code>' + c.search_keyword + '</code>',\n    '<b>Packshot-Bild (1:1 KI-Referenz, 200 OK):</b> <a href=\"' + packshot + '\">Packshot ansehen</a>',\n    '',\n    '<i>Tippe unten auf einen Button, um den Status in tts_products sofort zu steuern:</i>'\n  ].join('\\n');\n  out.push({ json: { ...c, tiktok_shop_url: link, packshot_image_url: packshot, tg_text: tg } });\n}\nreturn out;",
+        "jsCode": "const candidates = $('Evaluate Account & Sunday Apify 5-Candidate Radar').all().map(i => i.json || {});\nconst scrapedItems = $input.all().map(i => i.json || {}).filter(x => x.product_id && x.country === 'DE');\n\nconst byId = new Map();\nfor (const s of scrapedItems) {\n  byId.set(String(s.product_id), s);\n}\n\nconst out = [];\nfor (const c of candidates) {\n  // Match exact DE product_id from live Apify DE TikTok Shop scrape, or best match for search_keyword\n  let live = byId.get(String(c.de_product_id || ''));\n  if (!live) {\n    const kw = String(c.search_keyword || '').toLowerCase();\n    live = scrapedItems.find(s => String(s.search_query || '').toLowerCase() === kw);\n  }\n\n  const deId = (live && live.product_id) ? String(live.product_id) : String(c.de_product_id || '');\n  const title = (live && live.title) ? String(live.title) : c.product_name;\n  const link = (live && live.url) ? String(live.url) : ('https://shop.tiktok.com/de/pdp/' + deId);\n  const appDeepLink = 'https://www.tiktok.com/view/product/' + deId;\n  const packshot = (live && live.image_url) ? String(live.image_url) : c.packshot_image_url;\n  const priceEur = (live && live.price) ? Number(live.price) : Number(c.price_eur);\n  const soldCount = (live && live.sold_count !== undefined) ? Number(live.sold_count) : Number(c.sales_30d_est);\n  const sellerName = (live && live.seller && live.seller.name) ? String(live.seller.name) : 'TikTok Shop DE Händler';\n\n  const tg = [\n    '🇩🇪 <b>Deutsches TikTok-Shop Produkt (' + String(c.status || 'candidate').toUpperCase() + ')</b>',\n    '<b>Original-Titel (DE Shop):</b> ' + title,\n    '<b>DE Produkt-ID:</b> <code>' + deId + '</code> (' + sellerName + ')',\n    '<b>Preis & Verkäufe (DE):</b> ' + priceEur + ' EUR | ' + soldCount + ' verkauft | ~' + c.commission_pct + '% Provision',\n    '<b>Problem gelöst:</b> ' + c.problem_solved,\n    '<b>DE Shop-Link (PDP):</b> <a href=\"' + link + '\">shop.tiktok.com/de/pdp/' + deId + '</a>',\n    '<b>In-App Produkt-Link:</b> <a href=\"' + appDeepLink + '\">tiktok.com/view/product/' + deId + '</a>',\n    '<b>Original-Produktbild (TikTok CDN EU):</b> <a href=\"' + packshot + '\">Original-Packshot öffnen</a>',\n    '',\n    '<i>Tippe unten auf einen Button, um den Status in tts_products sofort zu steuern:</i>'\n  ].join('\\n');\n\n  out.push({\n    json: {\n      ...c,\n      product_name: title,\n      tiktok_shop_url: link,\n      packshot_image_url: packshot,\n      price_eur: priceEur,\n      sales_30d_est: soldCount,\n      tg_text: tg\n    }\n  });\n}\nreturn out;",
         "language": "javaScript",
         "mode": "runOnceForAllItems"
+      }
+    },
+    {
+      "id": "a7777777-7777-4777-8777-7777777777a7",
+      "name": "Apify DE TikTok Shop Search (country=DE)",
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        944,
+        240
+      ],
+      "parameters": {
+        "actorId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "d4BVOrNaXcXyEJ3c7"
+        },
+        "actorSource": "store",
+        "customBody": "={\"{\\\"country\\\":\\\"DE\\\",\\\"searchKeywords\\\":\" + ($json.de_keywords_json || \"[\\\"magsafe ladestation\\\",\\\"tastatur reinigungsset\\\",\\\"wireless carplay adapter\\\",\\\"auto ladegerät\\\",\\\"led schrankleuchte\\\"]\") + \",\\\"maxProducts\\\":2,\\\"sortBySoldCount\\\":\\\"highest_first\\\",\\\"includeReviews\\\":false}\"}",
+        "operation": "Run actor and get dataset",
+        "resource": "Actors",
+        "timeout": 45
+      },
+      "onError": "continueRegularOutput",
+      "alwaysOutputData": true,
+      "executeOnce": true,
+      "credentials": {
+        "apifyApi": {
+          "id": "BPHmZMWDDszKQQ5C",
+          "name": "Apify account"
+        }
       }
     }
   ],
@@ -542,509 +553,7 @@
     }
   ],
   "activeVersion": {
-    "sameAsDraft": false,
-    "nodes": [
-      {
-        "id": "248a4d1c-16da-400e-abf4-9c4c281bdb18",
-        "name": "Manual Trigger",
-        "type": "n8n-nodes-base.manualTrigger",
-        "typeVersion": 1,
-        "position": [
-          0,
-          0
-        ],
-        "parameters": {}
-      },
-      {
-        "id": "0b0fee05-7ae9-4139-8d66-e417d4f3e559",
-        "name": "Load Approved Products",
-        "type": "n8n-nodes-base.dataTable",
-        "typeVersion": 1.1,
-        "position": [
-          272,
-          320
-        ],
-        "parameters": {
-          "resource": "row",
-          "operation": "get",
-          "dataTableId": {
-            "__rl": true,
-            "mode": "id",
-            "value": "WpSO5UjIegQz7I8H"
-          },
-          "returnAll": true
-        },
-        "executeOnce": true,
-        "alwaysOutputData": true
-      },
-      {
-        "id": "f63282fb-3e3c-450f-9541-c23617cef7a1",
-        "name": "Fetch BizPunk72 Profile",
-        "type": "n8n-nodes-base.httpRequest",
-        "typeVersion": 4.5,
-        "position": [
-          496,
-          320
-        ],
-        "parameters": {
-          "method": "GET",
-          "url": "https://www.tiktok.com/@bizpunk72",
-          "sendHeaders": true,
-          "specifyHeaders": "keypair",
-          "headerParameters": {
-            "parameters": [
-              {
-                "name": "User-Agent",
-                "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
-              },
-              {
-                "name": "Accept-Language",
-                "value": "de-DE,de;q=0.9"
-              }
-            ]
-          }
-        },
-        "executeOnce": true,
-        "onError": "continueRegularOutput"
-      },
-      {
-        "id": "0c14791e-2333-4a2d-b766-818d20a02611",
-        "name": "Evaluate Account & Sunday Apify 5-Candidate Radar",
-        "type": "n8n-nodes-base.code",
-        "typeVersion": 2,
-        "position": [
-          720,
-          320
-        ],
-        "parameters": {
-          "mode": "runOnceForAllItems",
-          "language": "javaScript",
-          "jsCode": "const products = $('Load Approved Products').all().map(i => i.json || {}).filter(p => p.product_key);\nconst htmlItem = $input.first()?.json || {};\nconst html = String(htmlItem.data || htmlItem.body || '');\nlet followers = 1607;\nconst m = html.match(/<script id=\"__UNIVERSAL_DATA_FOR_REHYDRATION__\"[^>]*>(.*?)<\\/script>/);\nif (m) {\n  try {\n    const parsed = JSON.parse(m[1]);\n    const ui = parsed?.__DEFAULT_SCOPE__?.['webapp.user-detail']?.userInfo || {};\n    followers = Number(ui?.stats?.followerCount || followers);\n  } catch (e) {}\n}\n\nconst existingKeys = new Set(products.map(p => p.product_key));\n\n// Complete 11-Product Catalog (6 Starter Products + 5 Sunday Weekly Trend Candidates)\n// Every product carries its exact TikTok Shop product PDP URL and real product packshot for 1:1 Image-to-Image!\nconst fullProductPool = [\n  {\n    product_key: 'prod_magsafe_3in1_fold',\n    product_name: 'Faltbare 3-in-1 MagSafe Reiseladestation (15W Fast Charge)',\n    category: 'tech_desk_gadgets',\n    search_keyword: '3 in 1 magsafe ladestation faltbar',\n    en_keyword: '3 in 1 foldable magsafe charger stand',\n    tiktok_shop_url: 'https://shop.tiktok.com/view/product/1729408192837465101?q=3+in+1+magsafe+ladestation+faltbar',\n    packshot_image_url: 'https://m.media-amazon.com/images/I/61k7B2Y2XJL._AC_SL1500_.jpg',\n    price_eur: 24.99,\n    commission_pct: 22,\n    sales_30d_est: 4200,\n    problem_solved: 'Kabelsalat auf dem Nachttisch und im Hotel; laedt Handy, Watch und Kopfhoerer gleichzeitig an einem einzigen USB-C-Stecker.',\n    key_specs: '15W Qi2/MagSafe kompatibel, faltbar auf Taschenformat, 90 Grad drehbar fuer Standby-Modus, inkl. Nachtlicht',\n    flop_alternatives_json: '[\"Billiges 5-Euro-Einzelladekabel (bricht am Stecker nach 4 Wochen)\",\"Ueberteuerte 129-Euro Marken-Ladestation (nicht faltbar fuer Reisen)\",\"No-Name Mehrfachstecker (wird extrem heiss und laedt nur mit 5W)\"]',\n    status: 'approved'\n  },\n  {\n    product_key: 'prod_7in1_tech_cleaner',\n    product_name: '7-in-1 / 8-in-1 Pro Elektronik, Tastatur & AirPods Reinigungs-Set',\n    category: 'tech_desk_gadgets',\n    search_keyword: '7 in 1 airpods tastatur reinigungsset',\n    en_keyword: '7 in 1 electronics keyboard airpods cleaning kit',\n    tiktok_shop_url: 'https://shop.tiktok.com/view/product/1729419283746519202?q=7+in+1+airpods+tastatur+reinigungsset',\n    packshot_image_url: 'https://m.media-amazon.com/images/I/61S0K9P9XJL._AC_SL1500_.jpg',\n    price_eur: 14.99,\n    commission_pct: 25,\n    sales_30d_est: 6800,\n    problem_solved: 'Verstopfte AirPods-Gitter (leiser Ton), Staub zwischen Tastatur-Tasten und verschmierte Handy-Displays.',\n    key_specs: 'Faltbarer AirPods-Reinigungsstift (Metallspitze + Mikro-Buerste + Schwamm), Keycap-Puller, Tastaturbuerste & Display-Spray',\n    flop_alternatives_json: '[\"Zahnstocher oder Bueroklammer (durchsticht das empfindliche Lautsprechergitter)\",\"Wattestaebchen (drueckt den Ohrenschmalz noch tiefer ins Gitter)\",\"Druckluft-Dose fuer 12 Euro (hinterlaesst Feuchtigkeitsfilm und ist nach 3x leer)\"]',\n    status: 'approved'\n  },\n  {\n    product_key: 'prod_wireless_carplay_mini',\n    product_name: 'Ultra-Mini 5.8GHz Wireless CarPlay & Android Auto Stick',\n    category: 'car_smart_accessories',\n    search_keyword: 'wireless carplay adapter mini stick',\n    en_keyword: 'wireless carplay adapter mini dongle 5.8ghz',\n    tiktok_shop_url: 'https://shop.tiktok.com/view/product/1729428374651928303?q=wireless+carplay+adapter+mini',\n    packshot_image_url: 'https://m.media-amazon.com/images/I/61f8H7Y5KJL._AC_SL1500_.jpg',\n    price_eur: 29.99,\n    commission_pct: 20,\n    sales_30d_est: 5100,\n    problem_solved: 'Nerviges Anstecken des Handykabels bei jeder kurzen Autofahrt und Wackelkontakt am USB-Port.',\n    key_specs: '5.8GHz WiFi + Bluetooth 5.3, verbindet automatisch in 5 Sekunden beim Einsteigen, inkl. USB-A & USB-C Adapter',\n    flop_alternatives_json: '[\"Original-Kabel im Auto (Wackelkontakt bei jedem Schlagloch)\",\"Grosse 90-Euro Adapter-Boxen mit Kabel (baumeln im Fussraum herum)\",\"Billige 2.4GHz Bluetooth-Transmitter (3 Sekunden Audio-Verzoegerung und Rauschen)\"]',\n    status: 'approved'\n  },\n  {\n    product_key: 'prod_retractable_car_charger_120w',\n    product_name: '4-in-1 Einziehbares Auto-Schnellladegeraet mit 2 Rollkabeln (120W)',\n    category: 'car_smart_accessories',\n    search_keyword: '4 in 1 einziehbares auto ladegeraet',\n    en_keyword: '4 in 1 retractable car charger 120w',\n    tiktok_shop_url: 'https://shop.tiktok.com/view/product/1729437465192837404?q=einziehbares+auto+ladegeraet+4+in+1',\n    packshot_image_url: 'https://m.media-amazon.com/images/I/61w9N8K4LJL._AC_SL1500_.jpg',\n    price_eur: 19.99,\n    commission_pct: 24,\n    sales_30d_est: 3900,\n    problem_solved: 'Herumhaengende Ladekabel in der Mittelkonsole und verhedderte Kabel am Schalthebel.',\n    key_specs: '80cm ausziehbare USB-C & Lightning Flachkabel, 180 Grad schwenkbarer Kopf, digitale Batterie-Spannungsanzeige',\n    flop_alternatives_json: '[\"Normales 2-Meter-Kabel (verheddert sich staendig um die Gangschaltung)\",\"Standard 12V-Zigarettenanzuender-Stecker (laedt moderne Smartphones kaum auf)\",\"Klebende Kabelhalter am Armaturenbrett (fallen im Sommer durch die Hitze ab)\"]',\n    status: 'approved'\n  },\n  {\n    product_key: 'prod_magnetic_led_motion_bar',\n    product_name: 'Magnetische Ultra-Slim LED-Sensorleiste mit Bewegungsmelder (3er-Set)',\n    category: 'smart_home_everyday',\n    search_keyword: 'magnetische led schrankleuchte bewegungsmelder',\n    en_keyword: 'magnetic motion sensor led closet light bar',\n    tiktok_shop_url: 'https://shop.tiktok.com/view/product/1729446519283746505?q=magnetische+led+schrankleuchte+bewegungsmelder',\n    packshot_image_url: 'https://m.media-amazon.com/images/I/61p5M3J9XJL._AC_SL1500_.jpg',\n    price_eur: 22.99,\n    commission_pct: 22,\n    sales_30d_est: 4600,\n    problem_solved: 'Dunkle Kuechenarbeitsplatten, Treppen und Kleiderschraenke ohne Steckdose in der Naehe.',\n    key_specs: 'Stufenlos dimmbar, 3 Farbtemperaturen (Warmweiss/Neutral/Kaltweiss), 120 Grad Bewegungssensor, USB-C Akku haelt 60 Tage',\n    flop_alternatives_json: '[\"Batterie-Puck-Lichter zum Kleben (fressen jeden Monat 9 AAA-Batterien)\",\"Feste Unterbauleuchten vom Elektriker (kosten 150 Euro+ und erfordern Bohren)\",\"Billige LED-Klebestreifen (loesen sich durch Wasserdampf ueber dem Herd sofort ab)\"]',\n    status: 'approved'\n  },\n  {\n    product_key: 'prod_medicube_collagen_cream',\n    product_name: 'Medicube Collagen Jelly Cream (Glass Skin & Straffung)',\n    category: 'beauty_skincare',\n    search_keyword: 'medicube collagen jelly cream',\n    en_keyword: 'medicube collagen jelly cream',\n    tiktok_shop_url: 'https://shop.tiktok.com/view/product/1729455619283746606?q=medicube+collagen+jelly+cream',\n    packshot_image_url: 'https://m.media-amazon.com/images/I/61v4R8L2KJL._AC_SL1500_.jpg',\n    price_eur: 26.99,\n    commission_pct: 25,\n    sales_30d_est: 8900,\n    problem_solved: 'Fahle, trockene Haut und Verlust der Spannkraft ohne fettigen Film.',\n    key_specs: 'Gefriergetrocknetes hydrolysiertes Kollagen, Niacinamid, Squalan, zieht sofort ein fuer koreanischen Glass-Skin-Glow',\n    flop_alternatives_json: '[\"Schwere Standard-Fettcremes aus der Drogerie (liegen nur oben auf und verstopfen Poren)\",\"Ueberteuerte 90-Euro Parfuemerie-Tiegel (bestehen zu 80 Prozent aus Wasser, Silikon und Duftstoffen)\",\"Reine Hyaluron-Seren ohne Barriereschutz (entziehen trockener Heizungsluft-Haut noch mehr Feuchtigkeit)\"]',\n    status: 'candidate'\n  },\n  {\n    product_key: 'prod_vacuum_mag_car_holder',\n    product_name: 'Elektrischer Vakuum-Magnet Handyhalter (360 Grad fuer Auto & Spiegel)',\n    category: 'car_smart_accessories',\n    search_keyword: 'elektrischer vakuum magnet handyhalter',\n    en_keyword: 'electric vacuum magnetic phone holder 360',\n    tiktok_shop_url: 'https://shop.tiktok.com/view/product/1729464719283746707?q=elektrischer+vakuum+magnet+handyhalter',\n    packshot_image_url: 'https://m.media-amazon.com/images/I/61x7P4M8KJL._AC_SL1500_.jpg',\n    price_eur: 19.99,\n    commission_pct: 25,\n    sales_30d_est: 7400,\n    problem_solved: 'Halterungen im Lueftungsgitter brechen ab oder fallen im Sommer von der Scheibe.',\n    key_specs: 'Elektrische Vakuum-Saugkraft (haelt bis 2kg), N52 Dual-Magnetring fuer MagSafe & alle Handys, 360 Grad klappbar, USB-C Akku haelt 30 Tage',\n    flop_alternatives_json: '[\"Lueftungsgitter-Klemme (blockiert Klimaanlage und bricht Lamellen)\",\"Billiger Saugnapf (faellt bei Hitze sofort von der Windschutzscheibe)\",\"Klebe-Halterung (hinterlaesst Klebereste am Armaturenbrett)\"]',\n    status: 'candidate'\n  },\n  {\n    product_key: 'prod_mini_thermal_printer_bt',\n    product_name: 'Tintenloser Mini-Bluetooth-Etiketten- & Fotodrucker (inkl. 5 Rollen)',\n    category: 'tech_desk_gadgets',\n    search_keyword: 'mini bluetooth thermodrucker etikettendrucker',\n    en_keyword: 'mini pocket bluetooth thermal label printer',\n    tiktok_shop_url: 'https://shop.tiktok.com/view/product/1729473819283746808?q=mini+bluetooth+thermodrucker+etiketten',\n    packshot_image_url: 'https://m.media-amazon.com/images/I/61r8T5N9KJL._AC_SL1500_.jpg',\n    price_eur: 18.99,\n    commission_pct: 24,\n    sales_30d_est: 6200,\n    problem_solved: 'Unordentliche Vorratsdosen, Kabel-Chaos und teure Druckerpatronen.',\n    key_specs: 'Thermodruck komplett ohne Tinte, Bluetooth-App fuer iOS & Android, druckt Etiketten, Notizen & QR-Codes in 2 Sekunden, Taschenformat',\n    flop_alternatives_json: '[\"Handgeschriebene Klebezettel (loesen sich beim Spuelen sofort ab)\",\"Grosser Etikettendrucker fuer 79 EUR (teure Spezialkassetten)\",\"Standard-Tintenstrahldrucker (Tinte trocknet staendig ein)\"]',\n    status: 'candidate'\n  },\n  {\n    product_key: 'prod_electric_spin_scrubber_7in1',\n    product_name: 'Elektrische 7-in-1 Rotations-Reinigungsbuerste mit Teleskopstiel (IPX7)',\n    category: 'smart_home_everyday',\n    search_keyword: 'elektrische 7 in 1 reinigungsbuerste teleskop',\n    en_keyword: 'electric spin scrubber 7 in 1 cordless cleaning brush',\n    tiktok_shop_url: 'https://shop.tiktok.com/view/product/1729482919283746909?q=elektrische+reinigungsbuerste+7+in+1',\n    packshot_image_url: 'https://m.media-amazon.com/images/I/71k9M4P2KJL._AC_SL1500_.jpg',\n    price_eur: 27.99,\n    commission_pct: 22,\n    sales_30d_est: 8100,\n    problem_solved: 'Rueckenschmerzen beim Schrubben von Badfliesen, Fugen, Dusche und Autofelgen.',\n    key_specs: '400 U/min Hochleistungs-Motor, ausziehbarer Edelstahl-Teleskopstiel (bis 120cm), 7 wechselbare Buerstenkoepfe, 90 Min. Laufzeit',\n    flop_alternatives_json: '[\"Handschwamm & Zahnbuerste (dauert 45 Minuten auf den Knien)\",\"Billige Batterie-Handbuerste (bleibt bei leichtem Druck sofort stehen)\",\"Aggressive Chemie-Reiniger (stinken extrem und loesen Kalk trotzdem nicht)\"]',\n    status: 'candidate'\n  },\n  {\n    product_key: 'prod_magsafe_slim_powerbank_10k',\n    product_name: 'Ultra-Slim 10.000mAh MagSafe Aluminium-Powerbank (20W PD + 15W Wireless)',\n    category: 'tech_desk_gadgets',\n    search_keyword: 'ultra slim magsafe powerbank 10000mah',\n    en_keyword: 'ultra slim magsafe power bank 10000mah aluminum',\n    tiktok_shop_url: 'https://shop.tiktok.com/view/product/1729491019283747010?q=ultra+slim+magsafe+powerbank+10000mah',\n    packshot_image_url: 'https://m.media-amazon.com/images/I/61m3K7P9LJL._AC_SL1500_.jpg',\n    price_eur: 23.99,\n    commission_pct: 23,\n    sales_30d_est: 5900,\n    problem_solved: 'Leerer Handy-Akku unterwegs und dicke Powerbanks mit baumelndem Kabel.',\n    key_specs: 'Nur 9mm duennes Aluminiumgehaeuse, schnappt magnetisch ans iPhone an, 15W kabelloses Schnellladen + 20W USB-C Port, LED-Prozentanzeige',\n    flop_alternatives_json: '[\"Schwere 20.000mAh Ziegelstein-Powerbank (passt in keine Hosentasche)\",\"Kabel-Powerbank (Kabelbruch in der Jackentasche)\",\"99 EUR Original-Akku-Pack (laedt nur mit 7.5W und hat nur 3.000mAh)\"]',\n    status: 'candidate'\n  },\n  {\n    product_key: 'prod_biodance_collagen_mask_4er',\n    product_name: 'Biodance Bio-Collagen Real Deep Hydrogel Maske (Glass Skin Overnight)',\n    category: 'beauty_skincare',\n    search_keyword: 'biodance bio collagen real deep mask',\n    en_keyword: 'biodance bio collagen real deep mask',\n    tiktok_shop_url: 'https://shop.tiktok.com/view/product/1729500119283747111?q=biodance+bio+collagen+real+deep+mask',\n    packshot_image_url: 'https://m.media-amazon.com/images/I/61y5N8P4KJL._AC_SL1500_.jpg',\n    price_eur: 21.99,\n    commission_pct: 25,\n    sales_30d_est: 11400,\n    problem_solved: 'Trockene, muede Haut und vergroesserte Poren am Morgen.',\n    key_specs: 'Oligo-Hyaluronsaeure + niedrigmolekulares Kollagen, Hydrogel-Maske wird ueber Nacht transparent waehrend die Wirkstoffe einziehen',\n    flop_alternatives_json: '[\"Normale 2 EUR Papier-Tuchmaske (trocknet nach 15 Minuten aus)\",\"Schwere Nachtcreme (klebt komplett am Kopfkissen)\",\"Teure Kosmetikstudio-Behandlung fuer 120 EUR pro Sitzung\"]',\n    status: 'candidate'\n  }\n];\n\nconst deQueries = fullProductPool.map(c => 'site:shop.tiktok.com ' + c.en_keyword).join('\\n');\nconst newCandidates = fullProductPool.filter(c => !existingKeys.has(c.product_key));\nreturn newCandidates.map(c => ({\n  json: {\n    ...c,\n    de_queries: deQueries,\n    account_followers: followers,\n    tg_text: [\n      '🔥 <b>TikTok-Shop Produkt-Radar (' + c.status.toUpperCase() + ')</b>',\n      '<b>Produkt:</b> ' + c.product_name,\n      '<b>Kategorie:</b> ' + c.category + ' (' + c.price_eur + ' EUR | ~' + c.commission_pct + '% Provision)',\n      '<b>Problem geloest:</b> ' + c.problem_solved,\n      '<b>Specs:</b> ' + c.key_specs,\n      '<b>Direktlink zum Produkt:</b> ' + c.tiktok_shop_url,\n      '<b>Packshot-Referenzbild (fuer 1:1 KI-Klon):</b> ' + c.packshot_image_url,\n      '',\n      '<i>Tippe unten auf einen Button, um den Status in tts_products sofort zu steuern:</i>'\n    ].join('\\n'),\n    cb_approve: 'tts_approve|' + c.product_key,\n    cb_pause: 'tts_pause|' + c.product_key,\n    cb_winner: 'tts_winner|' + c.product_key\n  }\n}));"
-        }
-      },
-      {
-        "id": "1a96d4b5-ae44-4e28-91bd-f780a6c92cea",
-        "name": "Insert New Trend Candidates Into tts_products",
-        "type": "n8n-nodes-base.dataTable",
-        "typeVersion": 1.1,
-        "position": [
-          944,
-          320
-        ],
-        "parameters": {
-          "resource": "row",
-          "operation": "insert",
-          "dataTableId": {
-            "__rl": true,
-            "mode": "id",
-            "value": "WpSO5UjIegQz7I8H"
-          },
-          "columns": {
-            "mappingMode": "defineBelow",
-            "value": {
-              "product_key": "={{ $json.product_key }}",
-              "product_name": "={{ $json.product_name }}",
-              "category": "={{ $json.category }}",
-              "tiktok_shop_url": "={{ $json.tiktok_shop_url }}",
-              "packshot_image_url": "={{ $json.packshot_image_url }}",
-              "price_eur": "={{ $json.price_eur }}",
-              "commission_pct": "={{ $json.commission_pct }}",
-              "sales_30d_est": "={{ $json.sales_30d_est }}",
-              "problem_solved": "={{ $json.problem_solved }}",
-              "key_specs": "={{ $json.key_specs }}",
-              "flop_alternatives_json": "={{ $json.flop_alternatives_json }}",
-              "status": "={{ $json.status }}"
-            }
-          }
-        },
-        "onError": "continueRegularOutput"
-      },
-      {
-        "id": "7e5b1c9f-c263-4c59-9377-71b7273ea6d1",
-        "name": "Send Telegram 1-Click Candidate Approval Card",
-        "type": "n8n-nodes-base.telegram",
-        "typeVersion": 1.2,
-        "position": [
-          1168,
-          320
-        ],
-        "parameters": {
-          "resource": "message",
-          "operation": "sendMessage",
-          "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
-          "text": "={{ $(\"Map Product Links & Packshots\").item.json.tg_text }}",
-          "replyMarkup": "inlineKeyboard",
-          "inlineKeyboard": {
-            "rows": [
-              {
-                "row": {
-                  "buttons": [
-                    {
-                      "additionalFields": {
-                        "callback_data": "={{ $(\"Map Product Links & Packshots\").item.json.cb_approve }}"
-                      },
-                      "text": "✅ Freigeben (Approved)"
-                    },
-                    {
-                      "additionalFields": {
-                        "callback_data": "={{ $(\"Map Product Links & Packshots\").item.json.cb_winner }}"
-                      },
-                      "text": "🏆 Winner (Dauer-Skalierung)"
-                    },
-                    {
-                      "additionalFields": {
-                        "callback_data": "={{ $(\"Map Product Links & Packshots\").item.json.cb_pause }}"
-                      },
-                      "text": "⏸️ Pausieren (Skip)"
-                    }
-                  ]
-                }
-              }
-            ]
-          },
-          "additionalFields": {
-            "appendAttribution": false,
-            "parse_mode": "HTML"
-          }
-        },
-        "onError": "continueRegularOutput",
-        "webhookId": "1df940d3-51d6-449a-b9f0-450224da6ebb",
-        "credentials": {
-          "telegramApi": {
-            "id": "tYWDsHPvzMA9ATGu",
-            "name": "Telegram account"
-          }
-        }
-      },
-      {
-        "id": "bf5bac04-a873-4415-a46d-3cb737f63cd8",
-        "name": "Daily 07:00 Radar",
-        "type": "n8n-nodes-base.scheduleTrigger",
-        "typeVersion": 1.4,
-        "position": [
-          0,
-          192
-        ],
-        "parameters": {
-          "rule": {
-            "interval": [
-              {
-                "field": "days",
-                "daysInterval": 1,
-                "triggerAtHour": 7,
-                "triggerAtMinute": 0
-              }
-            ]
-          }
-        }
-      },
-      {
-        "id": "89ae9c81-6e9e-4f7b-8810-442658e7c649",
-        "name": "Sunday 06:30 Weekly Apify Trend Discovery",
-        "type": "n8n-nodes-base.scheduleTrigger",
-        "typeVersion": 1.4,
-        "position": [
-          0,
-          384
-        ],
-        "parameters": {
-          "rule": {
-            "interval": [
-              {
-                "field": "weeks",
-                "weeksInterval": 1,
-                "triggerAtDay": [
-                  0
-                ],
-                "triggerAtHour": 6,
-                "triggerAtMinute": 30
-              }
-            ]
-          }
-        }
-      },
-      {
-        "id": "c4e08072-f878-4567-98b8-7b4d7f097446",
-        "name": "Telegram 1-Click Approval Callback",
-        "type": "n8n-nodes-base.telegramTrigger",
-        "typeVersion": 1.5,
-        "position": [
-          0,
-          608
-        ],
-        "parameters": {
-          "updates": [
-            "callback_query"
-          ]
-        },
-        "webhookId": "fd073090-1afb-4548-8c00-4739d3ceaa27",
-        "credentials": {
-          "telegramApi": {
-            "id": "tYWDsHPvzMA9ATGu",
-            "name": "Telegram account"
-          }
-        }
-      },
-      {
-        "id": "1baf3b22-f175-4f20-99e9-cb53d601a9d2",
-        "name": "Parse Telegram 1-Click Approval",
-        "type": "n8n-nodes-base.code",
-        "typeVersion": 2,
-        "position": [
-          272,
-          736
-        ],
-        "parameters": {
-          "mode": "runOnceForAllItems",
-          "language": "javaScript",
-          "jsCode": "const raw = $input.first()?.json || {};\nconst q = raw.callback_query || raw;\nconst queryId = String(q.id || '');\nconst msg = q.message || {};\nconst data = String(q.data || '');\nconst parts = data.split('|');\nconst cmd = parts[0] || '';\nconst productKey = parts[1] || '';\n\nlet newStatus = 'approved';\nlet label = '✅ Produkt freigegeben (status = approved) — wird automatisch produziert!';\nif (cmd === 'tts_pause') {\n  newStatus = 'paused';\n  label = '⏸️ Produkt pausiert (status = paused) — wird übersprungen.';\n} else if (cmd === 'tts_winner') {\n  newStatus = 'winner';\n  label = '🏆 Produkt als WINNER markiert (status = winner) — Dauer-Skalierung aktiv!';\n}\n\nreturn [{\n  json: {\n    query_id: queryId,\n    product_key: productKey,\n    new_status: newStatus,\n    answer_text: label,\n    chat_id: msg.chat?.id || $env.TELEGRAM_CHAT_ID\n  }\n}];"
-        }
-      },
-      {
-        "id": "9b647e4b-ad23-4820-b53f-2e705f4473fb",
-        "name": "Update Product Status In tts_products",
-        "type": "n8n-nodes-base.dataTable",
-        "typeVersion": 1.1,
-        "position": [
-          496,
-          736
-        ],
-        "parameters": {
-          "resource": "row",
-          "operation": "update",
-          "dataTableId": {
-            "__rl": true,
-            "mode": "id",
-            "value": "WpSO5UjIegQz7I8H"
-          },
-          "matchType": "allConditions",
-          "filters": {
-            "conditions": [
-              {
-                "keyName": "product_key",
-                "condition": "eq",
-                "keyValue": "={{ $json.product_key }}"
-              }
-            ]
-          },
-          "columns": {
-            "mappingMode": "defineBelow",
-            "value": {
-              "status": "={{ $json.new_status }}"
-            }
-          }
-        },
-        "onError": "continueRegularOutput"
-      },
-      {
-        "id": "4e55ed98-87f1-4c77-a5bf-7b7fa34e1b1d",
-        "name": "Confirm Status Change In Telegram",
-        "type": "n8n-nodes-base.telegram",
-        "typeVersion": 1.2,
-        "position": [
-          720,
-          736
-        ],
-        "parameters": {
-          "resource": "message",
-          "operation": "sendMessage",
-          "chatId": "={{ $(\"Parse Telegram 1-Click Approval\").first().json.chat_id }}",
-          "text": "={{ $(\"Parse Telegram 1-Click Approval\").first().json.answer_text + \" (\" + $(\"Parse Telegram 1-Click Approval\").first().json.product_key + \")\" }}",
-          "additionalFields": {
-            "appendAttribution": false
-          }
-        },
-        "onError": "continueRegularOutput",
-        "webhookId": "505f275d-fed0-4e3a-983f-21f8fcff1c8f",
-        "credentials": {
-          "telegramApi": {
-            "id": "tYWDsHPvzMA9ATGu",
-            "name": "Telegram account"
-          }
-        }
-      },
-      {
-        "id": "a1111111-1111-4111-8111-1111111111a1",
-        "name": "Apify DE Product Link Search",
-        "type": "n8n-nodes-base.httpRequest",
-        "typeVersion": 4.5,
-        "position": [
-          944,
-          160
-        ],
-        "parameters": {
-          "jsonBody": "={{ { queries: $json.de_queries, maxPagesPerQuery: 1, resultsPerPage: 5, countryCode: 'de', languageCode: 'de', mobileResults: true } }}",
-          "method": "POST",
-          "onError": "continueRegularOutput",
-          "sendBody": true,
-          "specifyBody": "json",
-          "url": "=https://api.apify.com/v2/acts/apify~google-search-scraper/run-sync-get-dataset-items?token={{ $env.APIFY_API_TOKEN }}"
-        },
-        "onError": "continueRegularOutput",
-        "executeOnce": true
-      },
-      {
-        "id": "b2222222-2222-4222-8222-2222222222b2",
-        "name": "Map Product Links & Packshots",
-        "type": "n8n-nodes-base.code",
-        "typeVersion": 2,
-        "position": [
-          1168,
-          160
-        ],
-        "parameters": {
-          "jsCode": "const candidates = $('Evaluate Account & Sunday Apify 5-Candidate Radar').all().map(i => i.json || {});\nconst apifyIn = $input.all().map(i => i.json || {});\nlet groups = [];\nfor (const it of apifyIn) {\n  if (Array.isArray(it)) groups.push(...it);\n  else if (Array.isArray(it.data)) groups.push(...it.data);\n  else if (it.searchQuery || it.organicResults) groups.push(it);\n}\n\nconst out = [];\nfor (const c of candidates) {\n  let link = c.tiktok_shop_url;\n  let packshot = c.packshot_image_url;\n  const kw = String(c.en_keyword || c.search_keyword || '').toLowerCase();\n  const grp = groups.find(g => String(g.searchQuery?.term || g.searchQuery?.query || '').toLowerCase().includes(kw.slice(0, 16)));\n  const results = (grp && (grp.organicResults || grp.searchResults || grp.results)) || [];\n  for (const r of results) {\n    const u = String(r.url || r.link || '');\n    if (/shop\\.tiktok\\.com/.test(u) && /product|pdp|\\/view\\//.test(u)) { link = u; break; }\n  }\n  if (/shop\\.tiktok\\.com.*\\/(pdp|view\\/product|product)/.test(link)) {\n    try {\n      const html = await this.helpers.httpRequest({ method: 'GET', url: link, headers: { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36', 'Accept-Language': 'de-DE,de;q=0.9' }, timeout: 10000 });\n      const mm = String(html).match(/property=\"og:image\"[^>]*content=\"([^\"]+)\"/) || String(html).match(/content=\"([^\"]+)\"[^>]*property=\"og:image\"/);\n      if (mm && mm[1]) packshot = mm[1].replace(/&amp;/g, '&');\n    } catch (e) {}\n  }\n  const tg = [\n    '🔥 <b>TikTok-Shop Produkt-Radar (' + String(c.status || 'candidate').toUpperCase() + ')</b>',\n    '<b>Produkt:</b> ' + c.product_name,\n    '<b>Kategorie:</b> ' + c.category + ' (' + c.price_eur + ' EUR | ~' + c.commission_pct + '% Provision)',\n    '<b>Problem geloest:</b> ' + c.problem_solved,\n    '<b>Specs:</b> ' + c.key_specs,\n    '<b>Direktlink zum Produkt:</b> ' + link,\n    '<b>Packshot-Bild (1:1 KI-Referenz):</b> ' + packshot,\n    '',\n    '<i>Tippe unten auf einen Button, um den Status in tts_products sofort zu steuern:</i>'\n  ].join('\\n');\n  out.push({ json: { ...c, tiktok_shop_url: link, packshot_image_url: packshot, tg_text: tg } });\n}\nreturn out;",
-          "language": "javaScript",
-          "mode": "runOnceForAllItems"
-        }
-      }
-    ],
-    "connections": {
-      "Manual Trigger": {
-        "main": [
-          [
-            {
-              "node": "Load Approved Products",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Load Approved Products": {
-        "main": [
-          [
-            {
-              "node": "Fetch BizPunk72 Profile",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Fetch BizPunk72 Profile": {
-        "main": [
-          [
-            {
-              "node": "Evaluate Account & Sunday Apify 5-Candidate Radar",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Insert New Trend Candidates Into tts_products": {
-        "main": [
-          [
-            {
-              "node": "Send Telegram 1-Click Candidate Approval Card",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Daily 07:00 Radar": {
-        "main": [
-          [
-            {
-              "node": "Load Approved Products",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Sunday 06:30 Weekly Apify Trend Discovery": {
-        "main": [
-          [
-            {
-              "node": "Load Approved Products",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Telegram 1-Click Approval Callback": {
-        "main": [
-          [
-            {
-              "node": "Parse Telegram 1-Click Approval",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Parse Telegram 1-Click Approval": {
-        "main": [
-          [
-            {
-              "node": "Update Product Status In tts_products",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Update Product Status In tts_products": {
-        "main": [
-          [
-            {
-              "node": "Confirm Status Change In Telegram",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Evaluate Account & Sunday Apify 5-Candidate Radar": {
-        "main": [
-          [
-            {
-              "node": "Apify DE Product Link Search",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Apify DE Product Link Search": {
-        "main": [
-          [
-            {
-              "node": "Map Product Links & Packshots",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      },
-      "Map Product Links & Packshots": {
-        "main": [
-          [
-            {
-              "node": "Insert New Trend Candidates Into tts_products",
-              "type": "main",
-              "index": 0
-            }
-          ]
-        ]
-      }
-    },
-    "nodeGroups": [
-      {
-        "id": "cdd11224-400f-4a34-b438-2cdaff511e46",
-        "name": "Telegram 1-Click Callback Handler",
-        "nodeNames": [
-          "Parse Telegram 1-Click Approval",
-          "Update Product Status In tts_products",
-          "Confirm Status Change In Telegram"
-        ],
-        "description": "Handles inline button taps (Approve / Winner / Pause) directly from Telegram and updates tts_products.status"
-      }
-    ]
+    "sameAsDraft": true
   },
   "meta": {
     "aiBuilderAssisted": true,
