@@ -3,12 +3,12 @@
   "name": "TTS_04_FFmpeg_Render_And_Zernio",
   "active": false,
   "isArchived": false,
-  "versionId": "cf170c7c-5170-4b5a-958a-f657b28035e4",
+  "versionId": "d7d0ce51-8018-49e1-b861-3eedebe3871f",
   "activeVersionId": null,
   "triggerCount": 0,
-  "nodeCount": 16,
+  "nodeCount": 17,
   "createdAt": "2026-10-25T10:11:17.663Z",
-  "updatedAt": "2026-10-25T14:13:05.572Z",
+  "updatedAt": "2026-10-25T15:44:44.846Z",
   "settings": {
     "executionOrder": "v1",
     "availableInMCP": true
@@ -199,6 +199,17 @@
         [
           {
             "node": "Log Draft In Published Posts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Daily 08:30 FFmpeg & Zernio Upload": {
+      "main": [
+        [
+          {
+            "node": "Load Videos Ready For FFmpeg",
             "type": "main",
             "index": 0
           }
@@ -618,6 +629,28 @@
             "gmv_eur": 0,
             "published_at": "={{ $now.toISO() }}"
           }
+        }
+      }
+    },
+    {
+      "id": "e9bd091e-2c6a-4084-9e70-7ef79cd90d63",
+      "name": "Daily 08:30 FFmpeg & Zernio Upload",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        192
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "daysInterval": 1,
+              "field": "days",
+              "triggerAtHour": 8,
+              "triggerAtMinute": 30
+            }
+          ]
         }
       }
     }
