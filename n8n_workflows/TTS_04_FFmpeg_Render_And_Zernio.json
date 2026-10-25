@@ -1,0 +1,668 @@
+{
+  "id": "19n3oP2Q1wlT1Djc",
+  "name": "TTS_04_FFmpeg_Render_And_Zernio",
+  "active": false,
+  "isArchived": false,
+  "versionId": "cf170c7c-5170-4b5a-958a-f657b28035e4",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "nodeCount": 16,
+  "createdAt": "2026-10-25T10:11:17.663Z",
+  "updatedAt": "2026-10-25T14:13:05.572Z",
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "tags": [],
+  "parentFolderId": null,
+  "description": "TikTok-Shop 38s 1:1 Clone Render & Zernio Upload: Uses Hugging Face Inference TTS for German Voiceover, 4.35s per scene + 8.5s final Shop CTA, box-free colored ASS subtitles, and Zernio upload.",
+  "scopes": [
+    "execution:delete",
+    "execution:list",
+    "execution:read",
+    "execution:reveal",
+    "workflow:create",
+    "workflow:delete",
+    "workflow:disableRedaction",
+    "workflow:enableRedaction",
+    "workflow:execute",
+    "workflow:execute-chat",
+    "workflow:export",
+    "workflow:import",
+    "workflow:list",
+    "workflow:move",
+    "workflow:publish",
+    "workflow:read",
+    "workflow:share",
+    "workflow:unpublish",
+    "workflow:unshare",
+    "workflow:update"
+  ],
+  "canExecute": true,
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Load Videos Ready For FFmpeg",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Videos Ready For FFmpeg": {
+      "main": [
+        [
+          {
+            "node": "Prepare 38s Slideshow & HF TTS Voiceover",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare 38s Slideshow & HF TTS Voiceover": {
+      "main": [
+        [
+          {
+            "node": "FFmpeg Stitch 38s Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FFmpeg Stitch 38s Video": {
+      "main": [
+        [
+          {
+            "node": "Restore HF Voice Binary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Restore HF Voice Binary": {
+      "main": [
+        [
+          {
+            "node": "FFmpeg Mux HF Voiceover Into Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FFmpeg Mux HF Voiceover Into Video": {
+      "main": [
+        [
+          {
+            "node": "FFmpeg Mix Voiceover (100%) + BGM (10%)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FFmpeg Mix Voiceover (100%) + BGM (10%)": {
+      "main": [
+        [
+          {
+            "node": "Build 38s Box-Free Multi-Color ASS Subtitles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build 38s Box-Free Multi-Color ASS Subtitles": {
+      "main": [
+        [
+          {
+            "node": "FFmpeg Burn Clean ASS Subtitles",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FFmpeg Burn Clean ASS Subtitles": {
+      "main": [
+        [
+          {
+            "node": "Zernio Presign Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zernio Presign Video": {
+      "main": [
+        [
+          {
+            "node": "Combine Video Binary & Presign URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine Video Binary & Presign URL": {
+      "main": [
+        [
+          {
+            "node": "Upload MP4 To Zernio CDN",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload MP4 To Zernio CDN": {
+      "main": [
+        [
+          {
+            "node": "Prepare Zernio TikTok Draft Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Zernio TikTok Draft Payload": {
+      "main": [
+        [
+          {
+            "node": "Zernio TikTok Draft API (@bizpunk72)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zernio TikTok Draft API (@bizpunk72)": {
+      "main": [
+        [
+          {
+            "node": "Extract Zernio Post ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Zernio Post ID": {
+      "main": [
+        [
+          {
+            "node": "Log Draft In Published Posts",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodes": [
+    {
+      "id": "514fffb6-0860-444d-acd5-a8aa4b00553e",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "1916138a-20a4-4d87-9178-527f9aff8d3e",
+      "name": "Load Videos Ready For FFmpeg",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        272,
+        128
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "6fgkj3WjUwDA4S2m"
+        },
+        "returnAll": true
+      },
+      "executeOnce": true
+    },
+    {
+      "id": "0a882374-93bf-4be7-9864-e969c413f7e7",
+      "name": "Prepare 38s Slideshow & HF TTS Voiceover",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        496,
+        128
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const rows = $input.all().map(i => i.json || {});\nconst readyRows = rows.filter(r => r.render_status === 'ready_for_ffmpeg');\nconst target = readyRows[readyRows.length - 1] || rows[rows.length - 1];\nif (!target || !target.video_key) return [];\n\nlet scenes = [];\ntry {\n  scenes = JSON.parse(target.scenes_json || '[]');\n} catch (e) {\n  scenes = [];\n}\n\n// Build segments with 4.6s for scenes 1-7 and two 4.6s segments for Scene 8 (final CTA stays visible ~8.7s!)\nconst segments = [];\nfor (let i = 0; i < scenes.length; i++) {\n  const s = scenes[i] || {};\n  const mediaUrl = s.generated_clip_url || s.generated_image_url || 'https://images.unsplash.com/photo-1585338107529-13afc5f02586?w=1080';\n  const mediaType = s.generated_clip_url ? 'video' : 'image';\n  segments.push({\n    type: mediaType,\n    url: mediaUrl,\n    duration: 4.6\n  });\n  if (i === scenes.length - 1) {\n    segments.push({\n      type: mediaType,\n      url: mediaUrl,\n      duration: 4.6\n    });\n  }\n}\n\n// Automatic Voice Rule:\n// Tech, Gadgets, Smart Home & Car -> Male Voice \"Jonas\" (nl_m.flac, de, exaggeration=0.72, cfg_weight=0.05)\n// Beauty, Style, Skincare & Health -> Female Voice \"Mia\" (sv_f.flac, de, exaggeration=0.72, cfg_weight=0.05)\nconst pKey = String(target.product_key || '').toLowerCase();\nconst aKey = String(target.avatar_key || '').toLowerCase();\nconst isBeautyStyleHealth = /beauty|skin|style|health|medicube|collagen|sarah|mia/.test(pKey + ' ' + aKey);\nconst selectedVoiceName = isBeautyStyleHealth ? 'mia_de (female)' : 'jonas_de (male)';\n\nconst sp = 'resembleai-chatterbox-multilingual-tts.hf.space';\nlet voiceBinary = null;\nlet ttsProviderUsed = 'none';\n\ntry {\n  // 1. Obtain the cached Gradio FileData for German on ResembleAI/Chatterbox-Multilingual-TTS\n  const langCall = await this.helpers.httpRequest({\n    method: 'POST',\n    url: 'https://' + sp + '/gradio_api/call/on_language_change',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify({ data: ['de', null, ''] }),\n    timeout: 20000\n  });\n  const langObj = typeof langCall === 'string' ? JSON.parse(langCall) : langCall;\n  const langSse = await this.helpers.httpRequest({\n    method: 'GET',\n    url: 'https://' + sp + '/gradio_api/call/on_language_change/' + langObj.event_id,\n    timeout: 30000\n  });\n  let refFileObj = null;\n  for (const line of String(langSse).split('\\n')) {\n    if (line.startsWith('data: ') && line.trim() !== 'data: null') {\n      const parsed = JSON.parse(line.slice(6));\n      if (Array.isArray(parsed) && parsed[0]) refFileObj = parsed[0];\n    }\n  }\n\n  // 2. Split German script into chunks < 230 chars so Chatterbox Multilingual never cuts off mid-sentence\n  const rawScript = String(target.script_de_full || '')\n    .replace(/ae/g, 'ä')\n    .replace(/oe/g, 'ö')\n    .replace(/ue/g, 'ü')\n    .replace(/Ae/g, 'Ä')\n    .replace(/Oe/g, 'Ö')\n    .replace(/Ue/g, 'Ü')\n    .replace(/3-in-1/g, 'drei in eins')\n    .replace(/7-in-1/g, 'sieben in eins')\n    .replace(/8-in-1/g, 'acht in eins');\n\n  let textChunks = [];\n  if (rawScript.includes('|||')) {\n    textChunks = rawScript.split('|||').map(c => c.trim()).filter(Boolean);\n  } else {\n    const sents = rawScript.split(/(?<=[.!?])\\s+/).filter(Boolean);\n    let cur = '';\n    for (const st of sents) {\n      if ((cur + ' ' + st).trim().length <= 210) {\n        cur = (cur + ' ' + st).trim();\n      } else {\n        if (cur) textChunks.push(cur);\n        cur = st;\n      }\n    }\n    if (cur) textChunks.push(cur);\n  }\n\n  const pcmParts = [];\n  let wavHeaderTemplate = null;\n\n  for (const chunk of textChunks) {\n    const callResp = await this.helpers.httpRequest({\n      method: 'POST',\n      url: 'https://' + sp + '/gradio_api/call/generate_tts_audio',\n      headers: { 'Content-Type': 'application/json' },\n      body: JSON.stringify({\n        data: [chunk, 'de', refFileObj, 0.72, 0.8, 42, 0.5]\n      }),\n      timeout: 25000\n    });\n    const callObj = typeof callResp === 'string' ? JSON.parse(callResp) : callResp;\n    const evId = callObj.event_id;\n    const sseText = await this.helpers.httpRequest({\n      method: 'GET',\n      url: 'https://' + sp + '/gradio_api/call/generate_tts_audio/' + evId,\n      timeout: 120000\n    });\n    for (const line of String(sseText).split('\\n')) {\n      if (line.startsWith('data: ') && line.trim() !== 'data: null') {\n        const d = JSON.parse(line.slice(6));\n        if (Array.isArray(d) && d[0] && d[0].url) {\n          const wavBuf = Buffer.from(await this.helpers.httpRequest({\n            method: 'GET',\n            url: d[0].url,\n            encoding: 'arraybuffer',\n            timeout: 30000\n          }));\n          if (wavBuf.length > 44) {\n            if (!wavHeaderTemplate) wavHeaderTemplate = wavBuf.slice(0, 44);\n            pcmParts.push(wavBuf.slice(44));\n            pcmParts.push(Buffer.alloc(8640));\n          }\n        }\n      }\n    }\n  }\n\n  if (wavHeaderTemplate && pcmParts.length > 0) {\n    const totalPcm = Buffer.concat(pcmParts);\n    const finalWav = Buffer.concat([Buffer.from(wavHeaderTemplate), totalPcm]);\n    finalWav.writeUInt32LE(36 + totalPcm.length, 4);\n    finalWav.writeUInt32LE(totalPcm.length, 40);\n    voiceBinary = await this.helpers.prepareBinaryData(finalWav, 'voice_de.wav', 'audio/wav');\n    ttsProviderUsed = 'hf-chatterbox-multilingual-de:' + selectedVoiceName;\n  }\n} catch (e) {\n  ttsProviderUsed = 'err:' + String(e.message || e);\n}\n\nconst outItem = {\n  json: {\n    ...target,\n    tts_provider_used: ttsProviderUsed,\n    slideshow_body: JSON.stringify({\n      segments,\n      imageDuration: 4.6,\n      transition: 0.25\n    })\n  }\n};\nif (voiceBinary) {\n  outItem.binary = { voice: voiceBinary };\n}\nreturn [outItem];"
+      }
+    },
+    {
+      "id": "997701ac-f8c9-4cef-96b5-d67e579bf0a5",
+      "name": "FFmpeg Stitch 38s Video",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        720,
+        128
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://ffmpeg.mafrapi.eu/api/ffmpeg/slideshow",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            },
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.slideshow_body }}"
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "ca6d9c42-8cc7-4df3-b8df-e50bcf5a8f39",
+      "name": "Restore HF Voice Binary",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        944,
+        128
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const prev = $('Prepare 38s Slideshow & HF TTS Voiceover').first() || {};\nconst stitched = $input.first()?.json || {};\nconst stitchedUrl = String(stitched.reel_url || '');\nconst bgmUrl = 'https://raw.githubusercontent.com/gitbixxs/Music/main/conner-silicon-valley-drive-494293.mp3';\n\n// If no voice binary was returned, fallback to BGM-mixed video so pipeline never breaks\nlet fallbackMixedUrl = stitchedUrl;\nif (!prev.binary || !prev.binary.voice) {\n  try {\n    const mixResp = await this.helpers.httpRequest({\n      method: 'POST',\n      url: 'https://ffmpeg.mafrapi.eu/api/ffmpeg/mix-music',\n      headers: { 'Content-Type': 'application/json', 'User-Agent': 'Mozilla/5.0' },\n      body: JSON.stringify({ videoUrl: stitchedUrl, musicUrl: bgmUrl, musicVolume: 0.25 }),\n      timeout: 60000\n    });\n    if (mixResp && mixResp.reel_url) fallbackMixedUrl = mixResp.reel_url;\n  } catch (e) {}\n}\n\nreturn [{\n  json: {\n    ...(prev.json || {}),\n    stitched_url: stitchedUrl,\n    fallback_mixed_url: fallbackMixedUrl\n  },\n  binary: prev.binary || {}\n}];"
+      }
+    },
+    {
+      "id": "cf0c719b-1042-463d-9560-faa912e46264",
+      "name": "FFmpeg Mux HF Voiceover Into Video",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1168,
+        128
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://ffmpeg.mafrapi.eu/api/ffmpeg/scale-9x16",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "videoUrl",
+              "value": "={{ $json.stitched_url }}"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "voice",
+              "inputDataFieldName": "voice"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "baseVideo"
+            }
+          }
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "aa001faa-aa86-41e2-9856-eef86c47b7fb",
+      "name": "FFmpeg Mix Voiceover (100%) + BGM (10%)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1392,
+        128
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://ffmpeg.mafrapi.eu/api/ffmpeg/mix-audio-video",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "baseVideo",
+              "inputDataFieldName": "baseVideo"
+            },
+            {
+              "name": "overlayVideoUrl",
+              "value": "={{ $(\"Restore HF Voice Binary\").first().json.stitched_url }}"
+            },
+            {
+              "name": "musicUrl",
+              "value": "https://raw.githubusercontent.com/gitbixxs/Music/main/conner-silicon-valley-drive-494293.mp3"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "video"
+            }
+          }
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "691172f9-ab18-4df7-a95e-88dda680cc9e",
+      "name": "Build 38s Box-Free Multi-Color ASS Subtitles",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        800,
+        128
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const prev = $('Restore HF Voice Binary').first()?.json || {};\nconst mixedItem = $input.first() || {};\nconst muxedItem = $('FFmpeg Mux HF Voiceover Into Video').first() || {};\n\nlet videoBinary = mixedItem.binary?.video || muxedItem.binary?.baseVideo || null;\nif (!videoBinary && prev.fallback_mixed_url) {\n  try {\n    const dl = await this.helpers.httpRequest({\n      method: 'GET',\n      url: prev.fallback_mixed_url,\n      headers: { 'User-Agent': 'Mozilla/5.0' },\n      encoding: 'arraybuffer',\n      timeout: 60000\n    });\n    videoBinary = await this.helpers.prepareBinaryData(Buffer.from(dl), 'video.mp4', 'video/mp4');\n  } catch (e) {}\n}\n\nlet scenes = [];\ntry {\n  scenes = JSON.parse(prev.scenes_json || '[]');\n} catch (e) {\n  scenes = [];\n}\n\nfunction fmt(sec) {\n  sec = Math.max(0, Number(sec) || 0);\n  const h = Math.floor(sec / 3600);\n  const m = Math.floor((sec % 3600) / 60);\n  const s = Math.floor(sec % 60);\n  const cs = Math.floor((sec - Math.floor(sec)) * 100);\n  return h + ':' + String(m).padStart(2, '0') + ':' + String(s).padStart(2, '0') + '.' + String(cs).padStart(2, '0');\n}\n\nfunction wrapWords(text, maxChars = 20) {\n  const words = String(text || '').replace(/\\s+/g, ' ').trim().split(' ').filter(Boolean);\n  const lines = [];\n  let cur = '';\n  for (const w of words) {\n    const cand = cur ? cur + ' ' + w : w;\n    if (cand.length <= maxChars) {\n      cur = cand;\n    } else {\n      if (cur) lines.push(cur);\n      cur = w;\n    }\n  }\n  if (cur) lines.push(cur);\n  return lines.join('\\\\N');\n}\n\nconst header = [\n  '[Script Info]',\n  'Title: TikTok Shop 38s Clean Bold Subtitles',\n  'ScriptType: v4.00+',\n  'WrapStyle: 0',\n  'PlayResX: 1080',\n  'PlayResY: 1920',\n  '',\n  '[V4+ Styles]',\n  'Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding',\n  'Style: BadgeHook,DejaVu Sans,66,&H0000D7FF,&H0000D7FF,&H00000000,&H80000000,-1,0,0,0,100,100,1,0,1,7,3,8,120,120,200,1',\n  'Style: BadgeHero,DejaVu Sans,68,&H0066FF00,&H0066FF00,&H00000000,&H80000000,-1,0,0,0,100,100,1,0,1,7,3,8,120,120,200,1',\n  'Style: BadgeCta,DejaVu Sans,70,&H000088FF,&H000088FF,&H00000000,&H80000000,-1,0,0,0,100,100,1,0,1,8,3,8,120,120,200,1',\n  'Style: SubHook,DejaVu Sans,58,&H00FFFFFF,&H0000D7FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,6,3,2,120,120,460,1',\n  'Style: SubHero,DejaVu Sans,58,&H00B8FF99,&H0066FF00,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,6,3,2,120,120,460,1',\n  'Style: SubCta,DejaVu Sans,64,&H0000D7FF,&H000088FF,&H00000000,&H80000000,-1,0,0,0,100,100,0,0,1,7,3,2,120,120,380,1',\n  '',\n  '[Events]',\n  'Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text'\n].join('\\n') + '\\n';\n\nlet events = '';\nlet t = 0;\n\nfor (let i = 0; i < scenes.length; i++) {\n  const s = scenes[i] || {};\n  const isLast = (i === scenes.length - 1);\n  const dur = isLast ? 8.5 : 4.35;\n  const start = t;\n  const end = t + dur;\n  t = end;\n\n  const role = String(s.role || '');\n  const badgeStyle = role === 'hook' ? 'BadgeHook' : (isLast || role === 'cta') ? 'BadgeCta' : 'BadgeHero';\n  const subStyle = role === 'hook' ? 'SubHook' : (isLast || role === 'cta') ? 'SubCta' : 'SubHero';\n\n  const badgeText = wrapWords(String(s.overlay_badge || '').toUpperCase(), 18);\n  if (badgeText) {\n    events += 'Dialogue: 1,' + fmt(start + 0.05) + ',' + fmt(end - 0.05) + ',' + badgeStyle + ',,0,0,0,,' + badgeText + '\\n';\n  }\n\n  const words = String(s.spoken_text || '').replace(/\\s+/g, ' ').trim().split(' ').filter(Boolean);\n  const mid = Math.ceil(words.length / 2);\n  const part1 = wrapWords(words.slice(0, mid).join(' '), 20);\n  const part2 = wrapWords(words.slice(mid).join(' '), 20);\n  const halfDur = dur / (part2 ? 2 : 1);\n\n  if (part1) {\n    events += 'Dialogue: 0,' + fmt(start) + ',' + fmt(start + halfDur) + ',' + subStyle + ',,0,0,0,,' + part1 + '\\n';\n  }\n  if (part2) {\n    events += 'Dialogue: 0,' + fmt(start + halfDur) + ',' + fmt(end) + ',' + subStyle + ',,0,0,0,,' + part2 + '\\n';\n  }\n}\n\nconst assContent = header + events;\nconst subtitlesBinary = await this.helpers.prepareBinaryData(Buffer.from(assContent, 'utf8'), 'clean_subtitles.ass', 'text/x-ssa');\n\nconst binaries = { subtitles: subtitlesBinary };\nif (videoBinary) {\n  binaries.video = videoBinary;\n}\n\nreturn [{\n  json: {\n    ...prev,\n    has_mixed_video: Boolean(videoBinary)\n  },\n  binary: binaries\n}];"
+      }
+    },
+    {
+      "id": "b3ebdfba-b891-4049-8802-4d4065ebadea",
+      "name": "FFmpeg Burn Clean ASS Subtitles",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1024,
+        128
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://ffmpeg.mafrapi.eu/api/ffmpeg/add-subtitles",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "video",
+              "inputDataFieldName": "video"
+            },
+            {
+              "parameterType": "formBinaryData",
+              "name": "subtitles",
+              "inputDataFieldName": "subtitles"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "video"
+            }
+          }
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "5683035e-fcc2-4485-8412-fa8c7e5cccbd",
+      "name": "Zernio Presign Video",
+      "type": "n8n-nodes-late.late",
+      "typeVersion": 1,
+      "position": [
+        1328,
+        128
+      ],
+      "parameters": {
+        "resource": "media",
+        "operation": "presign",
+        "filename": "tiktok_shop_38s_hf_voice.mp4"
+      },
+      "credentials": {
+        "lateApi": {
+          "id": "mBmoLHXu5hb3qPZv",
+          "name": "Zernio account"
+        }
+      }
+    },
+    {
+      "id": "16b61453-0e0a-4b80-8c4b-0f72f630445b",
+      "name": "Combine Video Binary & Presign URL",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1552,
+        128
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const presign = $input.first()?.json || {};\nconst subbed = $('FFmpeg Burn Clean ASS Subtitles').first() || {};\nreturn [{\n  json: presign,\n  binary: subbed.binary || {}\n}];"
+      }
+    },
+    {
+      "id": "14997085-7ea3-44da-bc08-aa1c8a53a3d8",
+      "name": "Upload MP4 To Zernio CDN",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        1776,
+        128
+      ],
+      "parameters": {
+        "method": "PUT",
+        "url": "={{ $json.uploadUrl }}",
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "video"
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "e2501c90-9278-4b86-a750-51f35815ab9d",
+      "name": "Prepare Zernio TikTok Draft Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2000,
+        128
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const prev = $('Restore HF Voice Binary').first()?.json || {};\nconst presign = $('Zernio Presign Video').first()?.json || {};\nconst reelUrl = String(presign.publicUrl || presign.url || '');\n\nconst caption = String(prev.caption_de || 'Wann hast du das letzte Mal deine AirPods & Tastatur richtig gereinigt? Dieses 7-in-1 Elektronik & AirPods Reinigungs-Set bekommt jede Ritze sauber! Unten links im orangenen Warenkorb verlinkt. #airpodsreinigen #techhacks #tastaturreinigen #gadgets #tiktokshopde #bizpunk72');\n\nconst isDirectPublish = Boolean(prev.direct_publish);\n\nconst zernioBody = {\n  content: caption,\n  publishNow: true,\n  platforms: [\n    {\n      platform: 'tiktok',\n      accountId: '6a99599b77555aae01ce4ec4'\n    }\n  ],\n  mediaItems: reelUrl ? [{ type: 'video', url: reelUrl }] : [],\n  tiktokSettings: {\n    draft: !isDirectPublish,\n    is_ai_generated: true,\n    privacy_level: 'PUBLIC_TO_EVERYONE',\n    allow_comment: true,\n    allow_duet: true,\n    allow_stitch: true,\n    content_preview_confirmed: true,\n    express_consent_given: true\n  }\n};\n\nreturn [{\n  json: {\n    ...prev,\n    final_video_url: reelUrl,\n    zernio_body: JSON.stringify(zernioBody)\n  }\n}];"
+      }
+    },
+    {
+      "id": "5809a041-7f21-477a-aeed-958d91530246",
+      "name": "Zernio TikTok Draft API (@bizpunk72)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        2224,
+        128
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://zernio.com/api/v1/posts",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "lateApi",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.zernio_body }}"
+      },
+      "onError": "continueRegularOutput",
+      "credentials": {
+        "lateApi": {
+          "id": "mBmoLHXu5hb3qPZv",
+          "name": "Zernio account"
+        }
+      }
+    },
+    {
+      "id": "21828a1e-607f-4c69-83fc-289163398c21",
+      "name": "Extract Zernio Post ID",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2448,
+        128
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const prev = $('Prepare Zernio TikTok Draft Payload').first()?.json || {};\nconst zResp = $input.first()?.json || {};\nconst postObj = zResp.post || zResp.data || zResp || {};\nconst zernioId = String(postObj._id || zResp.post_id || zResp.id || 'draft_uploaded');\nconst status = zResp.error ? 'failed: ' + String(zResp.error) : 'draft_in_inbox';\n\nreturn [{\n  json: {\n    ...prev,\n    zernio_post_id: zernioId,\n    publish_status: status\n  }\n}];"
+      }
+    },
+    {
+      "id": "fa069e3c-4d77-4215-aa4c-9d7f136fbf77",
+      "name": "Log Draft In Published Posts",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        2672,
+        128
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "insert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "SsveB5rcFawYvO2s"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "post_key": "={{ \"post_38s_\" + $json.video_key }}",
+            "video_key": "={{ $json.video_key }}",
+            "product_key": "={{ $json.product_key }}",
+            "zernio_post_id": "={{ $json.zernio_post_id }}",
+            "tiktok_post_url": "={{ $json.final_video_url }}",
+            "publish_status": "={{ $json.publish_status }}",
+            "views": 0,
+            "likes": 0,
+            "comments": 0,
+            "orders_est": 0,
+            "gmv_eur": 0,
+            "published_at": "={{ $now.toISO() }}"
+          }
+        }
+      }
+    }
+  ],
+  "nodeGroups": [
+    {
+      "id": "971755e1-bca7-4631-a768-faf6ce8fc5eb",
+      "name": "Stitch 38s Video & HF Voiceover",
+      "nodeNames": [
+        "Load Videos Ready For FFmpeg",
+        "Prepare 38s Slideshow & HF TTS Voiceover",
+        "FFmpeg Stitch 38s Video",
+        "Restore HF Voice Binary",
+        "FFmpeg Mux HF Voiceover Into Video",
+        "FFmpeg Mix Voiceover (100%) + BGM (10%)"
+      ],
+      "description": "Generates HF German Voiceover, stitches 38s 1:1 scene visuals, and mixes voice + BGM"
+    },
+    {
+      "id": "d513b884-c8b0-410e-af30-4fa3aab98b7b",
+      "name": "Burn Box-Free Colored Subtitles",
+      "nodeNames": [
+        "Build 38s Box-Free Multi-Color ASS Subtitles",
+        "FFmpeg Burn Clean ASS Subtitles"
+      ],
+      "description": "Burns wrapped, box-free bold typography with 4.35s per scene and 8.5s final CTA"
+    },
+    {
+      "id": "e4421675-e28c-4060-ba15-9795f23dca4b",
+      "name": "Upload Draft To TikTok Inbox",
+      "nodeNames": [
+        "Zernio Presign Video",
+        "Combine Video Binary & Presign URL",
+        "Upload MP4 To Zernio CDN",
+        "Prepare Zernio TikTok Draft Payload",
+        "Zernio TikTok Draft API (@bizpunk72)",
+        "Extract Zernio Post ID",
+        "Log Draft In Published Posts"
+      ],
+      "description": "Uploads rendered 38s MP4 to Zernio CDN and sends AI-disclosed draft to @bizpunk72"
+    }
+  ],
+  "activeVersion": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  }
+}

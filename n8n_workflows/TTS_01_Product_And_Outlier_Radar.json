@@ -1,0 +1,106 @@
+{
+  "id": "3qVjo7qjfxxMGvdK",
+  "name": "TTS_01_Product_And_Outlier_Radar",
+  "parentFolderId": "pB3FFX2Z9VBTcmuv",
+  "description": "TikTok-Shop Radar: Checks @bizpunk72 live follower & commerce readiness and matches approved DE products with US/UK viral outlier templates.",
+  "nodes": [
+    {
+      "id": "248a4d1c-16da-400e-abf4-9c4c281bdb18",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 0],
+      "parameters": {}
+    },
+    {
+      "id": "0b0fee05-7ae9-4139-8d66-e417d4f3e559",
+      "name": "Load Approved Products",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [224, 96],
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "WpSO5UjIegQz7I8H"
+        },
+        "returnAll": true
+      },
+      "executeOnce": true
+    },
+    {
+      "id": "f63282fb-3e3c-450f-9541-c23617cef7a1",
+      "name": "Fetch BizPunk72 Profile",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [448, 96],
+      "parameters": {
+        "method": "GET",
+        "url": "https://www.tiktok.com/@bizpunk72",
+        "sendHeaders": true,
+        "specifyHeaders": "keypair",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+            },
+            {
+              "name": "Accept-Language",
+              "value": "de-DE,de;q=0.9"
+            }
+          ]
+        }
+      },
+      "executeOnce": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "81c62c75-0b20-4b54-bb01-c92fece93c95",
+      "name": "Evaluate Account & Match Outliers",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [672, 96],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const products = $('Load Approved Products').all().map(i => i.json || {});\nconst htmlItem = $input.first()?.json || {};\nconst html = String(htmlItem.data || htmlItem.body || '');\nlet followers = 1395;\nlet ttSeller = false;\nlet commerceUser = false;\nconst m = html.match(/<script id=\"__UNIVERSAL_DATA_FOR_REHYDRATION__\"[^>]*>(.*?)<\\/script>/);\nif (m) {\n  try {\n    const parsed = JSON.parse(m[1]);\n    const ui = parsed?.__DEFAULT_SCOPE__?.['webapp.user-detail']?.userInfo || {};\n    followers = Number(ui?.stats?.followerCount || followers);\n    ttSeller = Boolean(ui?.user?.ttSeller);\n    commerceUser = Boolean(ui?.user?.commerceUserInfo?.commerceUser);\n  } catch (e) {}\n}\nconst delta = Math.max(0, 1500 - followers);\nconst ctaMode = followers >= 1500 ? 'tiktok_shop_cart' : 'follower_sprint_1500';\nconst approved = products.filter(p => p.status === 'approved');\nreturn approved.map(p => ({\n  json: {\n    product_key: p.product_key,\n    product_name: p.product_name,\n    category: p.category,\n    price_eur: p.price_eur,\n    commission_pct: p.commission_pct,\n    problem_solved: p.problem_solved,\n    key_specs: p.key_specs,\n    account_followers: followers,\n    followers_delta_to_1500: delta,\n    recommended_cta_mode: ctaMode\n  }\n}));"
+      }
+    },
+    {
+      "id": "bf5bac04-a873-4415-a46d-3cb737f63cd8",
+      "name": "Daily 07:00 Radar",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [0, 192],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "days",
+              "daysInterval": 1,
+              "triggerAtHour": 7,
+              "triggerAtMinute": 0
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [[{"node": "Load Approved Products", "type": "main", "index": 0}]]
+    },
+    "Load Approved Products": {
+      "main": [[{"node": "Fetch BizPunk72 Profile", "type": "main", "index": 0}]]
+    },
+    "Fetch BizPunk72 Profile": {
+      "main": [[{"node": "Evaluate Account & Match Outliers", "type": "main", "index": 0}]]
+    },
+    "Daily 07:00 Radar": {
+      "main": [[{"node": "Load Approved Products", "type": "main", "index": 0}]]
+    }
+  }
+}

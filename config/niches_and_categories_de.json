@@ -1,0 +1,169 @@
+{
+  "project": "TikTok-Shop (@bizpunk72)",
+  "target_market": "DE",
+  "currency": "EUR",
+  "phases": {
+    "phase_1_primary": {
+      "name": "Tech Gadgets, Smart Setup & Everyday Problem Solvers",
+      "rationale": "Matches @bizpunk72's existing 1,375 AI/Tech followers while offering high impulse-buy appeal on TikTok Shop DE.",
+      "min_commission_pct": 15,
+      "price_sweet_spot_eur": [14.99, 49.99],
+      "categories": [
+        {
+          "category_key": "tech_desk_gadgets",
+          "label_de": "Schreibtisch- & Lade-Gadgets",
+          "retail_backdrop_de": "German electronics store aisle (MediaMarkt / Saturn style) with red/dark shelves and blurred product boxes",
+          "search_keywords_en": [
+            "3 in 1 magnetic charger",
+            "retractable fast charger cable",
+            "keyboard cleaning kit",
+            "magSafe powerbank slim",
+            "laptop screen extender"
+          ],
+          "search_keywords_de": [
+            "3 in 1 Ladestation",
+            "einziehbares Ladekabel",
+            "Tastatur Reinigungsset",
+            "MagSafe Powerbank",
+            "Schreibtisch Gadget"
+          ],
+          "seed_products": [
+            {
+              "product_key": "prod_magsafe_3in1_fold",
+              "product_name": "Faltbare 3-in-1 MagSafe Reiseladestation (15W Fast Charge)",
+              "price_eur": 24.99,
+              "commission_pct": 22,
+              "problem_solved": "Kabelsalat auf dem Nachttisch und im Hotel; lädt Handy, Watch und Kopfhörer gleichzeitig an einem einzigen USB-C-Stecker.",
+              "key_specs": "15W Qi2/MagSafe kompatibel, faltbar auf Kreditkartengröße, Überhitzungsschutz, inkl. Nachtlicht",
+              "flop_alternatives": [
+                "Billiges 5€-Einzelladekabel (bricht am Stecker nach 4 Wochen)",
+                "Überteuerte 129€ Marken-Ladestation (nicht faltbar für Reisen)",
+                "No-Name Mehrfachstecker (wird extrem heiß und lädt nur mit 5W)"
+              ]
+            },
+            {
+              "product_key": "prod_7in1_tech_cleaner",
+              "product_name": "8-in-1 Pro Elektronik & AirPods Reinigungs-Pen",
+              "price_eur": 14.99,
+              "commission_pct": 25,
+              "problem_solved": "Verstopfte AirPods-Gitter (leiser Ton) und verstaubte mechanische Tastaturen.",
+              "key_specs": "Metallspitze, hochdichte Mikrofaserbürste, Keycap-Puller, integriertes Display-Spray",
+              "flop_alternatives": [
+                "Zahnstocher oder Büroklammer (durchsticht das empfindliche Lautsprechergitter)",
+                "Wattestäbchen (drückt den Schmutz noch tiefer ins Gehäuse)",
+                "Druckluft-Dose für 12€ (hinterlässt Feuchtigkeitsfilm und ist nach 3x leer)"
+              ]
+            }
+          ]
+        },
+        {
+          "category_key": "car_smart_accessories",
+          "label_de": "Auto-Upgrades & Smart Driving",
+          "retail_backdrop_de": "Modern German car interior cockpit / ATU auto accessories shelf",
+          "search_keywords_en": [
+            "wireless carplay adapter",
+            "retractable car charger",
+            "vacuum magnetic car phone holder",
+            "car hud display"
+          ],
+          "search_keywords_de": [
+            "Wireless CarPlay Adapter",
+            "einziehbares Auto Ladegerät",
+            "Vakuum Magnet Handyhalterung Auto"
+          ],
+          "seed_products": [
+            {
+              "product_key": "prod_wireless_carplay_mini",
+              "product_name": "Ultra-Mini 5.8GHz Wireless CarPlay & Android Auto Stick",
+              "price_eur": 29.99,
+              "commission_pct": 20,
+              "problem_solved": "Nerviges Anstecken des Handykabels bei jeder kurzen Autofahrt und Wackelkontakt am USB-Port.",
+              "key_specs": "5.8GHz WiFi + Bluetooth 5.3, verbindet automatisch in 5 Sekunden beim Einsteigen, USB-A & USB-C Adapter",
+              "flop_alternatives": [
+                "Original-Kabel im Auto (Wackelkontakt bei jedem Schlagloch)",
+                "Große 90€ Adapter-Boxen mit Kabel (baumeln im Fußraum herum)",
+                "Billige 2.4GHz Bluetooth-Transmitter (3 Sekunden Audio-Verzögerung und Rauschen)"
+              ]
+            },
+            {
+              "product_key": "prod_retractable_car_charger_120w",
+              "product_name": "4-in-1 Einziehbares Auto-Schnellladegerät mit 2 Rollkabeln",
+              "price_eur": 19.99,
+              "commission_pct": 24,
+              "problem_solved": "Herumhängende Ladekabel in der Mittelkonsole und im Schalthebel.",
+              "key_specs": "80cm ausziehbare Lightning & USB-C Flachkabel, 180° schwenkbar, Spannungsanzeige",
+              "flop_alternatives": [
+                "Normales 2-Meter-Kabel (verheddert sich ständig um die Gangschaltung)",
+                "Standard 12V-Zigarettenanzünder-Stecker (lädt moderne Smartphones kaum auf)",
+                "Klebende Kabelhalter am Armaturenbrett (fallen im Sommer durch die Hitze ab)"
+              ]
+            }
+          ]
+        },
+        {
+          "category_key": "smart_home_everyday",
+          "label_de": "Smart-Home & Alltags-Problemlöser",
+          "retail_backdrop_de": "Bright modern German apartment kitchen / hallway or hardware store shelf (OBI / Bauhaus style)",
+          "search_keywords_en": [
+            "motion sensor cabinet light magnetic",
+            "electric spin scrubber",
+            "mini thermal label printer"
+          ],
+          "search_keywords_de": [
+            "Magnetische LED Schrankbeleuchtung Bewegungsmelder",
+            "Mini Etikettendrucker ohne Tinte"
+          ],
+          "seed_products": [
+            {
+              "product_key": "prod_magnetic_led_motion_bar",
+              "product_name": "Magnetische Ultra-Slim LED-Sensorleiste (3er-Set, USB-C)",
+              "price_eur": 22.99,
+              "commission_pct": 22,
+              "problem_solved": "Dunkle Küchenarbeitsplatten und Kleiderschränke ohne Steckdose in der Nähe.",
+              "key_specs": "Stufenlos dimmbar, 3 Farbtemperaturen (Warmweiß/Neutral/Kaltweiß), 120° Bewegungssensor, hält 60 Tage pro Ladung",
+              "flop_alternatives": [
+                "Batterie-Puck-Lichter zum Kleben (fressen jeden Monat 9 AAA-Batterien)",
+                "Feste Unterbauleuchten vom Elektriker (kosten 150€+ und erfordern Bohren)",
+                "Billige LED-Klebestreifen (lösen sich durch Wasserdampf über dem Herd sofort ab)"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "phase_2_expansion": {
+      "name": "Beauty, Skincare & Grooming (tkay Reference Model)",
+      "rationale": "High repeat purchase rate and massive US TikTok Shop outlier volume ready for German dm/Rossmann localization.",
+      "min_commission_pct": 20,
+      "price_sweet_spot_eur": [16.99, 39.99],
+      "categories": [
+        {
+          "category_key": "beauty_skincare",
+          "label_de": "Skincare & Anti-Aging (dm/Rossmann Vergleichsformat)",
+          "retail_backdrop_de": "Brightly lit German drugstore aisle (dm / Rossmann style) with skincare shelves in soft bokeh",
+          "search_keywords_en": [
+            "medicube collagen jelly cream",
+            "dr melaxin peel shot",
+            "biodance collagen mask",
+            "korean glass skin serum"
+          ],
+          "seed_products": [
+            {
+              "product_key": "prod_medicube_collagen_cream",
+              "product_name": "Medicube Collagen Jelly Cream (Glass Skin & Straffung)",
+              "price_eur": 26.99,
+              "commission_pct": 25,
+              "problem_solved": "Fahle, trockene Haut und Verlust der Spannkraft ab 30/40 ohne fettigen Film.",
+              "key_specs": "Gefriergetrocknetes hydrolysiertes Kollagen, Niacinamid, Squalan, zieht sofort ein",
+              "flop_alternatives": [
+                "Schwere Standard-Fettcremes aus der Drogerie (liegen nur oben auf und verstopfen Poren)",
+                "Überteuerte 90€ Parfümerie-Tiegel (bestehen zu 80% aus Wasser, Silikon und Duftstoffen)",
+                "Reine Hyaluron-Seren ohne Barriereschutz (entziehen trockener Heizungsluft-Haut noch mehr Feuchtigkeit)"
+              ]
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

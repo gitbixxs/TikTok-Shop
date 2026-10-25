@@ -1,0 +1,90 @@
+{
+  "database_name": "TikTok_Shop_Automation",
+  "notes": [
+    "Schema for the TikTok-Shop US-to-DE Outlier Cloning & Affiliate Pipeline (@bizpunk72).",
+    "Uses functional string keys (product_key, outlier_key, avatar_key, video_key, post_key) for idempotent operations across Baserow and n8n Data Tables."
+  ],
+  "tables": [
+    {
+      "name": "tts_products",
+      "primary_field": { "name": "product_key", "type": "text" },
+      "fields": [
+        { "name": "product_name", "type": "text" },
+        { "name": "category", "type": "text" },
+        { "name": "tiktok_shop_url", "type": "url" },
+        { "name": "packshot_image_url", "type": "url" },
+        { "name": "price_eur", "type": "number", "number_decimal_places": "2", "number_negative": false },
+        { "name": "commission_pct", "type": "number", "number_decimal_places": "0", "number_negative": false },
+        { "name": "sales_30d_est", "type": "number", "number_decimal_places": "0", "number_negative": false },
+        { "name": "problem_solved", "type": "long_text" },
+        { "name": "key_specs", "type": "long_text" },
+        { "name": "flop_alternatives_json", "type": "long_text" },
+        { "name": "status", "type": "text" }
+      ]
+    },
+    {
+      "name": "tts_outlier_videos",
+      "primary_field": { "name": "outlier_key", "type": "text" },
+      "fields": [
+        { "name": "source_url", "type": "url" },
+        { "name": "creator_handle", "type": "text" },
+        { "name": "language", "type": "text" },
+        { "name": "views", "type": "number", "number_decimal_places": "0", "number_negative": false },
+        { "name": "likes", "type": "number", "number_decimal_places": "0", "number_negative": false },
+        { "name": "duration_sec", "type": "number", "number_decimal_places": "0", "number_negative": false },
+        { "name": "hook_text", "type": "long_text" },
+        { "name": "transcript_raw", "type": "long_text" },
+        { "name": "scene_breakdown_json", "type": "long_text" },
+        { "name": "matched_product_key", "type": "text" },
+        { "name": "status", "type": "text" }
+      ]
+    },
+    {
+      "name": "tts_avatars",
+      "primary_field": { "name": "avatar_key", "type": "text" },
+      "fields": [
+        { "name": "name", "type": "text" },
+        { "name": "niche", "type": "text" },
+        { "name": "voice_style", "type": "text" },
+        { "name": "default_background", "type": "long_text" },
+        { "name": "base_prompt", "type": "long_text" },
+        { "name": "master_image_url", "type": "url" }
+      ]
+    },
+    {
+      "name": "tts_video_queue",
+      "primary_field": { "name": "video_key", "type": "text" },
+      "fields": [
+        { "name": "product_key", "type": "text" },
+        { "name": "outlier_key", "type": "text" },
+        { "name": "avatar_key", "type": "text" },
+        { "name": "cta_mode", "type": "text" },
+        { "name": "hook_de", "type": "long_text" },
+        { "name": "caption_de", "type": "long_text" },
+        { "name": "script_de_full", "type": "long_text" },
+        { "name": "scenes_json", "type": "long_text" },
+        { "name": "approval_status", "type": "text" },
+        { "name": "render_status", "type": "text" },
+        { "name": "final_video_url", "type": "url" },
+        { "name": "created_at", "type": "text" }
+      ]
+    },
+    {
+      "name": "tts_published_posts",
+      "primary_field": { "name": "post_key", "type": "text" },
+      "fields": [
+        { "name": "video_key", "type": "text" },
+        { "name": "product_key", "type": "text" },
+        { "name": "zernio_post_id", "type": "text" },
+        { "name": "tiktok_post_url", "type": "url" },
+        { "name": "publish_status", "type": "text" },
+        { "name": "views", "type": "number", "number_decimal_places": "0", "number_negative": false },
+        { "name": "likes", "type": "number", "number_decimal_places": "0", "number_negative": false },
+        { "name": "comments", "type": "number", "number_decimal_places": "0", "number_negative": false },
+        { "name": "orders_est", "type": "number", "number_decimal_places": "0", "number_negative": false },
+        { "name": "gmv_eur", "type": "number", "number_decimal_places": "2", "number_negative": false },
+        { "name": "published_at", "type": "text" }
+      ]
+    }
+  ]
+}

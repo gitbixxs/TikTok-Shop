@@ -1,0 +1,55 @@
+{
+  "id": "aLRjC7ZZ4MhqARJw",
+  "name": "TTS_03_Visual_And_Clip_Factory",
+  "parentFolderId": "pB3FFX2Z9VBTcmuv",
+  "description": "TikTok-Shop Visual & Clip Factory: Generates 9:16 scene images and presenter motion clips via fal.ai / Hugging Face Router and prepares segments for FFmpeg.",
+  "nodes": [
+    {
+      "id": "9cc4ade6-e064-49b0-9a56-178cd6c1ce7d",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [0, 0],
+      "parameters": {}
+    },
+    {
+      "id": "227a05bb-75ff-45b1-8484-71c06a779715",
+      "name": "Load Queued Videos",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [224, 0],
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {"__rl": true, "mode": "id", "value": "6fgkj3WjUwDA4S2m"},
+        "returnAll": true
+      },
+      "executeOnce": true
+    },
+    {
+      "id": "fc77bc04-a716-4dd1-9e48-b2cb216678f5",
+      "name": "AI Generate 6 Scene Assets (fal.ai / HF Router)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [448, 0],
+      "onError": "continueRegularOutput",
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const rows = $input.all().map(i => i.json || {});\nconst target = rows.find(r => r.approval_status === 'approved' && r.render_status === 'queued') || rows[0];\nif (!target || !target.video_key) return [];\nconst TOKEN = $env.HF_TOKEN || '';\nconst IMG_PROVIDER = $env.HF_IMAGE_PROVIDER || 'fal-ai';\nconst IMG_MODEL = $env.HF_IMAGE_MODEL || 'fal-ai/flux/schnell';\nconst VID_PROVIDER = $env.HF_VIDEO_PROVIDER || 'fal-ai';\nconst VID_MODEL = $env.HF_VIDEO_MODEL || 'fal-ai/wan/v2.2-5b/text-to-video';\nlet scenes = [];\ntry { scenes = JSON.parse(target.scenes_json || '[]'); } catch (e) { scenes = []; }\nfunction findUrl(obj, depth = 0) {\n  if (!obj || depth > 5) return '';\n  if (typeof obj === 'string') return /^https:\\/\\//.test(obj) && /\\.(mp4|png|jpe?g|webp)(\\?|$)/i.test(obj) ? obj : '';\n  if (Array.isArray(obj)) { for (const v of obj) { const u = findUrl(v, depth + 1); if (u) return u; } return ''; }\n  if (typeof obj === 'object') { for (const k of ['video', 'images', 'image', 'url', 'output', 'video_url', 'image_url']) { if (obj[k] !== undefined) { const u = findUrl(obj[k], depth + 1); if (u) return u; } } }\n  return '';\n}\nconst enrichedScenes = [];\nfor (const s of scenes) {\n  let imageUrl = s.generated_image_url || '';\n  let clipUrl = s.generated_clip_url || '';\n  if (TOKEN && !imageUrl) {\n    try {\n      const resp = await this.helpers.httpRequest({ method: 'POST', url: 'https://router.huggingface.co/' + IMG_PROVIDER + '/' + IMG_MODEL, headers: { Authorization: 'Bearer ' + TOKEN, 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt: s.image_prompt, image_size: { width: 768, height: 1344 }, num_images: 1 }), timeout: 35000 });\n      imageUrl = findUrl(resp);\n    } catch (e) {}\n  }\n  if (TOKEN && Number(s.scene_no) === 1 && !clipUrl) {\n    try {\n      const vResp = await this.helpers.httpRequest({ method: 'POST', url: 'https://router.huggingface.co/' + VID_PROVIDER + '/' + VID_MODEL, headers: { Authorization: 'Bearer ' + TOKEN, 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt: s.motion_prompt || s.image_prompt, aspect_ratio: '9:16', num_frames: 81 }), timeout: 180000 });\n      clipUrl = findUrl(vResp);\n    } catch (e) {}\n  }\n  enrichedScenes.push({ ...s, generated_image_url: imageUrl || 'https://images.unsplash.com/photo-1585338107529-13afc5f02586?w=1080', generated_clip_url: clipUrl || '' });\n}\nreturn [{ json: { ...target, scenes_json: JSON.stringify(enrichedScenes), render_status: 'ready_for_ffmpeg' } }];"
+      }
+    },
+    {
+      "id": "63bf6d26-2439-471c-9114-44a0aaabb639",
+      "name": "Save Generated Scene Assets",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [672, 0],
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {"__rl": true, "mode": "id", "value": "6fgkj3WjUwDA4S2m"}
+      }
+    }
+  ]
+}

@@ -1,0 +1,15 @@
+.env
+.env.*
+!.env.example
+__pycache__/
+*.py[cod]
+*$py.class
+.venv/
+venv/
+node_modules/
+.tmp*/
+output/
+*.mp4
+*.mp3
+*.wav
+*.zip

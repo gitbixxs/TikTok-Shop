@@ -1,0 +1,266 @@
+{
+  "id": "aVcsOiTDQw0XPInh",
+  "name": "TTS_02_Script_And_Scene_Architect",
+  "active": false,
+  "isArchived": false,
+  "versionId": "3da1869a-25f5-497b-9f3e-9c08446f09ad",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "nodeCount": 7,
+  "createdAt": "2026-10-24T19:40:57.583Z",
+  "updatedAt": "2026-10-25T12:56:04.036Z",
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "tags": [],
+  "parentFolderId": "pB3FFX2Z9VBTcmuv",
+  "description": "TikTok-Shop Script & Scene Architect: Adapts US/UK outlier scripts into the German 6-scene '3 Flops vs 1 Hero' format and queues scenes in tts_video_queue.",
+  "scopes": [
+    "execution:delete",
+    "execution:list",
+    "execution:read",
+    "execution:reveal",
+    "workflow:create",
+    "workflow:delete",
+    "workflow:disableRedaction",
+    "workflow:enableRedaction",
+    "workflow:execute",
+    "workflow:execute-chat",
+    "workflow:export",
+    "workflow:import",
+    "workflow:list",
+    "workflow:move",
+    "workflow:publish",
+    "workflow:read",
+    "workflow:share",
+    "workflow:unpublish",
+    "workflow:unshare",
+    "workflow:update"
+  ],
+  "canExecute": true,
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Load Products",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Products": {
+      "main": [
+        [
+          {
+            "node": "Load Outliers",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Outliers": {
+      "main": [
+        [
+          {
+            "node": "Load Avatars",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Avatars": {
+      "main": [
+        [
+          {
+            "node": "Load Video Queue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Video Queue": {
+      "main": [
+        [
+          {
+            "node": "Build German 6-Scene Clone Script",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build German 6-Scene Clone Script": {
+      "main": [
+        [
+          {
+            "node": "Insert Into Video Queue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "nodes": [
+    {
+      "id": "21506a71-bf6c-4d8b-8ecf-6463941d8a1f",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "87555c95-2663-48db-9a1c-3acc53179177",
+      "name": "Load Products",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        224,
+        0
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "WpSO5UjIegQz7I8H"
+        },
+        "returnAll": true
+      },
+      "executeOnce": true
+    },
+    {
+      "id": "31715ff6-cdb1-484b-b0fa-72f8c4224bbb",
+      "name": "Load Outliers",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        448,
+        0
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "2Edf8XI2hQ24bwRd"
+        },
+        "returnAll": true
+      },
+      "executeOnce": true
+    },
+    {
+      "id": "df88cb9b-77bf-406f-86f1-11f7635b5255",
+      "name": "Load Avatars",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        672,
+        0
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "NtCOlJtRsRf08XHy"
+        },
+        "returnAll": true
+      },
+      "executeOnce": true
+    },
+    {
+      "id": "ff89c27b-eb4e-4f21-bfaa-f12e0c699890",
+      "name": "Load Video Queue",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        896,
+        0
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "6fgkj3WjUwDA4S2m"
+        },
+        "returnAll": true
+      },
+      "executeOnce": true,
+      "alwaysOutputData": true
+    },
+    {
+      "id": "1602d99e-6b1d-427b-bde1-e36807c59e7f",
+      "name": "Build German 6-Scene Clone Script",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1120,
+        0
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const productKey = 'prod_7in1_tech_cleaner';\nconst outlierKey = 'outlier_luxcleantechh_7608202200036199702';\nconst videoKey = 'vid_hf1to1_cleaner_' + Date.now().toString().slice(-5);\nconst refVideoUrl = 'https://api.apify.com/v2/key-value-stores/U23LDAN9oAsYpdj76/records/video-luxcleante-20260218135021-7608202200036199702.mp4?signature=Gun2w3RFo2IqgWdWzf7o';\n\nconst scenes = [\n  {\n    scene_no: 1,\n    role: 'hook',\n    ref_timestamp: '00:00:05.0',\n    duration_sec: 4.5,\n    spoken_text: 'Wann hast du das letzte Mal deine AirPods und deine Tastatur richtig gereinigt?',\n    overlay_badge: 'SCHLUSS MIT SCHMUTZ',\n    edit_prompt: 'Keep the exact same close-up hand holding the white 7-in-1 electronics cleaning brush sliding out with soft keyboard background in vertical 9:16 portrait frame, photorealistic, no text overlays.',\n    motion_prompt: 'thumb sliding out the high-density cleaning brush of the white 7-in-1 electronics cleaner kit'\n  },\n  {\n    scene_no: 2,\n    role: 'hero_reveal',\n    ref_timestamp: '00:00:08.5',\n    duration_sec: 4.5,\n    spoken_text: 'Dieses kompakte sieben in eins Set hat fuer jede Ritze das perfekte Werkzeug.',\n    overlay_badge: '7-IN-1 REINIGUNGS-SET',\n    edit_prompt: 'Keep the exact same two hands opening the transparent cap of the white 7-in-1 electronics cleaning kit revealing the spray bottle and folding cleaning pen inside.',\n    motion_prompt: 'hands opening the transparent lid of the compact 7-in-1 tech cleaning kit'\n  },\n  {\n    scene_no: 3,\n    role: 'hero_reveal',\n    ref_timestamp: '00:00:15.5',\n    duration_sec: 4.5,\n    spoken_text: 'Mit der ausfahrbaren Buerste und dem Tastenzieher wird deine Tastatur bis unter die Tasten sauber.',\n    overlay_badge: 'TASTATUR & KEYCAP-PULLER',\n    edit_prompt: 'Keep the exact same close-up of the white 7-in-1 brush sweeping dust from between the mechanical keyboard switches on the desk.',\n    motion_prompt: 'cleaning brush sweeping dust between mechanical keyboard switches'\n  },\n  {\n    scene_no: 4,\n    role: 'hero_reveal',\n    ref_timestamp: '00:00:03.2',\n    duration_sec: 4.5,\n    spoken_text: 'Und mit dem integrierten Display-Spray und Mikrofaser-Pad verschwinden alle Fingerabdruecke vom Handy.',\n    overlay_badge: 'DISPLAY-SPRAY & PAD',\n    edit_prompt: 'Keep the exact same hands wiping a black smartphone screen clean using the microfiber pad side of the white 7-in-1 cleaner kit.',\n    motion_prompt: 'hand wiping smartphone screen clean with the microfiber side of the 7-in-1 cleaner'\n  },\n  {\n    scene_no: 5,\n    role: 'hero_reveal',\n    ref_timestamp: '00:00:12.0',\n    duration_sec: 4.5,\n    spoken_text: 'Im Inneren steckt der faltbare Reinigungs-Stift speziell fuer deine Kopfhoerer.',\n    overlay_badge: 'FALTBARER AIRPODS-STIFT',\n    edit_prompt: 'Keep the exact same close-up of a hand holding the white foldable dual-head AirPods cleaning pen against the desk background.',\n    motion_prompt: 'hand showing the compact white foldable earbuds cleaning pen'\n  },\n  {\n    scene_no: 6,\n    role: 'hero_reveal',\n    ref_timestamp: '00:00:19.0',\n    duration_sec: 4.5,\n    spoken_text: 'Die feine Spitze und die Mikro-Buerste loesen selbst festsitzenden Schmutz am Lautsprechergitter.',\n    overlay_badge: 'METALLSPITZE & MIKRO-BUERSTE',\n    edit_prompt: 'Keep the exact same close-up of hands unfolding the precision cleaning tip and high-density mini brush on the white AirPods cleaning pen.',\n    motion_prompt: 'fingers unfolding the precision tip and mini brush of the earbuds cleaning pen'\n  },\n  {\n    scene_no: 7,\n    role: 'hero_reveal',\n    ref_timestamp: '00:00:22.5',\n    duration_sec: 4.5,\n    spoken_text: 'Und das weiche Beflockungs-Schwaemmchen reinigt das tiefe AirPods-Ladecase in Sekunden.',\n    overlay_badge: 'SAUBERES LADECASE',\n    edit_prompt: 'Keep the exact same close-up of the white flocking sponge tip cleaning deep inside the white AirPods charging case.',\n    motion_prompt: 'soft flocking sponge cleaning deep inside the white earbuds charging case'\n  },\n  {\n    scene_no: 8,\n    role: 'cta',\n    ref_timestamp: '00:00:26.0',\n    duration_sec: 6.5,\n    spoken_text: 'So klingen deine Kopfhoerer sofort wieder wie neu! Ich hab dir das sieben in eins Set unten links im orangenen Warenkorb verlinkt – sicher es dir jetzt!',\n    overlay_badge: 'UNTEN LINKS IM WARENKORB',\n    edit_prompt: 'Keep the exact same close-up of the precision tip and mini brush cleaning the speaker mesh of a white wireless earbud.',\n    motion_prompt: 'precision cleaning pen brushing the speaker mesh of a white wireless earbud'\n  }\n];\n\nconst fullScript = 'Wann hast du das letzte Mal deine AirPods und deine Tastatur richtig gereinigt? Dieses kompakte sieben in eins Set hat fuer jede Ritze das perfekte Werkzeug. ||| Mit der ausfahrbaren Buerste, dem Tastenzieher und dem integrierten Display-Spray mit Mikrofaser-Pad werden Tastatur und Handy-Display sofort wieder sauber. ||| Und der faltbare Stift mit feiner Spitze und Schwaemmchen reinigt deine Kopfhoerer und das Ladecase bis in die tiefste Ecke. Ich hab dir das Set unten links im orangenen Warenkorb verlinkt – sicher es dir jetzt!';\n\nreturn [{\n  json: {\n    video_key: videoKey,\n    product_key: productKey,\n    outlier_key: outlierKey,\n    avatar_key: 'avatar_lukas_tech_de',\n    cta_mode: 'tiktok_shop_cart',\n    hook_de: scenes[0].spoken_text,\n    caption_de: 'Wann hast du das letzte Mal deine AirPods & Tastatur richtig gereinigt? Dieses 7-in-1 Elektronik & AirPods Reinigungs-Set bekommt jede Ritze sauber! Unten links im orangenen Warenkorb verlinkt. #airpodsreinigen #techhacks #tastaturreinigen #gadgets #tiktokshopde #bizpunk72',\n    script_de_full: fullScript,\n    scenes_json: JSON.stringify(scenes),\n    approval_status: 'approved',\n    render_status: 'queued',\n    final_video_url: refVideoUrl,\n    created_at: new Date().toISOString()\n  }\n}];"
+      }
+    },
+    {
+      "id": "bcf605e0-322c-40f3-b014-0ff478a63173",
+      "name": "Insert Into Video Queue",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1344,
+        0
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "insert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "6fgkj3WjUwDA4S2m"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "video_key": "={{ $json.video_key }}",
+            "product_key": "={{ $json.product_key }}",
+            "outlier_key": "={{ $json.outlier_key }}",
+            "avatar_key": "={{ $json.avatar_key }}",
+            "cta_mode": "={{ $json.cta_mode }}",
+            "hook_de": "={{ $json.hook_de }}",
+            "caption_de": "={{ $json.caption_de }}",
+            "script_de_full": "={{ $json.script_de_full }}",
+            "scenes_json": "={{ $json.scenes_json }}",
+            "approval_status": "={{ $json.approval_status }}",
+            "render_status": "={{ $json.render_status }}",
+            "final_video_url": "={{ $json.final_video_url }}",
+            "created_at": "={{ $json.created_at }}"
+          }
+        }
+      }
+    }
+  ],
+  "nodeGroups": [],
+  "activeVersion": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  }
+}
