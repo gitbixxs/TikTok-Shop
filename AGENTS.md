@@ -59,7 +59,7 @@ Every video description (`caption_de`) is automatically generated via Hugging Fa
   - `tts_video_queue` — Adapted German scripts, scene prompts, generated clips & render status
   - `tts_published_posts` — Zernio draft uploads, published TikTok URLs & GMV/order tracking
 - **Workflows:**
-  - `TTS_01_Product_And_Outlier_Radar`
-  - `TTS_02_Script_And_Scene_Architect`
-  - `TTS_03_Visual_And_Clip_Factory`
-  - `TTS_04_FFmpeg_Render_And_Zernio`
+  - `TTS_01_Product_And_Outlier_Radar` (`LS7wyhnaGW8nDfZl`) — Daily 07:00 Account Radar + Sunday 06:30 Weekly Apify 5-Trend Candidate Discovery (`status = candidate`) + Telegram 1-Click Inline Approval Callback (`✅ Freigeben`, `🏆 Winner`, `⏸️ Pausieren`)
+  - `TTS_02_Script_And_Scene_Architect` (`YytySstcIa4ifAlQ`) — Daily 07:30 Script & SEO Architect with **"Test & Double-Down" Rule** (3–5 test videos per approved product with rotating hooks, auto-pause losers `< 1,000` views & `0` orders after 4 videos, unlimited scaling for `status = winner` or `>= 5,000` views / `>= 1` order) + Daily Telegram Briefing Card
+  - `TTS_03_Visual_And_Clip_Factory` (`aLRjC7ZZ4MhqARJw`) — Daily 08:00 1:1 Image-to-Image (`flux-2/edit`) + Image-to-Video (`wan-i2v`) via Hugging Face Inference
+  - `TTS_04_FFmpeg_Render_And_Zernio` (`19n3oP2Q1wlT1Djc`) — Daily 08:30 HF German Voiceover (`Jonas` / `Mia`), 38s FFmpeg Render, Box-Free ASS Subtitles & Zernio Draft Upload

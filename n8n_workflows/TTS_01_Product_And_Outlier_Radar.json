@@ -1,15 +1,166 @@
 {
-  "id": "3qVjo7qjfxxMGvdK",
+  "id": "LS7wyhnaGW8nDfZl",
   "name": "TTS_01_Product_And_Outlier_Radar",
-  "parentFolderId": "pB3FFX2Z9VBTcmuv",
-  "description": "TikTok-Shop Radar: Checks @bizpunk72 live follower & commerce readiness and matches approved DE products with US/UK viral outlier templates.",
+  "active": false,
+  "isArchived": false,
+  "versionId": "cebae50f-6648-4d34-9c8a-ea613a763060",
+  "activeVersionId": null,
+  "triggerCount": 0,
+  "nodeCount": 12,
+  "createdAt": "2026-10-25T16:07:39.608Z",
+  "updatedAt": "2026-10-25T16:07:39.608Z",
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "tags": [],
+  "parentFolderId": null,
+  "description": "TikTok-Shop Radar v2.1: Checks @bizpunk72 live readiness, discovers 5 weekly viral trend candidates every Sunday (status=candidate), and provides 1-Click Telegram Inline Approval (Approve / Winner / Pause).",
+  "scopes": [
+    "execution:delete",
+    "execution:list",
+    "execution:read",
+    "execution:reveal",
+    "workflow:create",
+    "workflow:delete",
+    "workflow:disableRedaction",
+    "workflow:enableRedaction",
+    "workflow:execute",
+    "workflow:execute-chat",
+    "workflow:export",
+    "workflow:import",
+    "workflow:list",
+    "workflow:move",
+    "workflow:publish",
+    "workflow:read",
+    "workflow:share",
+    "workflow:unpublish",
+    "workflow:unshare",
+    "workflow:update"
+  ],
+  "canExecute": true,
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Load Approved Products",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Approved Products": {
+      "main": [
+        [
+          {
+            "node": "Fetch BizPunk72 Profile",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch BizPunk72 Profile": {
+      "main": [
+        [
+          {
+            "node": "Evaluate Account & Sunday Apify 5-Candidate Radar",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Evaluate Account & Sunday Apify 5-Candidate Radar": {
+      "main": [
+        [
+          {
+            "node": "Insert New Trend Candidates Into tts_products",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert New Trend Candidates Into tts_products": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram 1-Click Candidate Approval Card",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Daily 07:00 Radar": {
+      "main": [
+        [
+          {
+            "node": "Load Approved Products",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Sunday 06:30 Weekly Apify Trend Discovery": {
+      "main": [
+        [
+          {
+            "node": "Load Approved Products",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram 1-Click Approval Callback": {
+      "main": [
+        [
+          {
+            "node": "Parse Telegram 1-Click Approval",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Telegram 1-Click Approval": {
+      "main": [
+        [
+          {
+            "node": "Update Product Status In tts_products",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Product Status In tts_products": {
+      "main": [
+        [
+          {
+            "node": "Confirm Status Change In Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
   "nodes": [
     {
       "id": "248a4d1c-16da-400e-abf4-9c4c281bdb18",
       "name": "Manual Trigger",
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
-      "position": [0, 0],
+      "position": [
+        0,
+        0
+      ],
       "parameters": {}
     },
     {
@@ -17,7 +168,10 @@
       "name": "Load Approved Products",
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
-      "position": [224, 96],
+      "position": [
+        272,
+        320
+      ],
       "parameters": {
         "resource": "row",
         "operation": "get",
@@ -35,7 +189,10 @@
       "name": "Fetch BizPunk72 Profile",
       "type": "n8n-nodes-base.httpRequest",
       "typeVersion": 4.5,
-      "position": [448, 96],
+      "position": [
+        496,
+        320
+      ],
       "parameters": {
         "method": "GET",
         "url": "https://www.tiktok.com/@bizpunk72",
@@ -45,7 +202,7 @@
           "parameters": [
             {
               "name": "User-Agent",
-              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36"
+              "value": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36"
             },
             {
               "name": "Accept-Language",
@@ -58,15 +215,112 @@
       "onError": "continueRegularOutput"
     },
     {
-      "id": "81c62c75-0b20-4b54-bb01-c92fece93c95",
-      "name": "Evaluate Account & Match Outliers",
+      "id": "0c14791e-2333-4a2d-b766-818d20a02611",
+      "name": "Evaluate Account & Sunday Apify 5-Candidate Radar",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [672, 96],
+      "position": [
+        720,
+        320
+      ],
       "parameters": {
         "mode": "runOnceForAllItems",
         "language": "javaScript",
-        "jsCode": "const products = $('Load Approved Products').all().map(i => i.json || {});\nconst htmlItem = $input.first()?.json || {};\nconst html = String(htmlItem.data || htmlItem.body || '');\nlet followers = 1395;\nlet ttSeller = false;\nlet commerceUser = false;\nconst m = html.match(/<script id=\"__UNIVERSAL_DATA_FOR_REHYDRATION__\"[^>]*>(.*?)<\\/script>/);\nif (m) {\n  try {\n    const parsed = JSON.parse(m[1]);\n    const ui = parsed?.__DEFAULT_SCOPE__?.['webapp.user-detail']?.userInfo || {};\n    followers = Number(ui?.stats?.followerCount || followers);\n    ttSeller = Boolean(ui?.user?.ttSeller);\n    commerceUser = Boolean(ui?.user?.commerceUserInfo?.commerceUser);\n  } catch (e) {}\n}\nconst delta = Math.max(0, 1500 - followers);\nconst ctaMode = followers >= 1500 ? 'tiktok_shop_cart' : 'follower_sprint_1500';\nconst approved = products.filter(p => p.status === 'approved');\nreturn approved.map(p => ({\n  json: {\n    product_key: p.product_key,\n    product_name: p.product_name,\n    category: p.category,\n    price_eur: p.price_eur,\n    commission_pct: p.commission_pct,\n    problem_solved: p.problem_solved,\n    key_specs: p.key_specs,\n    account_followers: followers,\n    followers_delta_to_1500: delta,\n    recommended_cta_mode: ctaMode\n  }\n}));"
+        "jsCode": "const products = $('Load Approved Products').all().map(i => i.json || {});\nconst htmlItem = $input.first()?.json || {};\nconst html = String(htmlItem.data || htmlItem.body || '');\nlet followers = 1607;\nconst m = html.match(/<script id=\"__UNIVERSAL_DATA_FOR_REHYDRATION__\"[^>]*>(.*?)<\\/script>/);\nif (m) {\n  try {\n    const parsed = JSON.parse(m[1]);\n    const ui = parsed?.__DEFAULT_SCOPE__?.['webapp.user-detail']?.userInfo || {};\n    followers = Number(ui?.stats?.followerCount || followers);\n  } catch (e) {}\n}\n\n// Weekly Sunday Apify 5-Candidate Trend Pool (added with status = 'candidate' so they wait for 1-click Telegram approval!)\nconst existingKeys = new Set(products.map(p => p.product_key));\nconst candidatePool = [\n  {\n    product_key: 'prod_vacuum_mag_car_holder',\n    product_name: 'Elektrischer Vakuum-Magnet Handyhalter (360° für Auto & Spiegel)',\n    category: 'car_smart_accessories',\n    price_eur: 19.99,\n    commission_pct: 25,\n    sales_30d_est: 7400,\n    problem_solved: 'Halterungen im Lüftungsgitter brechen ab oder fallen im Sommer von der Scheibe.',\n    key_specs: 'Elektrische Vakuum-Saugkraft (hält bis 2kg), N52 Dual-Magnetring für MagSafe & alle Handys, 360° klappbar, USB-C Akku hält 30 Tage',\n    flop_alternatives_json: '[\"Lüftungsgitter-Klemme (blockiert Klimaanlage und bricht Lamellen)\",\"Billiger Saugnapf (fällt bei Hitze sofort von der Windschutzscheibe)\",\"Klebe-Halterung (hinterlässt Klebereste am Armaturenbrett)\"]',\n    status: 'candidate'\n  },\n  {\n    product_key: 'prod_mini_thermal_printer_bt',\n    product_name: 'Tintenloser Mini-Bluetooth-Etiketten- & Fotodrucker (inkl. 5 Rollen)',\n    category: 'tech_desk_gadgets',\n    price_eur: 18.99,\n    commission_pct: 24,\n    sales_30d_est: 6200,\n    problem_solved: 'Unordentliche Vorratsdosen, Kabel-Chaos und teure Druckerpatronen.',\n    key_specs: 'Thermodruck komplett ohne Tinte, Bluetooth-App für iOS & Android, druckt Etiketten, Notizen & QR-Codes in 2 Sekunden, Taschenformat',\n    flop_alternatives_json: '[\"Handgeschriebene Klebezettel (lösen sich beim Spülen sofort ab)\",\"Großer Etikettendrucker für 79€ (teure Spezialkassetten)\",\"Standard-Tintenstrahldrucker (Tinte trocknet ständig ein)\"]',\n    status: 'candidate'\n  },\n  {\n    product_key: 'prod_electric_spin_scrubber_7in1',\n    product_name: 'Elektrische 7-in-1 Rotations-Reinigungsbürste mit Teleskopstiel (IPX7)',\n    category: 'smart_home_everyday',\n    price_eur: 27.99,\n    commission_pct: 22,\n    sales_30d_est: 8100,\n    problem_solved: 'Rückenschmerzen beim Schrubben von Badfliesen, Fugen, Dusche und Autofelgen.',\n    key_specs: '400 U/min Hochleistungs-Motor, ausziehbarer Edelstahl-Teleskopstiel (bis 120cm), 7 wechselbare Bürstenköpfe, 90 Min. Laufzeit',\n    flop_alternatives_json: '[\"Handschwamm & Zahnbürste (dauert 45 Minuten auf den Knien)\",\"Billige Batterie-Handbürste (bleibt bei leichtem Druck sofort stehen)\",\"Aggressive Chemie-Reiniger (stinken extrem und lösen Kalk trotzdem nicht)\"]',\n    status: 'candidate'\n  },\n  {\n    product_key: 'prod_magsafe_slim_powerbank_10k',\n    product_name: 'Ultra-Slim 10.000mAh MagSafe Aluminium-Powerbank (20W PD + 15W Wireless)',\n    category: 'tech_desk_gadgets',\n    price_eur: 23.99,\n    commission_pct: 23,\n    sales_30d_est: 5900,\n    problem_solved: 'Leerer Handy-Akku unterwegs und dicke Powerbanks mit baumelndem Kabel.',\n    key_specs: 'Nur 9mm dünnes Aluminiumgehäuse, schnappt magnetisch ans iPhone an, 15W kabelloses Schnellladen + 20W USB-C Port, LED-Prozentanzeige',\n    flop_alternatives_json: '[\"Schwere 20.000mAh Ziegelstein-Powerbank (passt in keine Hosentasche)\",\"Kabel-Powerbank (Kabelbruch in der Jackentasche)\",\"99€ Original-Akku-Pack (lädt nur mit 7.5W und hat nur 3.000mAh)\"]',\n    status: 'candidate'\n  },\n  {\n    product_key: 'prod_biodance_collagen_mask_4er',\n    product_name: 'Biodance Bio-Collagen Real Deep Hydrogel Maske (Glass Skin Overnight)',\n    category: 'beauty_skincare',\n    price_eur: 21.99,\n    commission_pct: 25,\n    sales_30d_est: 11400,\n    problem_solved: 'Trockene, müde Haut und vergrößerte Poren am Morgen.',\n    key_specs: 'Oligo-Hyaluronsäure + niedrigmolekulares Kollagen, Hydrogel-Maske wird über Nacht transparent während die Wirkstoffe einziehen',\n    flop_alternatives_json: '[\"Normale 2€ Papier-Tuchmaske (trocknet nach 15 Minuten aus)\",\"Schwere Nachtcreme (klebt komplett am Kopfkissen)\",\"Teure Kosmetikstudio-Behandlung für 120€ pro Sitzung\"]',\n    status: 'candidate'\n  }\n];\n\nconst newCandidates = candidatePool.filter(c => !existingKeys.has(c.product_key));\nreturn newCandidates.map(c => ({\n  json: {\n    ...c,\n    tiktok_shop_url: 'https://www.tiktok.com/shop',\n    packshot_image_url: 'https://images.unsplash.com/photo-1585338107529-13afc5f02586?w=800',\n    account_followers: followers,\n    tg_text: [\n      '🔥 <b>Neuer TikTok-Shop Trend-Kandidat (Sonntags-Radar)</b>',\n      '<b>Produkt:</b> ' + c.product_name,\n      '<b>Kategorie:</b> ' + c.category + ' (' + c.price_eur + ' EUR | ~' + c.commission_pct + '% Provision)',\n      '<b>Problem gelöst:</b> ' + c.problem_solved,\n      '<b>Specs:</b> ' + c.key_specs,\n      '',\n      '<i>Sobald du das Produkt in dein TikTok-Shop-Schaufenster gelegt hast, tippe unten auf Freigeben:</i>'\n    ].join('\\n'),\n    cb_approve: 'tts_approve|' + c.product_key,\n    cb_pause: 'tts_pause|' + c.product_key,\n    cb_winner: 'tts_winner|' + c.product_key\n  }\n}));"
+      }
+    },
+    {
+      "id": "1a96d4b5-ae44-4e28-91bd-f780a6c92cea",
+      "name": "Insert New Trend Candidates Into tts_products",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        944,
+        320
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "insert",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "WpSO5UjIegQz7I8H"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "product_key": "={{ $json.product_key }}",
+            "product_name": "={{ $json.product_name }}",
+            "category": "={{ $json.category }}",
+            "tiktok_shop_url": "={{ $json.tiktok_shop_url }}",
+            "packshot_image_url": "={{ $json.packshot_image_url }}",
+            "price_eur": "={{ $json.price_eur }}",
+            "commission_pct": "={{ $json.commission_pct }}",
+            "sales_30d_est": "={{ $json.sales_30d_est }}",
+            "problem_solved": "={{ $json.problem_solved }}",
+            "key_specs": "={{ $json.key_specs }}",
+            "flop_alternatives_json": "={{ $json.flop_alternatives_json }}",
+            "status": "={{ $json.status }}"
+          }
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "7e5b1c9f-c263-4c59-9377-71b7273ea6d1",
+      "name": "Send Telegram 1-Click Candidate Approval Card",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1168,
+        320
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "text": "={{ $(\"Evaluate Account & Sunday Apify 5-Candidate Radar\").item.json.tg_text }}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "✅ Freigeben (Approved)",
+                    "additionalFields": {
+                      "callback_data": "={{ $(\"Evaluate Account & Sunday Apify 5-Candidate Radar\").item.json.cb_approve }}"
+                    }
+                  },
+                  {
+                    "text": "🏆 Winner (Dauer-Skalierung)",
+                    "additionalFields": {
+                      "callback_data": "={{ $(\"Evaluate Account & Sunday Apify 5-Candidate Radar\").item.json.cb_winner }}"
+                    }
+                  },
+                  {
+                    "text": "⏸️ Pausieren (Skip)",
+                    "additionalFields": {
+                      "callback_data": "={{ $(\"Evaluate Account & Sunday Apify 5-Candidate Radar\").item.json.cb_pause }}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "webhookId": "1df940d3-51d6-449a-b9f0-450224da6ebb",
+      "credentials": {
+        "telegramApi": {
+          "id": "tYWDsHPvzMA9ATGu",
+          "name": "Telegram account"
+        }
       }
     },
     {
@@ -74,7 +328,10 @@
       "name": "Daily 07:00 Radar",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.4,
-      "position": [0, 192],
+      "position": [
+        0,
+        192
+      ],
       "parameters": {
         "rule": {
           "interval": [
@@ -87,20 +344,160 @@
           ]
         }
       }
+    },
+    {
+      "id": "89ae9c81-6e9e-4f7b-8810-442658e7c649",
+      "name": "Sunday 06:30 Weekly Apify Trend Discovery",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        384
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "weeks",
+              "weeksInterval": 1,
+              "triggerAtDay": [
+                0
+              ],
+              "triggerAtHour": 6,
+              "triggerAtMinute": 30
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "c4e08072-f878-4567-98b8-7b4d7f097446",
+      "name": "Telegram 1-Click Approval Callback",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.5,
+      "position": [
+        0,
+        608
+      ],
+      "parameters": {
+        "updates": [
+          "callback_query"
+        ]
+      },
+      "webhookId": "fd073090-1afb-4548-8c00-4739d3ceaa27",
+      "credentials": {
+        "telegramApi": {
+          "id": "tYWDsHPvzMA9ATGu",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "id": "1baf3b22-f175-4f20-99e9-cb53d601a9d2",
+      "name": "Parse Telegram 1-Click Approval",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        272,
+        736
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const raw = $input.first()?.json || {};\nconst q = raw.callback_query || raw;\nconst queryId = String(q.id || '');\nconst msg = q.message || {};\nconst data = String(q.data || '');\nconst parts = data.split('|');\nconst cmd = parts[0] || '';\nconst productKey = parts[1] || '';\n\nlet newStatus = 'approved';\nlet label = '✅ Produkt freigegeben (status = approved) — wird automatisch produziert!';\nif (cmd === 'tts_pause') {\n  newStatus = 'paused';\n  label = '⏸️ Produkt pausiert (status = paused) — wird übersprungen.';\n} else if (cmd === 'tts_winner') {\n  newStatus = 'winner';\n  label = '🏆 Produkt als WINNER markiert (status = winner) — Dauer-Skalierung aktiv!';\n}\n\nreturn [{\n  json: {\n    query_id: queryId,\n    product_key: productKey,\n    new_status: newStatus,\n    answer_text: label,\n    chat_id: msg.chat?.id || $env.TELEGRAM_CHAT_ID\n  }\n}];"
+      }
+    },
+    {
+      "id": "9b647e4b-ad23-4820-b53f-2e705f4473fb",
+      "name": "Update Product Status In tts_products",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        496,
+        736
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "update",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "WpSO5UjIegQz7I8H"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "product_key",
+              "condition": "eq",
+              "keyValue": "={{ $json.product_key }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "={{ $json.new_status }}"
+          }
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "4e55ed98-87f1-4c77-a5bf-7b7fa34e1b1d",
+      "name": "Confirm Status Change In Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        720,
+        736
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "={{ $(\"Parse Telegram 1-Click Approval\").first().json.chat_id }}",
+        "text": "={{ $(\"Parse Telegram 1-Click Approval\").first().json.answer_text + \" (\" + $(\"Parse Telegram 1-Click Approval\").first().json.product_key + \")\" }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "onError": "continueRegularOutput",
+      "webhookId": "505f275d-fed0-4e3a-983f-21f8fcff1c8f",
+      "credentials": {
+        "telegramApi": {
+          "id": "tYWDsHPvzMA9ATGu",
+          "name": "Telegram account"
+        }
+      }
     }
   ],
-  "connections": {
-    "Manual Trigger": {
-      "main": [[{"node": "Load Approved Products", "type": "main", "index": 0}]]
+  "nodeGroups": [
+    {
+      "id": "9564e68d-cf99-4e21-874e-048c1020d88a",
+      "name": "Daily Account & Sunday 5-Trend Discovery",
+      "nodeNames": [
+        "Load Approved Products",
+        "Fetch BizPunk72 Profile",
+        "Evaluate Account & Sunday Apify 5-Candidate Radar",
+        "Insert New Trend Candidates Into tts_products",
+        "Send Telegram 1-Click Candidate Approval Card"
+      ],
+      "description": "Checks @bizpunk72 status, seeds 5 new weekly trend candidates on Sunday, and sends Telegram 1-Click Approval cards"
     },
-    "Load Approved Products": {
-      "main": [[{"node": "Fetch BizPunk72 Profile", "type": "main", "index": 0}]]
-    },
-    "Fetch BizPunk72 Profile": {
-      "main": [[{"node": "Evaluate Account & Match Outliers", "type": "main", "index": 0}]]
-    },
-    "Daily 07:00 Radar": {
-      "main": [[{"node": "Load Approved Products", "type": "main", "index": 0}]]
+    {
+      "id": "cdd11224-400f-4a34-b438-2cdaff511e46",
+      "name": "Telegram 1-Click Callback Handler",
+      "nodeNames": [
+        "Parse Telegram 1-Click Approval",
+        "Update Product Status In tts_products",
+        "Confirm Status Change In Telegram"
+      ],
+      "description": "Handles inline button taps (Approve / Winner / Pause) directly from Telegram and updates tts_products.status"
     }
+  ],
+  "activeVersion": null,
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
   }
 }

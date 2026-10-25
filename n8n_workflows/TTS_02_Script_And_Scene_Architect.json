@@ -1,21 +1,21 @@
 {
-  "id": "aVcsOiTDQw0XPInh",
+  "id": "YytySstcIa4ifAlQ",
   "name": "TTS_02_Script_And_Scene_Architect",
   "active": false,
   "isArchived": false,
-  "versionId": "6f563e17-5fa2-4ba6-83fc-eac6f30ede24",
+  "versionId": "23ac7037-31e9-4768-b871-ef8f025fa13e",
   "activeVersionId": null,
   "triggerCount": 0,
-  "nodeCount": 8,
-  "createdAt": "2026-10-24T19:40:57.583Z",
-  "updatedAt": "2026-10-25T15:45:33.824Z",
+  "nodeCount": 10,
+  "createdAt": "2026-10-25T16:09:16.962Z",
+  "updatedAt": "2026-10-25T16:09:16.962Z",
   "settings": {
     "executionOrder": "v1",
     "availableInMCP": true
   },
   "tags": [],
-  "parentFolderId": "pB3FFX2Z9VBTcmuv",
-  "description": "TikTok-Shop Script & Scene Architect: Adapts US/UK outlier scripts into the German 6-scene '3 Flops vs 1 Hero' format and queues scenes in tts_video_queue.",
+  "parentFolderId": null,
+  "description": "TikTok-Shop Script & Scene Architect v2.1: Implements Test & Double-Down rule (3-5 test videos per product, auto-pause losers <1000 views, unlimited scaling for winners), HF SEO captioning, and Telegram 1-Click buttons.",
   "scopes": [
     "execution:delete",
     "execution:list",
@@ -88,18 +88,40 @@
       "main": [
         [
           {
-            "node": "Build German 6-Scene Clone Script",
+            "node": "Load Published Posts Performance",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Build German 6-Scene Clone Script": {
+    "Load Published Posts Performance": {
+      "main": [
+        [
+          {
+            "node": "Test & Double-Down Selector + 8-Scene SEO Architect",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Test & Double-Down Selector + 8-Scene SEO Architect": {
       "main": [
         [
           {
             "node": "Insert Into Video Queue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Into Video Queue": {
+      "main": [
+        [
+          {
+            "node": "Send Daily Telegram Product & Hook Briefing",
             "type": "main",
             "index": 0
           }
@@ -136,8 +158,8 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
       "position": [
-        224,
-        0
+        272,
+        224
       ],
       "parameters": {
         "resource": "row",
@@ -157,8 +179,8 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
       "position": [
-        448,
-        0
+        496,
+        224
       ],
       "parameters": {
         "resource": "row",
@@ -178,8 +200,8 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
       "position": [
-        672,
-        0
+        720,
+        224
       ],
       "parameters": {
         "resource": "row",
@@ -199,8 +221,8 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
       "position": [
-        896,
-        0
+        944,
+        224
       ],
       "parameters": {
         "resource": "row",
@@ -216,18 +238,40 @@
       "alwaysOutputData": true
     },
     {
-      "id": "1602d99e-6b1d-427b-bde1-e36807c59e7f",
-      "name": "Build German 6-Scene Clone Script",
+      "id": "86562f32-185f-4ab0-85e5-6c3f2426498b",
+      "name": "Load Published Posts Performance",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        1168,
+        224
+      ],
+      "parameters": {
+        "resource": "row",
+        "operation": "get",
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "SsveB5rcFawYvO2s"
+        },
+        "returnAll": true
+      },
+      "executeOnce": true,
+      "alwaysOutputData": true
+    },
+    {
+      "id": "870784e7-f9ac-4548-b59e-c70cf5f0eb3a",
+      "name": "Test & Double-Down Selector + 8-Scene SEO Architect",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
       "position": [
-        1120,
-        0
+        800,
+        224
       ],
       "parameters": {
         "mode": "runOnceForAllItems",
         "language": "javaScript",
-        "jsCode": "const products = $('Load Products').all().map(i => i.json || {});\nconst outliers = $('Load Outliers').all().map(i => i.json || {});\nconst queueRows = $('Load Video Queue').all().map(i => i.json || {});\n\n// Automatically pick the next approved product in tts_products that hasn't been queued recently, or rotate through approved products!\nconst approvedProducts = products.filter(p => p.status === 'approved');\nconst usedProductKeys = new Set(queueRows.map(q => q.product_key));\nconst nextUnused = approvedProducts.find(p => !usedProductKeys.has(p.product_key));\nconst prodObj = nextUnused || approvedProducts[queueRows.length % Math.max(1, approvedProducts.length)] || {\n  product_key: 'prod_7in1_tech_cleaner',\n  product_name: '7-in-1 / 8-in-1 Pro Elektronik, Tastatur & AirPods Reinigungs-Set',\n  category: 'tech_desk_gadgets',\n  problem_solved: 'Verstopfte AirPods-Lautsprechergitter (leiser Ton), Staub zwischen mechanischen Tastatur-Tasten und Fingerabdrücke auf dem Smartphone-Display.',\n  key_specs: 'Faltbarer Dual-Head Reinigungs-Pen mit Metallspitze, hochdichter Mikro-Bürste & weichem Beflockungs-Schwämmchen für das Ladecase, ausfahrbare Tastatur-Bürste, Keycap-Puller (Tastenzieher), integriertes Display-Reinigungsspray und abnehmbares Super-Mikrofaser-Pad.'\n};\n\nconst productKey = prodObj.product_key;\nconst matchedOutlier = outliers.find(o => o.matched_product_key === productKey) || outliers[0] || {};\nconst outlierKey = matchedOutlier.outlier_key || ('outlier_' + productKey);\nconst videoKey = 'vid_hf1to1_' + productKey.replace('prod_', '') + '_' + Date.now().toString().slice(-5);\n\n// Select Avatar & Voice automatically based on category (Tech/Gadgets/Car/SmartHome -> Jonas | Beauty/Style/Health -> Mia)\nconst isBeauty = /beauty|skin|style|health|medicube|collagen/i.test(String(prodObj.category || '') + ' ' + productKey);\nconst avatarKey = isBeauty ? 'avatar_sarah_smartliving_de' : 'avatar_lukas_tech_de';\n\nconst refVideoUrl = matchedOutlier.source_video_stream_url || 'https://api.apify.com/v2/key-value-stores/U23LDAN9oAsYpdj76/records/video-luxcleante-20260218135021-7608202200036199702.mp4?signature=Gun2w3RFo2IqgWdWzf7o';\n\nconst scenes = [\n  {\n    scene_no: 1,\n    role: 'hook',\n    ref_timestamp: '00:00:05.0',\n    duration_sec: 4.5,\n    spoken_text: 'Wann hast du das letzte Mal deine AirPods und deine Tastatur richtig gereinigt?',\n    overlay_badge: 'SCHLUSS MIT SCHMUTZ',\n    edit_prompt: 'Keep the exact same close-up hand holding the product in vertical 9:16 portrait frame, photorealistic, no text overlays.',\n    motion_prompt: 'smooth close-up product demonstration of ' + prodObj.product_name\n  },\n  {\n    scene_no: 2,\n    role: 'hero_reveal',\n    ref_timestamp: '00:00:08.5',\n    duration_sec: 4.5,\n    spoken_text: 'Dieses kompakte sieben in eins Set hat fuer jede Ritze das perfekte Werkzeug.',\n    overlay_badge: '7-IN-1 REINIGUNGS-SET',\n    edit_prompt: 'Keep the exact same two hands opening the product cap in vertical 9:16 frame, photorealistic, no text overlays.',\n    motion_prompt: 'hands demonstrating ' + prodObj.product_name\n  },\n  {\n    scene_no: 3,\n    role: 'hero_reveal',\n    ref_timestamp: '00:00:15.5',\n    duration_sec: 4.5,\n    spoken_text: 'Mit der ausfahrbaren Buerste und dem Tastenzieher wird deine Tastatur bis unter die Tasten sauber.',\n    overlay_badge: 'TASTATUR & KEYCAP-PULLER',\n    edit_prompt: 'Keep the exact same close-up of the brush sweeping dust from between the mechanical keyboard switches on the desk.',\n    motion_prompt: 'cleaning brush sweeping dust between mechanical keyboard switches'\n  },\n  {\n    scene_no: 4,\n    role: 'hero_reveal',\n    ref_timestamp: '00:00:03.2',\n    duration_sec: 4.5,\n    spoken_text: 'Und mit dem integrierten Display-Spray und Mikrofaser-Pad verschwinden alle Fingerabdruecke vom Handy.',\n    overlay_badge: 'DISPLAY-SPRAY & PAD',\n    edit_prompt: 'Keep the exact same hands wiping a black smartphone screen clean using the microfiber pad side of the cleaner kit.',\n    motion_prompt: 'hand wiping smartphone screen clean with the microfiber side of the cleaner'\n  },\n  {\n    scene_no: 5,\n    role: 'hero_reveal',\n    ref_timestamp: '00:00:12.0',\n    duration_sec: 4.5,\n    spoken_text: 'Im Inneren steckt der faltbare Reinigungs-Stift speziell fuer deine Kopfhoerer.',\n    overlay_badge: 'FALTBARER AIRPODS-STIFT',\n    edit_prompt: 'Keep the exact same close-up of a hand holding the white foldable dual-head AirPods cleaning pen against the desk background.',\n    motion_prompt: 'hand showing the compact white foldable earbuds cleaning pen'\n  },\n  {\n    scene_no: 6,\n    role: 'hero_reveal',\n    ref_timestamp: '00:00:19.0',\n    duration_sec: 4.5,\n    spoken_text: 'Die feine Spitze und die Mikro-Buerste loesen selbst festsitzenden Schmutz am Lautsprechergitter.',\n    overlay_badge: 'METALLSPITZE & MIKRO-BUERSTE',\n    edit_prompt: 'Keep the exact same close-up of hands unfolding the precision cleaning tip and high-density mini brush on the white AirPods cleaning pen.',\n    motion_prompt: 'fingers unfolding the precision tip and mini brush of the earbuds cleaning pen'\n  },\n  {\n    scene_no: 7,\n    role: 'hero_reveal',\n    ref_timestamp: '00:00:22.5',\n    duration_sec: 4.5,\n    spoken_text: 'Und das weiche Beflockungs-Schwaemmchen reinigt das tiefe AirPods-Ladecase in Sekunden.',\n    overlay_badge: 'SAUBERES LADECASE',\n    edit_prompt: 'Keep the exact same close-up of the white flocking sponge tip cleaning deep inside the white AirPods charging case.',\n    motion_prompt: 'soft flocking sponge cleaning deep inside the white earbuds charging case'\n  },\n  {\n    scene_no: 8,\n    role: 'cta',\n    ref_timestamp: '00:00:26.0',\n    duration_sec: 6.5,\n    spoken_text: 'So klingen deine Kopfhoerer sofort wieder wie neu! Ich hab dir das sieben in eins Set unten links im orangenen Warenkorb verlinkt – sicher es dir jetzt!',\n    overlay_badge: 'UNTEN LINKS IM WARENKORB',\n    edit_prompt: 'Keep the exact same close-up of the precision tip and mini brush cleaning the speaker mesh of a white wireless earbud.',\n    motion_prompt: 'precision cleaning pen brushing the speaker mesh of a white wireless earbud'\n  }\n];\n\nconst fullScript = scenes.slice(0, 3).map(s => s.spoken_text).join(' ') + ' ||| ' + scenes.slice(3, 6).map(s => s.spoken_text).join(' ') + ' ||| ' + scenes.slice(6).map(s => s.spoken_text).join(' ');\n\n// Generate SEO-optimized German TikTok Shop description & hashtag block from the original product description via Hugging Face Inference LLM!\nconst TOKEN = $env.HF_TOKEN || '';\nlet seoCaptionDe = prodObj.product_name + ' – ' + prodObj.problem_solved + '\\n• ' + prodObj.key_specs + '\\nDirekt unten links im orangenen Warenkorb verlinkt! #tiktokshopde #tiktokmademebuyit #bizpunk72';\n\nif (TOKEN) {\n  try {\n    const llmResp = await this.helpers.httpRequest({\n      method: 'POST',\n      url: 'https://router.huggingface.co/v1/chat/completions',\n      headers: {\n        Authorization: 'Bearer ' + TOKEN,\n        'Content-Type': 'application/json'\n      },\n      body: JSON.stringify({\n        model: 'Qwen/Qwen2.5-72B-Instruct',\n        temperature: 0.3,\n        max_tokens: 450,\n        messages: [\n          {\n            role: 'system',\n            content: 'Du bist ein TikTok-Search-SEO-Experte für TikTok Shop Deutschland (@bizpunk72). Erstelle aus der Original-Produktbeschreibung eine verkaufsstarke, SEO-optimierte deutsche TikTok-Beschreibung mit: 1. Search-Hook in Zeile 1, 2. 4 Bulletpoints (•) mit den exakten Funktionen aus der Original-Produktbeschreibung, 3. Hinweis auf den orangenen Warenkorb unten links, 4. Zeile \"Suchbegriffe: ...\" mit 5 deutschen Long-Tail-Keywords, 5. 10 relevanten Hashtags inkl. #tiktokshopde #tiktokmademebuyit #bizpunk72. Gib NUR den fertigen Beschreibungstext ohne Einleitung aus.'\n          },\n          {\n            role: 'user',\n            content: 'Produkt: ' + prodObj.product_name + '\\nGelöstes Problem: ' + prodObj.problem_solved + '\\nOriginal-Produktbeschreibung / Specs: ' + prodObj.key_specs\n          }\n        ]\n      }),\n      timeout: 25000\n    });\n    const genText = llmResp?.choices?.[0]?.message?.content?.trim();\n    if (genText && genText.length > 120) {\n      seoCaptionDe = genText;\n    }\n  } catch (e) {}\n}\n\nreturn [{\n  json: {\n    video_key: videoKey,\n    product_key: productKey,\n    outlier_key: outlierKey,\n    avatar_key: avatarKey,\n    cta_mode: 'tiktok_shop_cart',\n    hook_de: scenes[0].spoken_text,\n    caption_de: seoCaptionDe,\n    script_de_full: fullScript,\n    scenes_json: JSON.stringify(scenes),\n    approval_status: 'approved',\n    render_status: 'queued',\n    final_video_url: refVideoUrl,\n    created_at: new Date().toISOString()\n  }\n}];"
+        "jsCode": "const products = $('Load Products').all().map(i => i.json || {}).filter(p => p.product_key);\nconst outliers = $('Load Outliers').all().map(i => i.json || {}).filter(o => o.outlier_key);\nconst queueRows = $('Load Video Queue').all().map(i => i.json || {}).filter(q => q.video_key);\nconst postRows = $('Load Published Posts Performance').all().map(i => i.json || {}).filter(p => p.post_key);\n\n// ============================================================================\n// B) OPTIMAL TIKTOK SHOP \"TEST & DOUBLE-DOWN\" RULE:\n// 1. Test Phase: Run each 'approved' product for 3 to 5 videos (rotating across products).\n// 2. Auto-Pause Losers ('paused'): If a product has >= 4 videos AND max views < 1,000 AND total orders == 0,\n//    automatically mark it for status='paused' and skip it!\n// 3. Scale Winners ('winner'): If a product has status='winner' OR any video >= 5,000 views OR orders_est >= 1,\n//    promote it to 'winner' and keep producing 2-3 new hook variations per week indefinitely!\n// ============================================================================\n\nconst statsByProduct = new Map();\nfor (const p of products) {\n  const pKey = p.product_key;\n  const qCount = queueRows.filter(q => q.product_key === pKey).length;\n  const pPosts = postRows.filter(r => r.product_key === pKey);\n  const maxViews = pPosts.reduce((m, r) => Math.max(m, Number(r.views || 0)), 0);\n  const totalOrders = pPosts.reduce((s, r) => s + Number(r.orders_est || 0), 0);\n  const isAutoWinner = p.status === 'winner' || maxViews >= 5000 || totalOrders >= 1;\n  const isAutoLoser = !isAutoWinner && qCount >= 4 && maxViews < 1000 && totalOrders === 0;\n  statsByProduct.set(pKey, {\n    qCount,\n    maxViews,\n    totalOrders,\n    isAutoWinner,\n    isAutoLoser,\n    effectiveStatus: isAutoWinner ? 'winner' : (isAutoLoser ? 'paused' : String(p.status || 'candidate'))\n  });\n}\n\n// Eligible pool: 'winner' (unlimited videos) + 'approved' (in 3-5 video test phase, i.e. < 4 videos)\nconst eligibleProducts = products.filter(p => {\n  const st = statsByProduct.get(p.product_key);\n  return st && (st.effectiveStatus === 'winner' || (st.effectiveStatus === 'approved' && st.qCount < 4));\n});\n\n// Sort by lowest video count first so every approved product gets its 1st, 2nd, 3rd, 4th test video evenly, while winners interleave\neligibleProducts.sort((a, b) => {\n  const sa = statsByProduct.get(a.product_key);\n  const sb = statsByProduct.get(b.product_key);\n  return (sa.qCount - sb.qCount);\n});\n\nconst prodObj = eligibleProducts[0] || products.find(p => p.status === 'approved') || products[0];\nconst productKey = prodObj.product_key;\nconst pStat = statsByProduct.get(productKey) || { qCount: 0, maxViews: 0, totalOrders: 0, effectiveStatus: 'approved' };\nconst variationNo = pStat.qCount + 1;\n\nconst matchedOutlier = outliers.find(o => o.matched_product_key === productKey) || outliers[0] || {};\nconst outlierKey = matchedOutlier.outlier_key || ('outlier_' + productKey);\nconst videoKey = 'vid_hf1to1_' + productKey.replace('prod_', '') + '_v' + variationNo + '_' + Date.now().toString().slice(-4);\n\n// Select Avatar & Voice automatically based on category (Tech/Gadgets/Car/SmartHome -> Jonas | Beauty/Style/Health -> Mia)\nconst isBeauty = /beauty|skin|style|health|medicube|collagen|biodance/i.test(String(prodObj.category || '') + ' ' + productKey);\nconst avatarKey = isBeauty ? 'avatar_sarah_smartliving_de' : 'avatar_lukas_tech_de';\nconst voiceLabel = isBeauty ? 'Mia (Weiblich - Beauty/Style/Gesundheit)' : 'Jonas (Männlich - Tech/Gadgets/Auto)';\n\nconst refVideoUrl = matchedOutlier.source_video_stream_url || 'https://api.apify.com/v2/key-value-stores/U23LDAN9oAsYpdj76/records/video-luxcleante-20260218135021-7608202200036199702.mp4?signature=Gun2w3RFo2IqgWdWzf7o';\n\n// Rotate Hook angle based on variation number (Variation 1..5) so each test video tests a fresh hook!\nconst hookAngles = [\n  'Wann hast du das letzte Mal deine AirPods und deine Tastatur richtig gereinigt?',\n  'Stopp mal kurz: Schau dir mal das Lautsprechergitter deiner Kopfhörer aus der Nähe an!',\n  'Warum kaufen sich eigentlich noch Leute teure Einweg-Reiniger, wenn dieses kleine Teil alles löst?',\n  'Wenn deine Kopfhörer plötzlich leiser klingen als früher, liegt es zu 99 Prozent an genau diesem Fehler!',\n  'Drei Dinge auf deinem Schreibtisch, die dringend ein Upgrade brauchen – Nummer eins hat mich komplett überzeugt!'\n];\nconst chosenHook = hookAngles[(variationNo - 1) % hookAngles.length];\n\nconst scenes = [\n  {\n    scene_no: 1,\n    role: 'hook',\n    ref_timestamp: '00:00:05.0',\n    duration_sec: 4.5,\n    spoken_text: chosenHook,\n    overlay_badge: 'TEST-VIDEO #' + variationNo + ' | ' + prodObj.product_name.slice(0, 18).toUpperCase(),\n    edit_prompt: 'Keep the exact same close-up hand holding the product in vertical 9:16 portrait frame, photorealistic, no text overlays.',\n    motion_prompt: 'smooth close-up product demonstration of ' + prodObj.product_name\n  },\n  {\n    scene_no: 2,\n    role: 'hero_reveal',\n    ref_timestamp: '00:00:08.5',\n    duration_sec: 4.5,\n    spoken_text: 'Dieses kompakte Set hat fuer jedes Problem im Alltag sofort die passende Loesung integriert.',\n    overlay_badge: 'ALL-IN-1 FUNKTION',\n    edit_prompt: 'Keep the exact same two hands opening the product cap in vertical 9:16 frame, photorealistic, no text overlays.',\n    motion_prompt: 'hands demonstrating ' + prodObj.product_name\n  },\n  {\n    scene_no: 3,\n    role: 'hero_reveal',\n    ref_timestamp: '00:00:15.5',\n    duration_sec: 4.5,\n    spoken_text: 'Mit der ausfahrbaren Buerste und dem Tastenzieher wird deine Tastatur bis unter die Tasten sauber.',\n    overlay_badge: 'TASTATUR & KEYCAP-PULLER',\n    edit_prompt: 'Keep the exact same close-up of the brush sweeping dust from between the mechanical keyboard switches on the desk.',\n    motion_prompt: 'cleaning brush sweeping dust between mechanical keyboard switches'\n  },\n  {\n    scene_no: 4,\n    role: 'hero_reveal',\n    ref_timestamp: '00:00:03.2',\n    duration_sec: 4.5,\n    spoken_text: 'Und mit dem integrierten Display-Spray und Mikrofaser-Pad verschwinden alle Fingerabdruecke vom Handy.',\n    overlay_badge: 'DISPLAY-SPRAY & PAD',\n    edit_prompt: 'Keep the exact same hands wiping a black smartphone screen clean using the microfiber pad side of the cleaner kit.',\n    motion_prompt: 'hand wiping smartphone screen clean with the microfiber side of the cleaner'\n  },\n  {\n    scene_no: 5,\n    role: 'hero_reveal',\n    ref_timestamp: '00:00:12.0',\n    duration_sec: 4.5,\n    spoken_text: 'Im Inneren steckt der faltbare Reinigungs-Stift speziell fuer deine Kopfhoerer.',\n    overlay_badge: 'FALTBARER AIRPODS-STIFT',\n    edit_prompt: 'Keep the exact same close-up of a hand holding the white foldable dual-head AirPods cleaning pen against the desk background.',\n    motion_prompt: 'hand showing the compact white foldable earbuds cleaning pen'\n  },\n  {\n    scene_no: 6,\n    role: 'hero_reveal',\n    ref_timestamp: '00:00:19.0',\n    duration_sec: 4.5,\n    spoken_text: 'Die feine Spitze und die Mikro-Buerste loesen selbst festsitzenden Schmutz am Lautsprechergitter.',\n    overlay_badge: 'METALLSPITZE & MIKRO-BUERSTE',\n    edit_prompt: 'Keep the exact same close-up of hands unfolding the precision cleaning tip and high-density mini brush on the white AirPods cleaning pen.',\n    motion_prompt: 'fingers unfolding the precision tip and mini brush of the earbuds cleaning pen'\n  },\n  {\n    scene_no: 7,\n    role: 'hero_reveal',\n    ref_timestamp: '00:00:22.5',\n    duration_sec: 4.5,\n    spoken_text: 'Und das weiche Beflockungs-Schwaemmchen reinigt das tiefe AirPods-Ladecase in Sekunden.',\n    overlay_badge: 'SAUBERES LADECASE',\n    edit_prompt: 'Keep the exact same close-up of the white flocking sponge tip cleaning deep inside the white AirPods charging case.',\n    motion_prompt: 'soft flocking sponge cleaning deep inside the white earbuds charging case'\n  },\n  {\n    scene_no: 8,\n    role: 'cta',\n    ref_timestamp: '00:00:26.0',\n    duration_sec: 6.5,\n    spoken_text: 'So klingen deine Kopfhoerer sofort wieder wie neu! Ich hab dir das Set unten links im orangenen Warenkorb verlinkt – sicher es dir jetzt!',\n    overlay_badge: 'UNTEN LINKS IM WARENKORB',\n    edit_prompt: 'Keep the exact same close-up of the precision tip and mini brush cleaning the speaker mesh of a white wireless earbud.',\n    motion_prompt: 'precision cleaning pen brushing the speaker mesh of a white wireless earbud'\n  }\n];\n\nconst fullScript = scenes.slice(0, 3).map(s => s.spoken_text).join(' ') + ' ||| ' + scenes.slice(3, 6).map(s => s.spoken_text).join(' ') + ' ||| ' + scenes.slice(6).map(s => s.spoken_text).join(' ');\n\nconst TOKEN = $env.HF_TOKEN || '';\nlet seoCaptionDe = prodObj.product_name + ' – ' + prodObj.problem_solved + '\\n• ' + prodObj.key_specs + '\\nDirekt unten links im orangenen Warenkorb verlinkt! #tiktokshopde #tiktokmademebuyit #bizpunk72';\n\nif (TOKEN) {\n  try {\n    const llmResp = await this.helpers.httpRequest({\n      method: 'POST',\n      url: 'https://router.huggingface.co/v1/chat/completions',\n      headers: {\n        Authorization: 'Bearer ' + TOKEN,\n        'Content-Type': 'application/json'\n      },\n      body: JSON.stringify({\n        model: 'Qwen/Qwen2.5-72B-Instruct',\n        temperature: 0.3,\n        max_tokens: 450,\n        messages: [\n          {\n            role: 'system',\n            content: 'Du bist ein TikTok-Search-SEO-Experte für TikTok Shop Deutschland (@bizpunk72). Erstelle aus der Original-Produktbeschreibung eine verkaufsstarke, SEO-optimierte deutsche TikTok-Beschreibung mit: 1. Search-Hook in Zeile 1, 2. 4 Bulletpoints (•) mit den exakten Funktionen aus der Original-Produktbeschreibung, 3. Hinweis auf den orangenen Warenkorb unten links, 4. Zeile \"Suchbegriffe: ...\" mit 5 deutschen Long-Tail-Keywords, 5. 10 relevanten Hashtags inkl. #tiktokshopde #tiktokmademebuyit #bizpunk72. Gib NUR den fertigen Beschreibungstext ohne Einleitung aus.'\n          },\n          {\n            role: 'user',\n            content: 'Produkt: ' + prodObj.product_name + '\\nGelöstes Problem: ' + prodObj.problem_solved + '\\nOriginal-Produktbeschreibung / Specs: ' + prodObj.key_specs\n          }\n        ]\n      }),\n      timeout: 25000\n    });\n    const genText = llmResp?.choices?.[0]?.message?.content?.trim();\n    if (genText && genText.length > 120) {\n      seoCaptionDe = genText;\n    }\n  } catch (e) {}\n}\n\nconst tgDailyText = [\n  '🎬 <b>Heutiges TikTok-Shop Video eingeplant (Test & Double-Down)</b>',\n  '<b>Produkt:</b> ' + prodObj.product_name,\n  '<b>Video-Nr. für dieses Produkt:</b> #' + variationNo + ' von 4 (Test-Phase) | Status: <b>' + pStat.effectiveStatus.toUpperCase() + '</b>',\n  '<b>Stimme:</b> ' + voiceLabel,\n  '<b>Heutiger Hook:</b> <i>\"' + chosenHook + '\"</i>',\n  '',\n  '<i>Du kannst den Produkt-Status hier jederzeit mit 1 Klick steuern:</i>'\n].join('\\n');\n\nreturn [{\n  json: {\n    video_key: videoKey,\n    product_key: productKey,\n    outlier_key: outlierKey,\n    avatar_key: avatarKey,\n    cta_mode: 'tiktok_shop_cart',\n    hook_de: scenes[0].spoken_text,\n    caption_de: seoCaptionDe,\n    script_de_full: fullScript,\n    scenes_json: JSON.stringify(scenes),\n    approval_status: 'approved',\n    render_status: 'queued',\n    final_video_url: refVideoUrl,\n    created_at: new Date().toISOString(),\n    effective_product_status: pStat.effectiveStatus,\n    tg_daily_text: tgDailyText,\n    cb_approve: 'tts_approve|' + productKey,\n    cb_winner: 'tts_winner|' + productKey,\n    cb_pause: 'tts_pause|' + productKey\n  }\n}];"
       }
     },
     {
@@ -236,8 +280,8 @@
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
       "position": [
-        1344,
-        0
+        1024,
+        224
       ],
       "parameters": {
         "resource": "row",
@@ -268,7 +312,64 @@
       }
     },
     {
-      "id": "fde98962-c601-4745-9415-6b0d3d7fa5f4",
+      "id": "01be7fe8-c692-4586-a7bf-f12632cdf180",
+      "name": "Send Daily Telegram Product & Hook Briefing",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1248,
+        224
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "text": "={{ $(\"Test & Double-Down Selector + 8-Scene SEO Architect\").first().json.tg_daily_text }}",
+        "replyMarkup": "inlineKeyboard",
+        "inlineKeyboard": {
+          "rows": [
+            {
+              "row": {
+                "buttons": [
+                  {
+                    "text": "🏆 Als WINNER skalieren",
+                    "additionalFields": {
+                      "callback_data": "={{ $(\"Test & Double-Down Selector + 8-Scene SEO Architect\").first().json.cb_winner }}"
+                    }
+                  },
+                  {
+                    "text": "⏸️ Produkt pausieren",
+                    "additionalFields": {
+                      "callback_data": "={{ $(\"Test & Double-Down Selector + 8-Scene SEO Architect\").first().json.cb_pause }}"
+                    }
+                  },
+                  {
+                    "text": "✅ Weiter testen",
+                    "additionalFields": {
+                      "callback_data": "={{ $(\"Test & Double-Down Selector + 8-Scene SEO Architect\").first().json.cb_approve }}"
+                    }
+                  }
+                ]
+              }
+            }
+          ]
+        },
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "onError": "continueRegularOutput",
+      "webhookId": "1c9111b9-a998-471a-bf7d-d192103e5743",
+      "credentials": {
+        "telegramApi": {
+          "id": "tYWDsHPvzMA9ATGu",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "id": "de1009bd-7d2f-474c-b2ac-e94f3bf49256",
       "name": "Daily 07:30 Script Architect",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.4,
@@ -280,8 +381,8 @@
         "rule": {
           "interval": [
             {
-              "daysInterval": 1,
               "field": "days",
+              "daysInterval": 1,
               "triggerAtHour": 7,
               "triggerAtMinute": 30
             }
@@ -292,24 +393,26 @@
   ],
   "nodeGroups": [
     {
-      "id": "51f94d1b-52ef-45b2-9ccc-7e94b5d6d6ff",
-      "name": "Load Catalog & Queue Data",
+      "id": "51b13c81-1174-4878-b49f-dc6474c916a3",
+      "name": "Load Catalog, Queue & Performance",
       "nodeNames": [
         "Load Products",
         "Load Outliers",
         "Load Avatars",
-        "Load Video Queue"
+        "Load Video Queue",
+        "Load Published Posts Performance"
       ],
-      "description": "Loads product catalog, viral outliers, avatars, and current video queue"
+      "description": "Loads products, outliers, avatars, video queue, and published post metrics for Test & Double-Down evaluation"
     },
     {
-      "id": "c013817b-a4dc-40bb-ad39-bcddf38a0d44",
-      "name": "Build Script & SEO Caption",
+      "id": "1655b613-c47e-477e-97be-fe08e71583d5",
+      "name": "Test & Double-Down + SEO Architect + Telegram Control",
       "nodeNames": [
-        "Build German 6-Scene Clone Script",
-        "Insert Into Video Queue"
+        "Test & Double-Down Selector + 8-Scene SEO Architect",
+        "Insert Into Video Queue",
+        "Send Daily Telegram Product & Hook Briefing"
       ],
-      "description": "Generates 8-scene 1:1 script, HF SEO caption, and inserts into tts_video_queue"
+      "description": "Applies 3-5 video Test & Double-Down rule, generates HF SEO caption, queues video, and sends Telegram 1-Click control card"
     }
   ],
   "activeVersion": null,
