@@ -3,12 +3,12 @@
   "name": "TTS_02_Script_And_Scene_Architect",
   "active": false,
   "isArchived": false,
-  "versionId": "23ac7037-31e9-4768-b871-ef8f025fa13e",
+  "versionId": "64ae5355-5665-4d86-8732-ef5dffdd73be",
   "activeVersionId": null,
   "triggerCount": 0,
   "nodeCount": 10,
   "createdAt": "2026-10-25T16:09:16.962Z",
-  "updatedAt": "2026-10-25T16:09:16.962Z",
+  "updatedAt": "2026-10-25T16:19:39.736Z",
   "settings": {
     "executionOrder": "v1",
     "availableInMCP": true
@@ -128,7 +128,7 @@
         ]
       ]
     },
-    "Daily 07:30 Script Architect": {
+    "3x Daily Script Architect (07:30/13:00/19:00)": {
       "main": [
         [
           {
@@ -370,7 +370,7 @@
     },
     {
       "id": "de1009bd-7d2f-474c-b2ac-e94f3bf49256",
-      "name": "Daily 07:30 Script Architect",
+      "name": "3x Daily Script Architect (07:30/13:00/19:00)",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.4,
       "position": [
@@ -381,10 +381,22 @@
         "rule": {
           "interval": [
             {
-              "field": "days",
               "daysInterval": 1,
+              "field": "days",
               "triggerAtHour": 7,
               "triggerAtMinute": 30
+            },
+            {
+              "daysInterval": 1,
+              "field": "days",
+              "triggerAtHour": 13,
+              "triggerAtMinute": 0
+            },
+            {
+              "daysInterval": 1,
+              "field": "days",
+              "triggerAtHour": 19,
+              "triggerAtMinute": 0
             }
           ]
         }

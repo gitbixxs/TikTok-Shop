@@ -3,12 +3,12 @@
   "name": "TTS_04_FFmpeg_Render_And_Zernio",
   "active": false,
   "isArchived": false,
-  "versionId": "d7d0ce51-8018-49e1-b861-3eedebe3871f",
+  "versionId": "66a1133e-d0e4-4139-8781-de6df5e6c987",
   "activeVersionId": null,
   "triggerCount": 0,
   "nodeCount": 17,
   "createdAt": "2026-10-25T10:11:17.663Z",
-  "updatedAt": "2026-10-25T15:44:44.846Z",
+  "updatedAt": "2026-10-25T16:19:40.342Z",
   "settings": {
     "executionOrder": "v1",
     "availableInMCP": true
@@ -205,7 +205,7 @@
         ]
       ]
     },
-    "Daily 08:30 FFmpeg & Zernio Upload": {
+    "3x Daily FFmpeg & Zernio (08:30/14:00/20:00)": {
       "main": [
         [
           {
@@ -634,7 +634,7 @@
     },
     {
       "id": "e9bd091e-2c6a-4084-9e70-7ef79cd90d63",
-      "name": "Daily 08:30 FFmpeg & Zernio Upload",
+      "name": "3x Daily FFmpeg & Zernio (08:30/14:00/20:00)",
       "type": "n8n-nodes-base.scheduleTrigger",
       "typeVersion": 1.4,
       "position": [
@@ -649,6 +649,18 @@
               "field": "days",
               "triggerAtHour": 8,
               "triggerAtMinute": 30
+            },
+            {
+              "daysInterval": 1,
+              "field": "days",
+              "triggerAtHour": 14,
+              "triggerAtMinute": 0
+            },
+            {
+              "daysInterval": 1,
+              "field": "days",
+              "triggerAtHour": 20,
+              "triggerAtMinute": 0
             }
           ]
         }
