@@ -13,6 +13,22 @@
       "parameters": {}
     },
     {
+      "id": "b6151f62-9b00-4625-84b3-da12350b5826",
+      "name": "3x Daily Visual Factory (08:00/13:30/19:30)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [0, 192],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {"daysInterval": 1, "field": "days", "triggerAtHour": 8, "triggerAtMinute": 0},
+            {"daysInterval": 1, "field": "days", "triggerAtHour": 13, "triggerAtMinute": 30},
+            {"daysInterval": 1, "field": "days", "triggerAtHour": 19, "triggerAtMinute": 30}
+          ]
+        }
+      }
+    },
+    {
       "id": "227a05bb-75ff-45b1-8484-71c06a779715",
       "name": "Load Queued Videos",
       "type": "n8n-nodes-base.dataTable",
