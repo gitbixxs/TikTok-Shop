@@ -1,43 +1,130 @@
 {
   "id": "aLRjC7ZZ4MhqARJw",
   "name": "TTS_03_Visual_And_Clip_Factory",
+  "active": true,
+  "isArchived": false,
+  "versionId": "ec30c2c0-8c16-4b1c-b66d-60d6cbb6a72b",
+  "activeVersionId": "ec30c2c0-8c16-4b1c-b66d-60d6cbb6a72b",
+  "triggerCount": 1,
+  "nodeCount": 6,
+  "createdAt": "2026-10-24T19:41:35.124Z",
+  "updatedAt": "2026-10-26T19:24:34.095Z",
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "tags": [],
   "parentFolderId": "pB3FFX2Z9VBTcmuv",
   "description": "TikTok-Shop Visual & Clip Factory: Generates 9:16 scene images and presenter motion clips via fal.ai / Hugging Face Router and prepares segments for FFmpeg.",
+  "scopes": [
+    "execution:delete",
+    "execution:list",
+    "execution:read",
+    "execution:reveal",
+    "workflow:create",
+    "workflow:delete",
+    "workflow:disableRedaction",
+    "workflow:enableRedaction",
+    "workflow:execute",
+    "workflow:execute-chat",
+    "workflow:export",
+    "workflow:import",
+    "workflow:list",
+    "workflow:move",
+    "workflow:publish",
+    "workflow:read",
+    "workflow:share",
+    "workflow:unpublish",
+    "workflow:unshare",
+    "workflow:update"
+  ],
+  "canExecute": true,
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Load Queued Videos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Generate 6 Scene Assets (fal.ai / HF Router)": {
+      "main": [
+        [
+          {
+            "node": "Save Generated Scene Assets",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "3x Daily Visual Factory (08:00/13:30/19:30)": {
+      "main": [
+        [
+          {
+            "node": "Load Queued Videos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Queued Videos": {
+      "main": [
+        [
+          {
+            "node": "Load Products For Packshot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Products For Packshot": {
+      "main": [
+        [
+          {
+            "node": "AI Generate 6 Scene Assets (fal.ai / HF Router)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
   "nodes": [
     {
       "id": "9cc4ade6-e064-49b0-9a56-178cd6c1ce7d",
       "name": "Manual Trigger",
       "type": "n8n-nodes-base.manualTrigger",
       "typeVersion": 1,
-      "position": [0, 0],
+      "position": [
+        0,
+        0
+      ],
       "parameters": {}
-    },
-    {
-      "id": "b6151f62-9b00-4625-84b3-da12350b5826",
-      "name": "3x Daily Visual Factory (08:00/13:30/19:30)",
-      "type": "n8n-nodes-base.scheduleTrigger",
-      "typeVersion": 1.4,
-      "position": [0, 192],
-      "parameters": {
-        "rule": {
-          "interval": [
-            {"daysInterval": 1, "field": "days", "triggerAtHour": 8, "triggerAtMinute": 0},
-            {"daysInterval": 1, "field": "days", "triggerAtHour": 13, "triggerAtMinute": 30},
-            {"daysInterval": 1, "field": "days", "triggerAtHour": 19, "triggerAtMinute": 30}
-          ]
-        }
-      }
     },
     {
       "id": "227a05bb-75ff-45b1-8484-71c06a779715",
       "name": "Load Queued Videos",
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
-      "position": [224, 0],
+      "position": [
+        224,
+        0
+      ],
       "parameters": {
         "resource": "row",
         "operation": "get",
-        "dataTableId": {"__rl": true, "mode": "id", "value": "6fgkj3WjUwDA4S2m"},
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "6fgkj3WjUwDA4S2m"
+        },
         "returnAll": true
       },
       "executeOnce": true
@@ -47,25 +134,116 @@
       "name": "AI Generate 6 Scene Assets (fal.ai / HF Router)",
       "type": "n8n-nodes-base.code",
       "typeVersion": 2,
-      "position": [448, 0],
-      "onError": "continueRegularOutput",
+      "position": [
+        448,
+        0
+      ],
       "parameters": {
         "mode": "runOnceForAllItems",
         "language": "javaScript",
-        "jsCode": "const rows = $input.all().map(i => i.json || {});\nconst target = rows.find(r => r.approval_status === 'approved' && r.render_status === 'queued') || rows[0];\nif (!target || !target.video_key) return [];\nconst TOKEN = $env.HF_TOKEN || '';\nconst IMG_PROVIDER = $env.HF_IMAGE_PROVIDER || 'fal-ai';\nconst IMG_MODEL = $env.HF_IMAGE_MODEL || 'fal-ai/flux/schnell';\nconst VID_PROVIDER = $env.HF_VIDEO_PROVIDER || 'fal-ai';\nconst VID_MODEL = $env.HF_VIDEO_MODEL || 'fal-ai/wan/v2.2-5b/text-to-video';\nlet scenes = [];\ntry { scenes = JSON.parse(target.scenes_json || '[]'); } catch (e) { scenes = []; }\nfunction findUrl(obj, depth = 0) {\n  if (!obj || depth > 5) return '';\n  if (typeof obj === 'string') return /^https:\\/\\//.test(obj) && /\\.(mp4|png|jpe?g|webp)(\\?|$)/i.test(obj) ? obj : '';\n  if (Array.isArray(obj)) { for (const v of obj) { const u = findUrl(v, depth + 1); if (u) return u; } return ''; }\n  if (typeof obj === 'object') { for (const k of ['video', 'images', 'image', 'url', 'output', 'video_url', 'image_url']) { if (obj[k] !== undefined) { const u = findUrl(obj[k], depth + 1); if (u) return u; } } }\n  return '';\n}\nconst enrichedScenes = [];\nfor (const s of scenes) {\n  let imageUrl = s.generated_image_url || '';\n  let clipUrl = s.generated_clip_url || '';\n  if (TOKEN && !imageUrl) {\n    try {\n      const resp = await this.helpers.httpRequest({ method: 'POST', url: 'https://router.huggingface.co/' + IMG_PROVIDER + '/' + IMG_MODEL, headers: { Authorization: 'Bearer ' + TOKEN, 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt: s.image_prompt, image_size: { width: 768, height: 1344 }, num_images: 1 }), timeout: 35000 });\n      imageUrl = findUrl(resp);\n    } catch (e) {}\n  }\n  if (TOKEN && Number(s.scene_no) === 1 && !clipUrl) {\n    try {\n      const vResp = await this.helpers.httpRequest({ method: 'POST', url: 'https://router.huggingface.co/' + VID_PROVIDER + '/' + VID_MODEL, headers: { Authorization: 'Bearer ' + TOKEN, 'Content-Type': 'application/json' }, body: JSON.stringify({ prompt: s.motion_prompt || s.image_prompt, aspect_ratio: '9:16', num_frames: 81 }), timeout: 180000 });\n      clipUrl = findUrl(vResp);\n    } catch (e) {}\n  }\n  enrichedScenes.push({ ...s, generated_image_url: imageUrl || 'https://images.unsplash.com/photo-1585338107529-13afc5f02586?w=1080', generated_clip_url: clipUrl || '' });\n}\nreturn [{ json: { ...target, scenes_json: JSON.stringify(enrichedScenes), render_status: 'ready_for_ffmpeg' } }];"
-      }
+        "jsCode": "const rows = $('Load Queued Videos').all().map(i => i.json || {});\nconst products = $('Load Products For Packshot').all().map(i => i.json || {});\nconst queuedRows = rows.filter(r => r.approval_status === 'approved' && r.render_status === 'queued');\nconst target = queuedRows[queuedRows.length - 1] || rows[rows.length - 1];\nif (!target || !target.video_key) return [];\n\nconst TOKEN = $env.HF_TOKEN || '';\nconst matchedProd = products.find(p => p.product_key === target.product_key) || {};\nconst dePackshotUrl = String(matchedProd.packshot_image_url || '');\nconst rawRefVideo = String(target.final_video_url || '');\nconst isCleanerVideoOnNonCleaner = rawRefVideo.includes('7608202200036199702') && target.product_key !== 'prod_7in1_tech_cleaner';\nconst refVideoUrl = isCleanerVideoOnNonCleaner ? '' : rawRefVideo;\n\nlet scenes = [];\ntry {\n  scenes = JSON.parse(target.scenes_json || '[]');\n} catch (e) {\n  scenes = [];\n}\n\nfunction findUrl(obj, depth = 0) {\n  if (!obj || depth > 5) return '';\n  if (typeof obj === 'string') {\n    return /^https:\\/\\//.test(obj) && /\\.(mp4|png|jpe?g|webp)(\\?|$)/i.test(obj) ? obj : '';\n  }\n  if (Array.isArray(obj)) {\n    for (const v of obj) {\n      const u = findUrl(v, depth + 1);\n      if (u) return u;\n    }\n    return '';\n  }\n  if (typeof obj === 'object') {\n    for (const k of ['video', 'images', 'image', 'url', 'output', 'video_url', 'image_url']) {\n      if (obj[k] !== undefined) {\n        const u = findUrl(obj[k], depth + 1);\n        if (u) return u;\n      }\n    }\n  }\n  return '';\n}\n\n// Download the German TikTok Shop original product image once and convert to base64 Data-URI so fal.ai / HF Router never fails on EU CDN query strings!\nlet packshotDataUrl = '';\nif (dePackshotUrl) {\n  try {\n    const imgBuf = await this.helpers.httpRequest({\n      method: 'GET',\n      url: dePackshotUrl,\n      headers: { 'User-Agent': 'Mozilla/5.0' },\n      encoding: 'arraybuffer',\n      timeout: 15000\n    });\n    const mime = dePackshotUrl.includes('.png') ? 'image/png' : (dePackshotUrl.includes('.webp') ? 'image/webp' : 'image/jpeg');\n    packshotDataUrl = 'data:' + mime + ';base64,' + Buffer.from(imgBuf).toString('base64');\n  } catch (e) {}\n}\n\nconst firstTs = (scenes[0] && scenes[0].ref_timestamp) || '00:00:05.0';\n\n// Process all 8 scenes IN PARALLEL (Promise.all) so total runtime is ~25-40s instead of >300s!\nconst enrichedScenes = await Promise.all(scenes.map(async (s) => {\n  const ts = s.ref_timestamp || firstTs;\n  let frameDataUrl = '';\n  if (refVideoUrl) {\n    try {\n      const thumbResp = await this.helpers.httpRequest({\n        method: 'POST',\n        url: 'https://ffmpeg.mafrapi.eu/api/ffmpeg/extract-thumbnail',\n        headers: { 'Content-Type': 'application/json', 'User-Agent': 'Mozilla/5.0' },\n        body: JSON.stringify({ videoUrl: refVideoUrl, timestamp: ts }),\n        encoding: 'arraybuffer',\n        timeout: 15000\n      });\n      frameDataUrl = 'data:image/jpeg;base64,' + Buffer.from(thumbResp).toString('base64');\n    } catch (e) {}\n  }\n\n  // Only keep an existing generated_image_url if it is an already-generated fal.media image (not a raw tiktokcdn fallback)\n  let editedImageUrl = (s.generated_image_url && s.generated_image_url.includes('fal.media')) ? s.generated_image_url : '';\n\n  if (TOKEN && !editedImageUrl) {\n    const primaryImg = frameDataUrl || packshotDataUrl;\n    const imgList = (frameDataUrl && packshotDataUrl) ? [frameDataUrl, packshotDataUrl] : (primaryImg ? [primaryImg] : []);\n    if (primaryImg) {\n      try {\n        const i2iResp = await this.helpers.httpRequest({\n          method: 'POST',\n          url: 'https://router.huggingface.co/fal-ai/fal-ai/flux-2/edit',\n          headers: {\n            Authorization: 'Bearer ' + TOKEN,\n            'Content-Type': 'application/json'\n          },\n          body: JSON.stringify({\n            prompt: s.edit_prompt || ('Vertical 9:16 smartphone POV product demonstration of ' + (matchedProd.product_name || target.product_key) + ', keeping the exact product from the reference image, photorealistic, no text overlays.'),\n            image_url: primaryImg,\n            image_urls: imgList\n          }),\n          timeout: 45000\n        });\n        editedImageUrl = findUrl(i2iResp);\n      } catch (e) {}\n    }\n\n    // Fallback to HF Router fal-ai/flux/schnell if flux-2/edit is busy or rejects webp data URI\n    if (!editedImageUrl) {\n      try {\n        const t2iResp = await this.helpers.httpRequest({\n          method: 'POST',\n          url: 'https://router.huggingface.co/fal-ai/fal-ai/flux/schnell',\n          headers: {\n            Authorization: 'Bearer ' + TOKEN,\n            'Content-Type': 'application/json'\n          },\n          body: JSON.stringify({\n            prompt: s.edit_prompt || ('Vertical 9:16 smartphone POV product demonstration of ' + (matchedProd.product_name || target.product_key) + ', photorealistic, no text overlays.'),\n            image_size: 'portrait_16_9',\n            num_inference_steps: 4\n          }),\n          timeout: 30000\n        });\n        editedImageUrl = findUrl(t2iResp);\n      } catch (e) {}\n    }\n  }\n\n  return {\n    ...s,\n    generated_image_url: editedImageUrl || dePackshotUrl,\n    generated_clip_url: s.generated_clip_url || ''\n  };\n}));\n\n// Generate 1 motion clip for Scene 1 via Hugging Face wan-i2v\nif (TOKEN && enrichedScenes[0] && enrichedScenes[0].generated_image_url && !enrichedScenes[0].generated_clip_url) {\n  try {\n    const i2vResp = await this.helpers.httpRequest({\n      method: 'POST',\n      url: 'https://router.huggingface.co/fal-ai/fal-ai/wan-i2v',\n      headers: {\n        Authorization: 'Bearer ' + TOKEN,\n        'Content-Type': 'application/json'\n      },\n      body: JSON.stringify({\n        prompt: enrichedScenes[0].motion_prompt || 'smooth realistic smartphone POV product demonstration',\n        image_url: enrichedScenes[0].generated_image_url\n      }),\n      timeout: 55000\n    });\n    const clipUrl = findUrl(i2vResp);\n    if (clipUrl) enrichedScenes[0].generated_clip_url = clipUrl;\n  } catch (e) {}\n}\n\nreturn [{\n  json: {\n    ...target,\n    scenes_json: JSON.stringify(enrichedScenes),\n    render_status: 'ready_for_ffmpeg'\n  }\n}];"
+      },
+      "onError": "continueRegularOutput"
     },
     {
       "id": "63bf6d26-2439-471c-9114-44a0aaabb639",
       "name": "Save Generated Scene Assets",
       "type": "n8n-nodes-base.dataTable",
       "typeVersion": 1.1,
-      "position": [672, 0],
+      "position": [
+        672,
+        0
+      ],
       "parameters": {
         "resource": "row",
         "operation": "update",
-        "dataTableId": {"__rl": true, "mode": "id", "value": "6fgkj3WjUwDA4S2m"}
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "6fgkj3WjUwDA4S2m"
+        },
+        "matchType": "allConditions",
+        "filters": {
+          "conditions": [
+            {
+              "keyName": "video_key",
+              "condition": "eq",
+              "keyValue": "={{ $json.video_key }}"
+            }
+          ]
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "scenes_json": "={{ $json.scenes_json }}",
+            "render_status": "={{ $json.render_status }}"
+          }
+        }
       }
+    },
+    {
+      "id": "b6151f62-9b00-4625-84b3-da12350b5826",
+      "name": "3x Daily Visual Factory (08:00/13:30/19:30)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        192
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "daysInterval": 1,
+              "field": "days",
+              "triggerAtHour": 8,
+              "triggerAtMinute": 0
+            },
+            {
+              "daysInterval": 1,
+              "field": "days",
+              "triggerAtHour": 13,
+              "triggerAtMinute": 30
+            },
+            {
+              "daysInterval": 1,
+              "field": "days",
+              "triggerAtHour": 19,
+              "triggerAtMinute": 30
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "b8888888-8888-4888-8888-8888888888b8",
+      "name": "Load Products For Packshot",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        336,
+        0
+      ],
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "WpSO5UjIegQz7I8H"
+        },
+        "operation": "get",
+        "resource": "row",
+        "returnAll": true
+      },
+      "alwaysOutputData": true,
+      "executeOnce": true
     }
-  ]
+  ],
+  "nodeGroups": [],
+  "activeVersion": {
+    "sameAsDraft": true
+  },
+  "meta": {
+    "aiBuilderAssisted": true,
+    "builderVariant": "mcp"
+  }
 }

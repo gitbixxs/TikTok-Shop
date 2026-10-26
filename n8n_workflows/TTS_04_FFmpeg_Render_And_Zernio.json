@@ -1,14 +1,14 @@
 {
   "id": "19n3oP2Q1wlT1Djc",
   "name": "TTS_04_FFmpeg_Render_And_Zernio",
-  "active": false,
+  "active": true,
   "isArchived": false,
-  "versionId": "66a1133e-d0e4-4139-8781-de6df5e6c987",
-  "activeVersionId": null,
-  "triggerCount": 0,
-  "nodeCount": 17,
+  "versionId": "5729b38e-b478-4e1d-b960-faa029fec871",
+  "activeVersionId": "5729b38e-b478-4e1d-b960-faa029fec871",
+  "triggerCount": 1,
+  "nodeCount": 19,
   "createdAt": "2026-10-25T10:11:17.663Z",
-  "updatedAt": "2026-10-25T16:19:40.342Z",
+  "updatedAt": "2026-10-26T19:18:35.233Z",
   "settings": {
     "executionOrder": "v1",
     "availableInMCP": true
@@ -45,17 +45,6 @@
         [
           {
             "node": "Load Videos Ready For FFmpeg",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
-    "Load Videos Ready For FFmpeg": {
-      "main": [
-        [
-          {
-            "node": "Prepare 38s Slideshow & HF TTS Voiceover",
             "type": "main",
             "index": 0
           }
@@ -215,6 +204,39 @@
           }
         ]
       ]
+    },
+    "Load Videos Ready For FFmpeg": {
+      "main": [
+        [
+          {
+            "node": "Load Products For Fallback Packshot",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Products For Fallback Packshot": {
+      "main": [
+        [
+          {
+            "node": "Prepare 38s Slideshow & HF TTS Voiceover",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Log Draft In Published Posts": {
+      "main": [
+        [
+          {
+            "node": "Mark Video As Rendered In Queue",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
   "nodes": [
@@ -262,7 +284,7 @@
       "parameters": {
         "mode": "runOnceForAllItems",
         "language": "javaScript",
-        "jsCode": "const rows = $input.all().map(i => i.json || {});\nconst readyRows = rows.filter(r => r.render_status === 'ready_for_ffmpeg');\nconst target = readyRows[readyRows.length - 1] || rows[rows.length - 1];\nif (!target || !target.video_key) return [];\n\nlet scenes = [];\ntry {\n  scenes = JSON.parse(target.scenes_json || '[]');\n} catch (e) {\n  scenes = [];\n}\n\n// Build segments with 4.6s for scenes 1-7 and two 4.6s segments for Scene 8 (final CTA stays visible ~8.7s!)\nconst segments = [];\nfor (let i = 0; i < scenes.length; i++) {\n  const s = scenes[i] || {};\n  const mediaUrl = s.generated_clip_url || s.generated_image_url || 'https://images.unsplash.com/photo-1585338107529-13afc5f02586?w=1080';\n  const mediaType = s.generated_clip_url ? 'video' : 'image';\n  segments.push({\n    type: mediaType,\n    url: mediaUrl,\n    duration: 4.6\n  });\n  if (i === scenes.length - 1) {\n    segments.push({\n      type: mediaType,\n      url: mediaUrl,\n      duration: 4.6\n    });\n  }\n}\n\n// Automatic Voice Rule:\n// Tech, Gadgets, Smart Home & Car -> Male Voice \"Jonas\" (nl_m.flac, de, exaggeration=0.72, cfg_weight=0.05)\n// Beauty, Style, Skincare & Health -> Female Voice \"Mia\" (sv_f.flac, de, exaggeration=0.72, cfg_weight=0.05)\nconst pKey = String(target.product_key || '').toLowerCase();\nconst aKey = String(target.avatar_key || '').toLowerCase();\nconst isBeautyStyleHealth = /beauty|skin|style|health|medicube|collagen|sarah|mia/.test(pKey + ' ' + aKey);\nconst selectedVoiceName = isBeautyStyleHealth ? 'mia_de (female)' : 'jonas_de (male)';\n\nconst sp = 'resembleai-chatterbox-multilingual-tts.hf.space';\nlet voiceBinary = null;\nlet ttsProviderUsed = 'none';\n\ntry {\n  // 1. Obtain the cached Gradio FileData for German on ResembleAI/Chatterbox-Multilingual-TTS\n  const langCall = await this.helpers.httpRequest({\n    method: 'POST',\n    url: 'https://' + sp + '/gradio_api/call/on_language_change',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify({ data: ['de', null, ''] }),\n    timeout: 20000\n  });\n  const langObj = typeof langCall === 'string' ? JSON.parse(langCall) : langCall;\n  const langSse = await this.helpers.httpRequest({\n    method: 'GET',\n    url: 'https://' + sp + '/gradio_api/call/on_language_change/' + langObj.event_id,\n    timeout: 30000\n  });\n  let refFileObj = null;\n  for (const line of String(langSse).split('\\n')) {\n    if (line.startsWith('data: ') && line.trim() !== 'data: null') {\n      const parsed = JSON.parse(line.slice(6));\n      if (Array.isArray(parsed) && parsed[0]) refFileObj = parsed[0];\n    }\n  }\n\n  // 2. Split German script into chunks < 230 chars so Chatterbox Multilingual never cuts off mid-sentence\n  const rawScript = String(target.script_de_full || '')\n    .replace(/ae/g, 'ä')\n    .replace(/oe/g, 'ö')\n    .replace(/ue/g, 'ü')\n    .replace(/Ae/g, 'Ä')\n    .replace(/Oe/g, 'Ö')\n    .replace(/Ue/g, 'Ü')\n    .replace(/3-in-1/g, 'drei in eins')\n    .replace(/7-in-1/g, 'sieben in eins')\n    .replace(/8-in-1/g, 'acht in eins');\n\n  let textChunks = [];\n  if (rawScript.includes('|||')) {\n    textChunks = rawScript.split('|||').map(c => c.trim()).filter(Boolean);\n  } else {\n    const sents = rawScript.split(/(?<=[.!?])\\s+/).filter(Boolean);\n    let cur = '';\n    for (const st of sents) {\n      if ((cur + ' ' + st).trim().length <= 210) {\n        cur = (cur + ' ' + st).trim();\n      } else {\n        if (cur) textChunks.push(cur);\n        cur = st;\n      }\n    }\n    if (cur) textChunks.push(cur);\n  }\n\n  const pcmParts = [];\n  let wavHeaderTemplate = null;\n\n  for (const chunk of textChunks) {\n    const callResp = await this.helpers.httpRequest({\n      method: 'POST',\n      url: 'https://' + sp + '/gradio_api/call/generate_tts_audio',\n      headers: { 'Content-Type': 'application/json' },\n      body: JSON.stringify({\n        data: [chunk, 'de', refFileObj, 0.72, 0.8, 42, 0.5]\n      }),\n      timeout: 25000\n    });\n    const callObj = typeof callResp === 'string' ? JSON.parse(callResp) : callResp;\n    const evId = callObj.event_id;\n    const sseText = await this.helpers.httpRequest({\n      method: 'GET',\n      url: 'https://' + sp + '/gradio_api/call/generate_tts_audio/' + evId,\n      timeout: 120000\n    });\n    for (const line of String(sseText).split('\\n')) {\n      if (line.startsWith('data: ') && line.trim() !== 'data: null') {\n        const d = JSON.parse(line.slice(6));\n        if (Array.isArray(d) && d[0] && d[0].url) {\n          const wavBuf = Buffer.from(await this.helpers.httpRequest({\n            method: 'GET',\n            url: d[0].url,\n            encoding: 'arraybuffer',\n            timeout: 30000\n          }));\n          if (wavBuf.length > 44) {\n            if (!wavHeaderTemplate) wavHeaderTemplate = wavBuf.slice(0, 44);\n            pcmParts.push(wavBuf.slice(44));\n            pcmParts.push(Buffer.alloc(8640));\n          }\n        }\n      }\n    }\n  }\n\n  if (wavHeaderTemplate && pcmParts.length > 0) {\n    const totalPcm = Buffer.concat(pcmParts);\n    const finalWav = Buffer.concat([Buffer.from(wavHeaderTemplate), totalPcm]);\n    finalWav.writeUInt32LE(36 + totalPcm.length, 4);\n    finalWav.writeUInt32LE(totalPcm.length, 40);\n    voiceBinary = await this.helpers.prepareBinaryData(finalWav, 'voice_de.wav', 'audio/wav');\n    ttsProviderUsed = 'hf-chatterbox-multilingual-de:' + selectedVoiceName;\n  }\n} catch (e) {\n  ttsProviderUsed = 'err:' + String(e.message || e);\n}\n\nconst outItem = {\n  json: {\n    ...target,\n    tts_provider_used: ttsProviderUsed,\n    slideshow_body: JSON.stringify({\n      segments,\n      imageDuration: 4.6,\n      transition: 0.25\n    })\n  }\n};\nif (voiceBinary) {\n  outItem.binary = { voice: voiceBinary };\n}\nreturn [outItem];"
+        "jsCode": "const rows = $('Load Videos Ready For FFmpeg').all().map(i => i.json || {});\nconst products = $('Load Products For Fallback Packshot').all().map(i => i.json || {});\n\n// STRICT CHECK: Only render rows that have completed TTS_03 ('ready_for_ffmpeg') — NEVER render 'queued' rows!\nconst readyRows = rows.filter(r => r.render_status === 'ready_for_ffmpeg');\nconst target = readyRows[readyRows.length - 1];\nif (!target || !target.video_key) return [];\n\nconst matchedProd = products.find(p => p.product_key === target.product_key) || {};\nconst dePackshotUrl = String(matchedProd.packshot_image_url || '');\n\nlet scenes = [];\ntry {\n  scenes = JSON.parse(target.scenes_json || '[]');\n} catch (e) {\n  scenes = [];\n}\nif (!scenes.length) return [];\n\n// Build segments with 4.6s for scenes 1-7 and two 4.6s segments for Scene 8 (final CTA stays visible ~8.7s!)\n// NEVER use any Unsplash pen/newspaper image — fallback is strictly the product's own German TikTok Shop packshot!\nconst segments = [];\nfor (let i = 0; i < scenes.length; i++) {\n  const s = scenes[i] || {};\n  const mediaUrl = s.generated_clip_url || s.generated_image_url || dePackshotUrl;\n  if (!mediaUrl) return [];\n  const mediaType = s.generated_clip_url ? 'video' : 'image';\n  segments.push({\n    type: mediaType,\n    url: mediaUrl,\n    duration: 4.6\n  });\n  if (i === scenes.length - 1) {\n    segments.push({\n      type: mediaType,\n      url: mediaUrl,\n      duration: 4.6\n    });\n  }\n}\n\n// Automatic Voice Rule:\n// Tech, Gadgets, Smart Home & Car -> Male Voice \"Jonas\" (nl_m.flac, de, exaggeration=0.72, cfg_weight=0.05)\n// Beauty, Style, Skincare & Health -> Female Voice \"Mia\" (sv_f.flac, de, exaggeration=0.72, cfg_weight=0.05)\nconst pKey = String(target.product_key || '').toLowerCase();\nconst aKey = String(target.avatar_key || '').toLowerCase();\nconst isBeautyStyleHealth = /beauty|skin|style|health|medicube|collagen|biodance|sarah|mia/.test(pKey + ' ' + aKey);\nconst selectedVoiceName = isBeautyStyleHealth ? 'mia_de (female)' : 'jonas_de (male)';\n\nconst sp = 'resembleai-chatterbox-multilingual-tts.hf.space';\nlet voiceBinary = null;\nlet ttsProviderUsed = 'none';\n\ntry {\n  // 1. Obtain the cached Gradio FileData for German on ResembleAI/Chatterbox-Multilingual-TTS\n  const langCall = await this.helpers.httpRequest({\n    method: 'POST',\n    url: 'https://' + sp + '/gradio_api/call/on_language_change',\n    headers: { 'Content-Type': 'application/json' },\n    body: JSON.stringify({ data: ['de', null, ''] }),\n    timeout: 20000\n  });\n  const langObj = typeof langCall === 'string' ? JSON.parse(langCall) : langCall;\n  const langSse = await this.helpers.httpRequest({\n    method: 'GET',\n    url: 'https://' + sp + '/gradio_api/call/on_language_change/' + langObj.event_id,\n    timeout: 30000\n  });\n  let refFileObj = null;\n  for (const line of String(langSse).split('\\n')) {\n    if (line.startsWith('data: ') && line.trim() !== 'data: null') {\n      const parsed = JSON.parse(line.slice(6));\n      if (Array.isArray(parsed) && parsed[0]) refFileObj = parsed[0];\n    }\n  }\n\n  // 2. Split German script into chunks < 230 chars so Chatterbox Multilingual never cuts off mid-sentence\n  const rawScript = String(target.script_de_full || '')\n    .replace(/ae/g, 'ä')\n    .replace(/oe/g, 'ö')\n    .replace(/ue/g, 'ü')\n    .replace(/Ae/g, 'Ä')\n    .replace(/Oe/g, 'Ö')\n    .replace(/Ue/g, 'Ü')\n    .replace(/3-in-1/g, 'drei in eins')\n    .replace(/4-in-1/g, 'vier in eins')\n    .replace(/7-in-1/g, 'sieben in eins')\n    .replace(/8-in-1/g, 'acht in eins');\n\n  let textChunks = [];\n  if (rawScript.includes('|||')) {\n    textChunks = rawScript.split('|||').map(c => c.trim()).filter(Boolean);\n  } else {\n    const sents = rawScript.split(/(?<=[.!?])\\s+/).filter(Boolean);\n    let cur = '';\n    for (const st of sents) {\n      if ((cur + ' ' + st).trim().length <= 210) {\n        cur = (cur + ' ' + st).trim();\n      } else {\n        if (cur) textChunks.push(cur);\n        cur = st;\n      }\n    }\n    if (cur) textChunks.push(cur);\n  }\n\n  const pcmParts = [];\n  let wavHeaderTemplate = null;\n\n  for (const chunk of textChunks) {\n    const callResp = await this.helpers.httpRequest({\n      method: 'POST',\n      url: 'https://' + sp + '/gradio_api/call/generate_tts_audio',\n      headers: { 'Content-Type': 'application/json' },\n      body: JSON.stringify({\n        data: [chunk, 'de', refFileObj, 0.72, 0.8, 42, 0.5]\n      }),\n      timeout: 25000\n    });\n    const callObj = typeof callResp === 'string' ? JSON.parse(callResp) : callResp;\n    const evId = callObj.event_id;\n    const sseText = await this.helpers.httpRequest({\n      method: 'GET',\n      url: 'https://' + sp + '/gradio_api/call/generate_tts_audio/' + evId,\n      timeout: 120000\n    });\n    for (const line of String(sseText).split('\\n')) {\n      if (line.startsWith('data: ') && line.trim() !== 'data: null') {\n        const d = JSON.parse(line.slice(6));\n        if (Array.isArray(d) && d[0] && d[0].url) {\n          const wavBuf = Buffer.from(await this.helpers.httpRequest({\n            method: 'GET',\n            url: d[0].url,\n            encoding: 'arraybuffer',\n            timeout: 30000\n          }));\n          if (wavBuf.length > 44) {\n            if (!wavHeaderTemplate) wavHeaderTemplate = wavBuf.slice(0, 44);\n            pcmParts.push(wavBuf.slice(44));\n            pcmParts.push(Buffer.alloc(8640));\n          }\n        }\n      }\n    }\n  }\n\n  if (wavHeaderTemplate && pcmParts.length > 0) {\n    const totalPcm = Buffer.concat(pcmParts);\n    const finalWav = Buffer.concat([Buffer.from(wavHeaderTemplate), totalPcm]);\n    finalWav.writeUInt32LE(36 + totalPcm.length, 4);\n    finalWav.writeUInt32LE(totalPcm.length, 40);\n    voiceBinary = await this.helpers.prepareBinaryData(finalWav, 'voice_de.wav', 'audio/wav');\n    ttsProviderUsed = 'hf-chatterbox-multilingual-de:' + selectedVoiceName;\n  }\n} catch (e) {\n  ttsProviderUsed = 'err:' + String(e.message || e);\n}\n\nconst outItem = {\n  json: {\n    ...target,\n    tts_provider_used: ttsProviderUsed,\n    slideshow_body: JSON.stringify({\n      segments,\n      imageDuration: 4.6,\n      transition: 0.25\n    })\n  }\n};\nif (voiceBinary) {\n  outItem.binary = { voice: voiceBinary };\n}\nreturn [outItem];"
       }
     },
     {
@@ -665,22 +687,64 @@
           ]
         }
       }
+    },
+    {
+      "id": "f9999999-9999-4999-8999-9999999999f1",
+      "name": "Load Products For Fallback Packshot",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        384,
+        128
+      ],
+      "parameters": {
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "WpSO5UjIegQz7I8H"
+        },
+        "operation": "get",
+        "resource": "row",
+        "returnAll": true
+      }
+    },
+    {
+      "id": "f9999999-9999-4999-8999-9999999999f2",
+      "name": "Mark Video As Rendered In Queue",
+      "type": "n8n-nodes-base.dataTable",
+      "typeVersion": 1.1,
+      "position": [
+        3840,
+        128
+      ],
+      "parameters": {
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "render_status": "rendered_and_uploaded"
+          }
+        },
+        "dataTableId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "6fgkj3WjUwDA4S2m"
+        },
+        "filters": {
+          "conditions": [
+            {
+              "condition": "eq",
+              "keyName": "video_key",
+              "keyValue": "={{ $(\"Extract Zernio Post ID\").first().json.video_key }}"
+            }
+          ]
+        },
+        "matchType": "allConditions",
+        "operation": "update",
+        "resource": "row"
+      }
     }
   ],
   "nodeGroups": [
-    {
-      "id": "971755e1-bca7-4631-a768-faf6ce8fc5eb",
-      "name": "Stitch 38s Video & HF Voiceover",
-      "nodeNames": [
-        "Load Videos Ready For FFmpeg",
-        "Prepare 38s Slideshow & HF TTS Voiceover",
-        "FFmpeg Stitch 38s Video",
-        "Restore HF Voice Binary",
-        "FFmpeg Mux HF Voiceover Into Video",
-        "FFmpeg Mix Voiceover (100%) + BGM (10%)"
-      ],
-      "description": "Generates HF German Voiceover, stitches 38s 1:1 scene visuals, and mixes voice + BGM"
-    },
     {
       "id": "d513b884-c8b0-410e-af30-4fa3aab98b7b",
       "name": "Burn Box-Free Colored Subtitles",
@@ -705,7 +769,9 @@
       "description": "Uploads rendered 38s MP4 to Zernio CDN and sends AI-disclosed draft to @bizpunk72"
     }
   ],
-  "activeVersion": null,
+  "activeVersion": {
+    "sameAsDraft": true
+  },
   "meta": {
     "aiBuilderAssisted": true,
     "builderVariant": "mcp"
