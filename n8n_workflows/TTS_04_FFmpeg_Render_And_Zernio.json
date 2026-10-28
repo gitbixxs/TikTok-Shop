@@ -3,12 +3,12 @@
   "name": "TTS_04_FFmpeg_Render_And_Zernio",
   "active": true,
   "isArchived": false,
-  "versionId": "5e735285-580a-45f3-823a-20716f4932a5",
-  "activeVersionId": "5e735285-580a-45f3-823a-20716f4932a5",
+  "versionId": "4773c7cf-9b44-43eb-a550-c71c23308fdb",
+  "activeVersionId": "4773c7cf-9b44-43eb-a550-c71c23308fdb",
   "triggerCount": 1,
-  "nodeCount": 19,
+  "nodeCount": 21,
   "createdAt": "2026-10-25T10:11:17.663Z",
-  "updatedAt": "2026-10-28T12:43:24.914Z",
+  "updatedAt": "2026-10-28T13:33:12.334Z",
   "settings": {
     "executionOrder": "v1",
     "availableInMCP": true
@@ -216,22 +216,44 @@
         ]
       ]
     },
-    "Load Products For Fallback Packshot": {
+    "Log Draft In Published Posts": {
       "main": [
         [
           {
-            "node": "Prepare 38s Slideshow & HF TTS Voiceover",
+            "node": "Mark Video As Rendered In Queue",
             "type": "main",
             "index": 0
           }
         ]
       ]
     },
-    "Log Draft In Published Posts": {
+    "Load Products For Fallback Packshot": {
       "main": [
         [
           {
-            "node": "Mark Video As Rendered In Queue",
+            "node": "Fetch Luisa Ref MP3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Luisa Ref MP3": {
+      "main": [
+        [
+          {
+            "node": "Upload Luisa Ref To HF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Luisa Ref To HF": {
+      "main": [
+        [
+          {
+            "node": "Prepare 38s Slideshow & HF TTS Voiceover",
             "type": "main",
             "index": 0
           }
@@ -284,7 +306,7 @@
       "parameters": {
         "mode": "runOnceForAllItems",
         "language": "javaScript",
-        "jsCode": "const rows = $('Load Videos Ready For FFmpeg').all().map(i => i.json || {});\nconst products = $('Load Products For Fallback Packshot').all().map(i => i.json || {});\n\nconst readyRows = rows.filter(r => r.render_status === 'ready_for_ffmpeg');\nconst target = readyRows[readyRows.length - 1];\nif (!target || !target.video_key) return [];\n\nconst matchedProd = products.find(p => p.product_key === target.product_key) || {};\nconst dePackshotUrl = String(matchedProd.packshot_image_url || '');\n\nlet scenes = [];\ntry { scenes = JSON.parse(target.scenes_json || '[]'); } catch (e) { scenes = []; }\nif (!scenes.length) return [];\n\nconst segments = [];\nfor (let i = 0; i < scenes.length; i++) {\n  const s = scenes[i] || {};\n  const mediaUrl = s.generated_clip_url || s.generated_image_url || dePackshotUrl;\n  if (!mediaUrl) return [];\n  const mediaType = s.generated_clip_url ? 'video' : 'image';\n  segments.push({ type: mediaType, url: mediaUrl, duration: 4.6 });\n  if (i === scenes.length - 1) segments.push({ type: mediaType, url: mediaUrl, duration: 4.6 });\n}\n\nconst pKey = String(target.product_key || '').toLowerCase();\nconst aKey = String(target.avatar_key || '').toLowerCase();\nconst isBeautyStyleHealth = /beauty|skin|style|health|medicube|collagen|biodance|sarah|mia/.test(pKey + ' ' + aKey);\nconst selectedVoiceName = isBeautyStyleHealth ? 'luisa_clone (female)' : 'florian_de (male)';\n\nconst HFTOK = $env.HF_TOKEN || '';\nconst HF_AUTH = HFTOK ? { Authorization: 'Bearer ' + HFTOK } : {};\n\n// Remote FileData for Gradio (server-side download, NO multipart upload needed)\nconst FEMALE_CLONE_REF_URL = 'https://files.catbox.moe/b76w25.mp3';\n\nconst rawScript = String(target.script_de_full || '')\n  .replace(/ae/g, 'ä').replace(/oe/g, 'ö').replace(/ue/g, 'ü')\n  .replace(/Ae/g, 'Ä').replace(/Oe/g, 'Ö').replace(/Ue/g, 'Ü')\n  .replace(/3-in-1/g, 'drei in eins').replace(/4-in-1/g, 'vier in eins')\n  .replace(/7-in-1/g, 'sieben in eins').replace(/8-in-1/g, 'acht in eins')\n  .replace(/\\bEUR\\b/g, 'Euro');\n\nconst stitchTask = (async () => {\n  let url = '';\n  try {\n    const mid = Math.ceil(segments.length / 2);\n    const [part1, part2] = await Promise.all([\n      this.helpers.httpRequest({\n        method: 'POST', url: 'https://ffmpeg.mafrapi.eu/api/ffmpeg/slideshow',\n        headers: { 'Content-Type': 'application/json', 'User-Agent': 'Mozilla/5.0' },\n        body: JSON.stringify({ segments: segments.slice(0, mid), imageDuration: 4.6, transition: 0.25 }),\n        timeout: 80000\n      }),\n      this.helpers.httpRequest({\n        method: 'POST', url: 'https://ffmpeg.mafrapi.eu/api/ffmpeg/slideshow',\n        headers: { 'Content-Type': 'application/json', 'User-Agent': 'Mozilla/5.0' },\n        body: JSON.stringify({ segments: segments.slice(mid), imageDuration: 4.6, transition: 0.25 }),\n        timeout: 80000\n      })\n    ]);\n    const u1 = part1 && part1.reel_url;\n    const u2 = part2 && part2.reel_url;\n    if (u1 && u2) {\n      const joined = await this.helpers.httpRequest({\n        method: 'POST', url: 'https://ffmpeg.mafrapi.eu/api/ffmpeg/slideshow',\n        headers: { 'Content-Type': 'application/json', 'User-Agent': 'Mozilla/5.0' },\n        body: JSON.stringify({\n          segments: [\n            { type: 'video', url: u1, duration: mid * 4.5 },\n            { type: 'video', url: u2, duration: (segments.length - mid) * 4.5 }\n          ],\n          imageDuration: 4.6, transition: 0.2\n        }),\n        timeout: 70000\n      });\n      if (joined && joined.reel_url) url = String(joined.reel_url);\n    }\n  } catch (e) {}\n  return url;\n})();\n\nconst splitChunks = () => {\n  let textChunks = [];\n  if (rawScript.includes('|||')) {\n    textChunks = rawScript.split('|||').map(c => c.trim()).filter(Boolean);\n  } else {\n    const sents = rawScript.split(/(?<=[.!?])\\s+/).filter(Boolean);\n    let cur = '';\n    for (const st of sents) {\n      if ((cur + ' ' + st).trim().length <= 210) cur = (cur + ' ' + st).trim();\n      else { if (cur) textChunks.push(cur); cur = st; }\n    }\n    if (cur) textChunks.push(cur);\n  }\n  return textChunks;\n};\n\nconst edgeTts = async () => {\n  const edgeHosts = ['innoai-edge-tts-text-to-speech.hf.space', 'cpuai-edge-tts-text-to-speech.hf.space'];\n  const edgeVoice = isBeautyStyleHealth\n    ? 'de-DE-SeraphinaMultilingualNeural - de-DE (Female)'\n    : 'de-DE-FlorianMultilingualNeural - de-DE (Male)';\n  const cleanFullText = rawScript.replace(/\\s*\\|\\|\\|\\s*/g, ' ').replace(/\\s+/g, ' ').trim();\n  for (const eh of edgeHosts) {\n    try {\n      const eCall = await this.helpers.httpRequest({\n        method: 'POST', url: 'https://' + eh + '/gradio_api/call/tts_interface',\n        headers: { 'Content-Type': 'application/json', ...HF_AUTH },\n        body: JSON.stringify({ data: [cleanFullText, edgeVoice, 6, 0] }),\n        timeout: 12000\n      });\n      const eObj = typeof eCall === 'string' ? JSON.parse(eCall) : eCall;\n      const eSse = await this.helpers.httpRequest({\n        method: 'GET', url: 'https://' + eh + '/gradio_api/call/tts_interface/' + eObj.event_id,\n        headers: HF_AUTH, timeout: 25000\n      });\n      for (const line of String(eSse).split('\\n')) {\n        if (line.startsWith('data: ') && line.trim() !== 'data: null') {\n          const d = JSON.parse(line.slice(6));\n          if (Array.isArray(d) && d[0] && d[0].url) {\n            const mp3Buf = Buffer.from(await this.helpers.httpRequest({\n              method: 'GET', url: d[0].url, headers: HF_AUTH, encoding: 'arraybuffer', timeout: 20000\n            }));\n            if (mp3Buf.length > 1000) {\n              return await this.helpers.prepareBinaryData(mp3Buf, 'voice_de.mp3', 'audio/mpeg');\n            }\n          }\n        }\n      }\n    } catch (e) {}\n  }\n  return null;\n};\n\nconst chatterbox = async (refFileObj) => {\n  if (!refFileObj) return null;\n  const sp = 'resembleai-chatterbox-multilingual-tts.hf.space';\n  const pcmParts = [];\n  let wavHeaderTemplate = null;\n  for (const chunk of splitChunks()) {\n    let chunkOk = false;\n    try {\n      const callResp = await this.helpers.httpRequest({\n        method: 'POST', url: 'https://' + sp + '/gradio_api/call/generate_tts_audio',\n        headers: { 'Content-Type': 'application/json', ...HF_AUTH },\n        body: JSON.stringify({ data: [chunk, 'de', refFileObj, 0.72, 0.8, 42, 0.05] }),\n        timeout: 8000\n      });\n      const callObj = typeof callResp === 'string' ? JSON.parse(callResp) : callResp;\n      const sseText = await this.helpers.httpRequest({\n        method: 'GET', url: 'https://' + sp + '/gradio_api/call/generate_tts_audio/' + callObj.event_id,\n        headers: HF_AUTH, timeout: 22000\n      });\n      for (const line of String(sseText).split('\\n')) {\n        if (line.startsWith('data: ') && line.trim() !== 'data: null') {\n          const d = JSON.parse(line.slice(6));\n          if (Array.isArray(d) && d[0] && d[0].url) {\n            const wavBuf = Buffer.from(await this.helpers.httpRequest({\n              method: 'GET', url: d[0].url, headers: HF_AUTH, encoding: 'arraybuffer', timeout: 12000\n            }));\n            if (wavBuf.length > 44) {\n              if (!wavHeaderTemplate) wavHeaderTemplate = wavBuf.slice(0, 44);\n              pcmParts.push(wavBuf.slice(44));\n              pcmParts.push(Buffer.alloc(8640));\n              chunkOk = true;\n            }\n          }\n        }\n      }\n    } catch (e) {}\n    if (!chunkOk) return null;\n  }\n  if (!wavHeaderTemplate || !pcmParts.length) return null;\n  const totalPcm = Buffer.concat(pcmParts);\n  const finalWav = Buffer.concat([Buffer.from(wavHeaderTemplate), totalPcm]);\n  finalWav.writeUInt32LE(36 + totalPcm.length, 4);\n  finalWav.writeUInt32LE(totalPcm.length, 40);\n  return await this.helpers.prepareBinaryData(finalWav, 'voice_de.wav', 'audio/wav');\n};\n\nconst builtinChatterboxRef = async () => {\n  const sp = 'resembleai-chatterbox-multilingual-tts.hf.space';\n  const refLang = isBeautyStyleHealth ? 'sv' : 'nl';\n  try {\n    const langCall = await this.helpers.httpRequest({\n      method: 'POST', url: 'https://' + sp + '/gradio_api/call/on_language_change',\n      headers: { 'Content-Type': 'application/json', ...HF_AUTH },\n      body: JSON.stringify({ data: [refLang, null, ''] }),\n      timeout: 8000\n    });\n    const langObj = typeof langCall === 'string' ? JSON.parse(langCall) : langCall;\n    const langSse = await this.helpers.httpRequest({\n      method: 'GET', url: 'https://' + sp + '/gradio_api/call/on_language_change/' + langObj.event_id,\n      headers: HF_AUTH, timeout: 10000\n    });\n    for (const line of String(langSse).split('\\n')) {\n      if (line.startsWith('data: ') && line.trim() !== 'data: null') {\n        const parsed = JSON.parse(line.slice(6));\n        if (Array.isArray(parsed) && parsed[0]) return parsed[0];\n      }\n    }\n  } catch (e) {}\n  return null;\n};\n\nconst ttsTask = (async () => {\n  let vBin = null;\n  let provider = 'none';\n  try {\n    if (isBeautyStyleHealth) {\n      // FEMALE Tier 1: Luisa voice clone via REMOTE FileData (server downloads mp3 — no multipart upload!)\n      const luisaRefs = [\n        { url: FEMALE_CLONE_REF_URL, meta: { _type: 'gradio.FileData' } },\n        { path: FEMALE_CLONE_REF_URL, meta: { _type: 'gradio.FileData' } }\n      ];\n      for (const refObj of luisaRefs) {\n        if (vBin) break;\n        vBin = await chatterbox(refObj);\n        if (vBin) provider = 'hf-chatterbox-clone-luisa-de:luisa_clone (female)';\n      }\n      // FEMALE Tier 2: Edge-TTS Seraphina (CPU, instant)\n      if (!vBin) {\n        vBin = await edgeTts();\n        if (vBin) provider = 'hf-edge-tts-de:seraphina_de (female)';\n      }\n      // FEMALE Tier 3: Chatterbox built-in sv_f\n      if (!vBin) {\n        const ref = await builtinChatterboxRef();\n        if (ref) {\n          vBin = await chatterbox(ref);\n          if (vBin) provider = 'hf-chatterbox-multilingual-de:sv_f (female)';\n        }\n      }\n    } else {\n      // MALE Tier 1: Edge-TTS Florian (STANDARD)\n      vBin = await edgeTts();\n      if (vBin) provider = 'hf-edge-tts-de:florian_de (male)';\n      // MALE Tier 2: Chatterbox built-in nl_m\n      if (!vBin) {\n        const ref = await builtinChatterboxRef();\n        if (ref) {\n          vBin = await chatterbox(ref);\n          if (vBin) provider = 'hf-chatterbox-multilingual-de:nl_m (male)';\n        }\n      }\n    }\n  } catch (e) {}\n  return { vBin, provider };\n})();\n\nconst [preStitchedUrl, ttsRes] = await Promise.all([stitchTask, ttsTask]);\nconst voiceBinary = ttsRes.vBin;\nconst ttsProviderUsed = ttsRes.provider;\n\nif (!voiceBinary) {\n  throw new Error('German TTS voiceover generation failed on all Hugging Face tiers — aborting render to prevent silent video.');\n}\n\nreturn [{\n  json: {\n    ...target,\n    pre_stitched_url: preStitchedUrl,\n    tts_provider_used: ttsProviderUsed,\n    slideshow_body: JSON.stringify({\n      segments: preStitchedUrl ? [{ type: 'video', url: preStitchedUrl, duration: 38.0 }] : segments,\n      imageDuration: 4.6,\n      transition: 0.25\n    })\n  },\n  binary: { voice: voiceBinary }\n}];"
+        "jsCode": "const rows = $('Load Videos Ready For FFmpeg').all().map(i => i.json || {});\nconst products = $('Load Products For Fallback Packshot').all().map(i => i.json || {});\n\nconst readyRows = rows.filter(r => r.render_status === 'ready_for_ffmpeg');\nconst target = readyRows[readyRows.length - 1];\nif (!target || !target.video_key) return [];\n\nconst matchedProd = products.find(p => p.product_key === target.product_key) || {};\nconst dePackshotUrl = String(matchedProd.packshot_image_url || '');\n\nlet scenes = [];\ntry { scenes = JSON.parse(target.scenes_json || '[]'); } catch (e) { scenes = []; }\nif (!scenes.length) return [];\n\nconst segments = [];\nfor (let i = 0; i < scenes.length; i++) {\n  const s = scenes[i] || {};\n  const mediaUrl = s.generated_clip_url || s.generated_image_url || dePackshotUrl;\n  if (!mediaUrl) return [];\n  const mediaType = s.generated_clip_url ? 'video' : 'image';\n  segments.push({ type: mediaType, url: mediaUrl, duration: 4.6 });\n  if (i === scenes.length - 1) segments.push({ type: mediaType, url: mediaUrl, duration: 4.6 });\n}\n\nconst pKey = String(target.product_key || '').toLowerCase();\nconst aKey = String(target.avatar_key || '').toLowerCase();\nconst isBeautyStyleHealth = /beauty|skin|style|health|medicube|collagen|biodance|sarah|mia/.test(pKey + ' ' + aKey);\n\nconst HFTOK = $env.HF_TOKEN || '';\nconst HF_AUTH = HFTOK ? { Authorization: 'Bearer ' + HFTOK } : {};\nconst ttsDebug = [];\nconst errStr = e => { try { return JSON.stringify(e && e.message ? e.message : e).slice(0, 150); } catch (x) { return 'err'; } };\n\nconst rawScript = String(target.script_de_full || '')\n  .replace(/ae/g, 'ä').replace(/oe/g, 'ö').replace(/ue/g, 'ü')\n  .replace(/Ae/g, 'Ä').replace(/Oe/g, 'Ö').replace(/Ue/g, 'Ü')\n  .replace(/3-in-1/g, 'drei in eins').replace(/4-in-1/g, 'vier in eins')\n  .replace(/7-in-1/g, 'sieben in eins').replace(/8-in-1/g, 'acht in eins')\n  .replace(/\\bEUR\\b/g, 'Euro');\n\nconst stitchTask = (async () => {\n  let url = '';\n  try {\n    const mid = Math.ceil(segments.length / 2);\n    const [part1, part2] = await Promise.all([\n      this.helpers.httpRequest({\n        method: 'POST', url: 'https://ffmpeg.mafrapi.eu/api/ffmpeg/slideshow',\n        headers: { 'Content-Type': 'application/json', 'User-Agent': 'Mozilla/5.0' },\n        body: JSON.stringify({ segments: segments.slice(0, mid), imageDuration: 4.6, transition: 0.25 }),\n        timeout: 80000\n      }),\n      this.helpers.httpRequest({\n        method: 'POST', url: 'https://ffmpeg.mafrapi.eu/api/ffmpeg/slideshow',\n        headers: { 'Content-Type': 'application/json', 'User-Agent': 'Mozilla/5.0' },\n        body: JSON.stringify({ segments: segments.slice(mid), imageDuration: 4.6, transition: 0.25 }),\n        timeout: 80000\n      })\n    ]);\n    const u1 = part1 && part1.reel_url;\n    const u2 = part2 && part2.reel_url;\n    if (u1 && u2) {\n      const joined = await this.helpers.httpRequest({\n        method: 'POST', url: 'https://ffmpeg.mafrapi.eu/api/ffmpeg/slideshow',\n        headers: { 'Content-Type': 'application/json', 'User-Agent': 'Mozilla/5.0' },\n        body: JSON.stringify({\n          segments: [\n            { type: 'video', url: u1, duration: mid * 4.5 },\n            { type: 'video', url: u2, duration: (segments.length - mid) * 4.5 }\n          ],\n          imageDuration: 4.6, transition: 0.2\n        }),\n        timeout: 70000\n      });\n      if (joined && joined.reel_url) url = String(joined.reel_url);\n    }\n  } catch (e) {}\n  return url;\n})();\n\nconst splitChunks = () => {\n  let textChunks = [];\n  if (rawScript.includes('|||')) {\n    textChunks = rawScript.split('|||').map(c => c.trim()).filter(Boolean);\n  } else {\n    const sents = rawScript.split(/(?<=[.!?])\\s+/).filter(Boolean);\n    let cur = '';\n    for (const st of sents) {\n      if ((cur + ' ' + st).trim().length <= 210) cur = (cur + ' ' + st).trim();\n      else { if (cur) textChunks.push(cur); cur = st; }\n    }\n    if (cur) textChunks.push(cur);\n  }\n  return textChunks;\n};\n\nconst edgeTts = async () => {\n  const edgeHosts = ['innoai-edge-tts-text-to-speech.hf.space', 'cpuai-edge-tts-text-to-speech.hf.space'];\n  const edgeVoice = isBeautyStyleHealth\n    ? 'de-DE-SeraphinaMultilingualNeural - de-DE (Female)'\n    : 'de-DE-FlorianMultilingualNeural - de-DE (Male)';\n  const cleanFullText = rawScript.replace(/\\s*\\|\\|\\|\\s*/g, ' ').replace(/\\s+/g, ' ').trim();\n  for (const eh of edgeHosts) {\n    try {\n      const eCall = await this.helpers.httpRequest({\n        method: 'POST', url: 'https://' + eh + '/gradio_api/call/tts_interface',\n        headers: { 'Content-Type': 'application/json', ...HF_AUTH },\n        body: JSON.stringify({ data: [cleanFullText, edgeVoice, 6, 0] }),\n        timeout: 12000\n      });\n      const eObj = typeof eCall === 'string' ? JSON.parse(eCall) : eCall;\n      const eSse = await this.helpers.httpRequest({\n        method: 'GET', url: 'https://' + eh + '/gradio_api/call/tts_interface/' + eObj.event_id,\n        headers: HF_AUTH, timeout: 25000\n      });\n      for (const line of String(eSse).split('\\n')) {\n        if (line.startsWith('data: ') && line.trim() !== 'data: null') {\n          const d = JSON.parse(line.slice(6));\n          if (Array.isArray(d) && d[0] && d[0].url) {\n            const mp3Buf = Buffer.from(await this.helpers.httpRequest({\n              method: 'GET', url: d[0].url, headers: HF_AUTH, encoding: 'arraybuffer', timeout: 20000\n            }));\n            if (mp3Buf.length > 1000) {\n              return await this.helpers.prepareBinaryData(mp3Buf, 'voice_de.mp3', 'audio/mpeg');\n            }\n          }\n        }\n      }\n    } catch (e) { ttsDebug.push(eh.slice(0, 12) + ': ' + errStr(e)); }\n  }\n  return null;\n};\n\nconst chatterbox = async (refFileObj) => {\n  if (!refFileObj) return null;\n  const sp = 'resembleai-chatterbox-multilingual-tts.hf.space';\n  const pcmParts = [];\n  let wavHeaderTemplate = null;\n  for (const chunk of splitChunks()) {\n    let chunkOk = false;\n    try {\n      const callResp = await this.helpers.httpRequest({\n        method: 'POST', url: 'https://' + sp + '/gradio_api/call/generate_tts_audio',\n        headers: { 'Content-Type': 'application/json', ...HF_AUTH },\n        body: JSON.stringify({ data: [chunk, 'de', refFileObj, 0.72, 0.8, 42, 0.05] }),\n        timeout: 8000\n      });\n      const callObj = typeof callResp === 'string' ? JSON.parse(callResp) : callResp;\n      const sseText = await this.helpers.httpRequest({\n        method: 'GET', url: 'https://' + sp + '/gradio_api/call/generate_tts_audio/' + callObj.event_id,\n        headers: HF_AUTH, timeout: 22000\n      });\n      for (const line of String(sseText).split('\\n')) {\n        if (line.startsWith('data: ') && line.trim() !== 'data: null') {\n          const d = JSON.parse(line.slice(6));\n          if (Array.isArray(d) && d[0] && d[0].url) {\n            const wavBuf = Buffer.from(await this.helpers.httpRequest({\n              method: 'GET', url: d[0].url, headers: HF_AUTH, encoding: 'arraybuffer', timeout: 12000\n            }));\n            if (wavBuf.length > 44) {\n              if (!wavHeaderTemplate) wavHeaderTemplate = wavBuf.slice(0, 44);\n              pcmParts.push(wavBuf.slice(44));\n              pcmParts.push(Buffer.alloc(8640));\n              chunkOk = true;\n            }\n          }\n        }\n      }\n    } catch (e) { ttsDebug.push('cb-chunk: ' + errStr(e)); }\n    if (!chunkOk) return null;\n  }\n  if (!wavHeaderTemplate || !pcmParts.length) return null;\n  const totalPcm = Buffer.concat(pcmParts);\n  const finalWav = Buffer.concat([Buffer.from(wavHeaderTemplate), totalPcm]);\n  finalWav.writeUInt32LE(36 + totalPcm.length, 4);\n  finalWav.writeUInt32LE(totalPcm.length, 40);\n  return await this.helpers.prepareBinaryData(finalWav, 'voice_de.wav', 'audio/wav');\n};\n\nconst builtinChatterboxRef = async () => {\n  const sp = 'resembleai-chatterbox-multilingual-tts.hf.space';\n  const refLang = isBeautyStyleHealth ? 'sv' : 'nl';\n  try {\n    const langCall = await this.helpers.httpRequest({\n      method: 'POST', url: 'https://' + sp + '/gradio_api/call/on_language_change',\n      headers: { 'Content-Type': 'application/json', ...HF_AUTH },\n      body: JSON.stringify({ data: [refLang, null, ''] }),\n      timeout: 8000\n    });\n    const langObj = typeof langCall === 'string' ? JSON.parse(langCall) : langCall;\n    const langSse = await this.helpers.httpRequest({\n      method: 'GET', url: 'https://' + sp + '/gradio_api/call/on_language_change/' + langObj.event_id,\n      headers: HF_AUTH, timeout: 10000\n    });\n    for (const line of String(langSse).split('\\n')) {\n      if (line.startsWith('data: ') && line.trim() !== 'data: null') {\n        const parsed = JSON.parse(line.slice(6));\n        if (Array.isArray(parsed) && parsed[0]) return parsed[0];\n      }\n    }\n  } catch (e) { ttsDebug.push('cb-ref: ' + errStr(e)); }\n  return null;\n};\n\nconst luisaUploadedRef = () => {\n  try {\n    const items = $('Upload Luisa Ref To HF').all() || [];\n    const upResp = (items[0] || {}).json;\n    let upPath = '';\n    if (typeof upResp === 'string' && upResp.startsWith('/')) upPath = upResp;\n    else {\n      const upArr = typeof upResp === 'string' ? JSON.parse(upResp) : upResp;\n      upPath = Array.isArray(upArr) ? upArr[0] : (upArr && upArr.files && upArr.files[0]);\n      if (upPath && upPath.json) upPath = upPath.json;\n    }\n    if (upPath && String(upPath).startsWith('/')) {\n      return {\n        path: String(upPath),\n        url: 'https://resembleai-chatterbox-multilingual-tts.hf.space/gradio_api/file=' + String(upPath),\n        orig_name: 'luisa_ref.mp3',\n        mime_type: 'audio/mpeg',\n        size: null,\n        is_stream: false,\n        meta: { _type: 'gradio.FileData' }\n      };\n    }\n    ttsDebug.push('luisa-path: unexpected shape ' + JSON.stringify(upResp).slice(0, 100));\n  } catch (e) { ttsDebug.push('luisa-path: ' + errStr(e)); }\n  return null;\n};\n\nconst ttsTask = (async () => {\n  let vBin = null;\n  let provider = 'none';\n  try {\n    if (isBeautyStyleHealth) {\n      const luisaRef = luisaUploadedRef();\n      if (luisaRef) {\n        vBin = await chatterbox(luisaRef);\n        if (vBin) provider = 'hf-chatterbox-clone-luisa-de:luisa_clone (female)';\n      } else {\n        ttsDebug.push('luisa-ref: upload returned no path');\n      }\n      if (!vBin) { vBin = await edgeTts(); if (vBin) provider = 'hf-edge-tts-de:seraphina_de (female)'; }\n      if (!vBin) {\n        const ref = await builtinChatterboxRef();\n        if (ref) { vBin = await chatterbox(ref); if (vBin) provider = 'hf-chatterbox-multilingual-de:sv_f (female)'; }\n      }\n    } else {\n      vBin = await edgeTts();\n      if (vBin) provider = 'hf-edge-tts-de:florian_de (male)';\n      if (!vBin) {\n        const ref = await builtinChatterboxRef();\n        if (ref) { vBin = await chatterbox(ref); if (vBin) provider = 'hf-chatterbox-multilingual-de:nl_m (male)'; }\n      }\n    }\n  } catch (e) { ttsDebug.push('ttsTask-fatal: ' + errStr(e)); }\n  return { vBin, provider };\n})();\n\nconst [preStitchedUrl, ttsRes] = await Promise.all([stitchTask, ttsTask]);\nconst voiceBinary = ttsRes.vBin;\nconst ttsProviderUsed = ttsRes.provider;\n\nif (!voiceBinary) {\n  throw new Error('German TTS voiceover generation failed on all Hugging Face tiers. Debug: ' + ttsDebug.join(' | '));\n}\n\nreturn [{\n  json: {\n    ...target,\n    pre_stitched_url: preStitchedUrl,\n    tts_provider_used: ttsProviderUsed,\n    tts_debug: ttsDebug.join(' | '),\n    slideshow_body: JSON.stringify({\n      segments: preStitchedUrl ? [{ type: 'video', url: preStitchedUrl, duration: 38.0 }] : segments,\n      imageDuration: 4.6,\n      transition: 0.25\n    })\n  },\n  binary: { voice: voiceBinary }\n}];"
       }
     },
     {
@@ -741,6 +763,88 @@
         "matchType": "allConditions",
         "operation": "update",
         "resource": "row"
+      }
+    },
+    {
+      "id": "56aa332b-869f-4812-aa96-12484cac9f92",
+      "name": "Fetch Luisa Ref MP3",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        736,
+        -128
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://files.catbox.moe/b76w25.mp3",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          },
+          "timeout": 20000
+        }
+      },
+      "onError": "continueRegularOutput",
+      "retryOnFail": true,
+      "maxTries": 3,
+      "waitBetweenTries": 2000,
+      "executeOnce": true
+    },
+    {
+      "id": "73a8e827-e504-4031-a082-94ff758d29a1",
+      "name": "Upload Luisa Ref To HF",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        976,
+        -128
+      ],
+      "parameters": {
+        "bodyParameters": {
+          "parameters": [
+            {
+              "inputDataFieldName": "data",
+              "name": "files",
+              "parameterType": "formBinaryData"
+            }
+          ]
+        },
+        "contentType": "multipart-form-data",
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.HF_TOKEN}}"
+            }
+          ]
+        },
+        "method": "POST",
+        "options": {
+          "timeout": 30000
+        },
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "upload_id",
+              "value": "tts_{{$execution.id}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "sendHeaders": true,
+        "sendQuery": true,
+        "url": "https://resembleai-chatterbox-multilingual-tts.hf.space/gradio_api/upload"
       }
     }
   ],
