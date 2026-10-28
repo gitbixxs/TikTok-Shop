@@ -12,15 +12,21 @@
       "fallback_reference_audio_url": "https://storage.googleapis.com/chatterbox-demo-samples/mtl_prompts/nl_m.flac"
     },
     "beauty_style_health": {
-      "voice_id": "seraphina_de",
+      "voice_id": "luisa_clone",
       "gender": "female",
-      "hf_space": "innoai/Edge-TTS-Text-to-Speech",
-      "hf_space_mirror": "cpuai/Edge-TTS-Text-to-Speech",
-      "edge_tts_voice": "de-DE-SeraphinaMultilingualNeural - de-DE (Female)",
-      "rate_percent": 6,
-      "pitch_hz": 0,
-      "fallback_hf_space": "ResembleAI/Chatterbox-Multilingual-TTS",
-      "fallback_reference_audio_url": "https://storage.googleapis.com/chatterbox-demo-samples/mtl_prompts/sv_f.flac"
+      "hf_space": "ResembleAI/Chatterbox-Multilingual-TTS",
+      "clone_reference_audio_url": "https://files.catbox.moe/b76w25.mp3",
+      "clone_upload_endpoint": "/gradio_api/upload -> FileData.path (server-side /tmp/gradio/...)",
+      "settings": {
+        "language_id": "de",
+        "exaggeration": 0.72,
+        "temperature": 0.8,
+        "cfg_weight": 0.05
+      },
+      "fallback_1_hf_space": "innoai/Edge-TTS-Text-to-Speech",
+      "fallback_1_voice": "de-DE-SeraphinaMultilingualNeural - de-DE (Female)",
+      "fallback_2_hf_space": "ResembleAI/Chatterbox-Multilingual-TTS",
+      "fallback_2_reference_audio": "sv_f (built-in, via on_language_change)"
     }
   },
   "avatars": [
@@ -54,9 +60,8 @@
       "niche": "beauty_skincare",
       "age_range": "24-32",
       "gender": "female",
-      "voice_id": "seraphina_de",
-      "edge_tts_voice": "de-DE-SeraphinaMultilingualNeural - de-DE (Female)",
-      "voice_style": "de-DE young, warm, motivating best-friend recommendation (Seraphina, Edge-TTS)",
+      "voice_id": "luisa_clone",
+      "voice_style": "de-DE young, friendly, motivated female voice clone (Luisa Wietzorek reference, Chatterbox multilingual de)",
       "default_background": "Brightly lit German drugstore or home store aisle (dm / Rossmann style) with clean shelves in soft focus",
       "base_prompt": "realistic smartphone selfie video frame of an approachable 27-year-old German woman with shoulder-length blonde hair, glowing natural skin, wearing a beige knit sweater, standing in a bright German retail store aisle (dm store style), natural retail lighting, shot on iPhone 15 front camera, vertical 9:16 portrait composition, authentic UGC look, no text, no watermarks"
     }

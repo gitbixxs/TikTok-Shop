@@ -21,15 +21,16 @@
 - **Active Mode:** `tiktok_shop_cart`
 - **Check Command:** Run `python scripts/check_account_status.py` at any time to verify live follower count and status.
 
-## Hugging Face Voiceover Rules (Florian & Seraphina)
+## Hugging Face Voiceover Rules (Florian & Luisa)
 
-All German voiceovers are generated via Hugging Face. **Tier 1 (Standard):** `innoai/Edge-TTS-Text-to-Speech` / `cpuai/Edge-TTS-Text-to-Speech` (CPU-based, no GPU quota, ~9s per full script, `rate: 6`, `pitch: 0`):
-- **Tech, Gadgets, Smart Home & Car Accessories → Male Voice "Florian":** `de-DE-FlorianMultilingualNeural - de-DE (Male)`
-- **Beauty, Style, Skincare & Health → Female Voice "Seraphina":** `de-DE-SeraphinaMultilingualNeural - de-DE (Female)`
+All German voiceovers are generated via Hugging Face with `Authorization: Bearer $env.HF_TOKEN` on every call (token unlocks ZeroGPU on HF Spaces).
 
-**Tier 2 (Fallback):** `ResembleAI/Chatterbox-Multilingual-TTS` voice clones (`language_id: "de"`, reference `nl_m.flac` male / `sv_f.flac` female, `exaggeration: 0.72`, `cfg_weight: 0.05`, chunked `< 250` chars per call, strictly capped at ~18s per chunk so Gradio queue stalls never block the render).
+- **Tech, Gadgets, Smart Home & Car Accessories → Male Voice "Florian" (Tier 1):** `innoai/Edge-TTS-Text-to-Speech` / `cpuai/Edge-TTS-Text-to-Speech` mirror (CPU-based, no GPU quota, ~9s per full script), voice `de-DE-FlorianMultilingualNeural - de-DE (Male)`, `rate: 6`, `pitch: 0`.
+- **Beauty, Style, Skincare & Health → Female Voice "Luisa" (Tier 1, real voice clone):** `ResembleAI/Chatterbox-Multilingual-TTS`, `language_id: "de"`, `exaggeration: 0.72`, `temperature: 0.8`, `cfg_weight: 0.05`, chunked `< 250` chars. Reference MP3 (`https://files.catbox.moe/b76w25.mp3`) is fetched by the `Fetch Luisa Ref MP3` HTTP node and uploaded by the `Upload Luisa Ref To HF` HTTP node via `POST /gradio_api/upload` (multipart `formBinaryData`, field `files`) → returns a server-side `/tmp/gradio/...` path, which the code node passes as `FileData {path, url, orig_name, mime_type, meta:{_type:"gradio.FileData"}}` to `generate_tts_audio`. Remote URLs/data-URIs in FileData are NOT accepted — the file must exist server-side.
+- **Fallbacks (female):** Edge-TTS `de-DE-SeraphinaMultilingualNeural` → Chatterbox built-in `sv_f`. **Fallback (male):** Chatterbox built-in `nl_m` via `on_language_change`.
+- All `fetch`/`upload` helper HTTP nodes run `executeOnce` + `retryOnFail` + `onError: continueRegularOutput` so per-item fan-out and transient failures can never crash the runner.
 
-**Hard guard:** If both tiers fail, `TTS_04` throws and aborts the render — a silent music-only video must never reach Zernio/TikTok.
+**Hard guard:** If every tier fails, `TTS_04` throws and aborts the render — a silent music-only video must never reach Zernio/TikTok.
 
 ## TikTok Search SEO Caption & Hashtag Rules (from Original Product Description)
 
