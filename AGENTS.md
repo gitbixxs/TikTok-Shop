@@ -21,15 +21,15 @@
 - **Active Mode:** `tiktok_shop_cart`
 - **Check Command:** Run `python scripts/check_account_status.py` at any time to verify live follower count and status.
 
-## Hugging Face Voiceover Rules (Jonas & Mia)
+## Hugging Face Voiceover Rules (Florian & Seraphina)
 
-All German voiceovers are generated via Hugging Face (`Chatterbox-Multilingual-TTS`, `language_id: "de"`, chunked `< 250` characters per call so sentences never cut off):
-- **Tech, Gadgets, Smart Home & Car Accessories → Male Voice "Jonas" (`maennlich_2_jonas_de.wav`):**
-  - Reference audio: `https://storage.googleapis.com/chatterbox-demo-samples/mtl_prompts/nl_m.flac`
-  - Settings: `language_id: "de"`, `exaggeration: 0.72`, `cfg_weight: 0.05`
-- **Beauty, Style, Skincare & Health → Female Voice "Mia" (`weiblich_2_mia_de.wav`):**
-  - Reference audio: `https://storage.googleapis.com/chatterbox-demo-samples/mtl_prompts/sv_f.flac`
-  - Settings: `language_id: "de"`, `exaggeration: 0.72`, `cfg_weight: 0.05`
+All German voiceovers are generated via Hugging Face. **Tier 1 (Standard):** `innoai/Edge-TTS-Text-to-Speech` / `cpuai/Edge-TTS-Text-to-Speech` (CPU-based, no GPU quota, ~9s per full script, `rate: 6`, `pitch: 0`):
+- **Tech, Gadgets, Smart Home & Car Accessories → Male Voice "Florian":** `de-DE-FlorianMultilingualNeural - de-DE (Male)`
+- **Beauty, Style, Skincare & Health → Female Voice "Seraphina":** `de-DE-SeraphinaMultilingualNeural - de-DE (Female)`
+
+**Tier 2 (Fallback):** `ResembleAI/Chatterbox-Multilingual-TTS` voice clones (`language_id: "de"`, reference `nl_m.flac` male / `sv_f.flac` female, `exaggeration: 0.72`, `cfg_weight: 0.05`, chunked `< 250` chars per call, strictly capped at ~18s per chunk so Gradio queue stalls never block the render).
+
+**Hard guard:** If both tiers fail, `TTS_04` throws and aborts the render — a silent music-only video must never reach Zernio/TikTok.
 
 ## TikTok Search SEO Caption & Hashtag Rules (from Original Product Description)
 
