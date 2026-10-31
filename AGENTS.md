@@ -21,13 +21,14 @@
 - **Active Mode:** `tiktok_shop_cart`
 - **Check Command:** Run `python scripts/check_account_status.py` at any time to verify live follower count and status.
 
-## Hugging Face Voiceover Rules (Florian & Luisa)
+## German Voiceover Rules (Florian & Luisa)
 
-All German voiceovers are generated via Hugging Face with `Authorization: Bearer $env.HF_TOKEN` on every call (token unlocks ZeroGPU on HF Spaces).
+**Edge-TTS voices run on our own Coolify endpoint** — `POST https://ffmpeg.mafrapi.eu/api/tts/edge` (`ffmpeg-service`, AI-Mate repo) executes the `edge-tts` CLI directly against Microsoft neural TTS: **no Hugging Face Space, no queue, no token, ~1s** for a full script. Chatterbox still uses HF with `Authorization: Bearer $env.HF_TOKEN` (unlocks ZeroGPU).
 
-- **Tech, Gadgets, Smart Home & Car Accessories → Male Voice "Florian" (Tier 1):** `innoai/Edge-TTS-Text-to-Speech` / `cpuai/Edge-TTS-Text-to-Speech` mirror (CPU-based, no GPU quota, ~9s per full script), voice `de-DE-FlorianMultilingualNeural - de-DE (Male)`, `rate: 6`, `pitch: 0`.
+- **Tech, Gadgets, Smart Home & Car Accessories → Male Voice "Florian" (Tier 1):** own endpoint, body `{text, voice: "de-DE-FlorianMultilingualNeural"}` → returns `{voice_url}` MP3 under `/temp/`. The public HF mirrors (`innoai`/`cpuai`) were abandoned — saturated queues produced `no-audio` on every attempt; the private `BizPunk/Edge-TTS-Prod` space 404s without token repo access.
 - **Beauty, Style, Skincare & Health → Female Voice "Luisa" (Tier 1, real voice clone):** `ResembleAI/Chatterbox-Multilingual-TTS`, `language_id: "de"`, `exaggeration: 0.72`, `temperature: 0.8`, `cfg_weight: 0.05`, chunked `< 250` chars. Reference MP3 (`https://files.catbox.moe/b76w25.mp3`) is fetched by the `Fetch Luisa Ref MP3` HTTP node and uploaded by the `Upload Luisa Ref To HF` HTTP node via `POST /gradio_api/upload` (multipart `formBinaryData`, field `files`) → returns a server-side `/tmp/gradio/...` path, which the code node passes as `FileData {path, url, orig_name, mime_type, meta:{_type:"gradio.FileData"}}` to `generate_tts_audio`. Remote URLs/data-URIs in FileData are NOT accepted — the file must exist server-side.
-- **Fallbacks (female):** Edge-TTS `de-DE-SeraphinaMultilingualNeural` → Chatterbox built-in `sv_f`. **Fallback (male):** Chatterbox built-in `nl_m` via `on_language_change`.
+- **Fallbacks (female):** Edge-TTS `de-DE-SeraphinaMultilingualNeural` via own endpoint → Chatterbox built-in `sv_f`. **Fallback (male):** Chatterbox built-in `nl_m` via `on_language_change`.
+- `tts_provider_used` reports `ffmpeg-edge-tts-de:florian|seraphina`, `hf-chatterbox-clone-luisa-de`, or `hf-chatterbox-multilingual-de:nl_m|sv_f`; `tts_debug` logs per-tier failures.
 - All `fetch`/`upload` helper HTTP nodes run `executeOnce` + `retryOnFail` + `onError: continueRegularOutput` so per-item fan-out and transient failures can never crash the runner.
 
 **Hard guard:** If every tier fails, `TTS_04` throws and aborts the render — a silent music-only video must never reach Zernio/TikTok.
@@ -63,5 +64,5 @@ Every video description (`caption_de`) is automatically generated via Hugging Fa
   - `TTS_01_Product_And_Outlier_Radar` (`LS7wyhnaGW8nDfZl`) — Daily 07:00 Account Radar + Sunday 06:30 Weekly Apify 5-Trend Candidate Discovery (`status = candidate`) + Telegram 1-Click Inline Approval Callback (`✅ Freigeben`, `🏆 Winner`, `⏸️ Pausieren`)
   - `TTS_02_Script_And_Scene_Architect` (`YytySstcIa4ifAlQ`) — **3x täglich (07:30 / 13:00 / 19:00)** Script & SEO Architect with **"Test & Double-Down" Rule** (3–5 test videos per approved product with rotating hooks, auto-pause losers `< 1,000` views & `0` orders after 4 videos, unlimited scaling for `status = winner` or `>= 5,000` views / `>= 1` order) + Daily Telegram Briefing Card
   - `TTS_03_Visual_And_Clip_Factory` (`aLRjC7ZZ4MhqARJw`) — **3x täglich (08:00 / 13:30 / 19:30)** 1:1 Image-to-Image (`flux-2/edit`) + Image-to-Video (`wan-i2v`) via Hugging Face Inference
-  - `TTS_04_FFmpeg_Render_And_Zernio` (`19n3oP2Q1wlT1Djc`) — **3x täglich (08:30 / 14:00 / 20:00)** HF German Voiceover (`Jonas` / `Mia`), 38s FFmpeg Render, Box-Free ASS Subtitles & Zernio Draft Upload
+  - `TTS_04_FFmpeg_Render_And_Zernio` (`19n3oP2Q1wlT1Djc`) — **3x täglich (08:30 / 14:00 / 20:00)** German Voiceover (`Florian` via own edge-tts endpoint / `Luisa` Chatterbox clone), 38s FFmpeg Render, Box-Free ASS Subtitles & Zernio Draft Upload
 - **Output:** 3 Videos pro Tag (morgens, mittags, abends) — ca. 08:35, 14:05 und 20:05 Uhr im TikTok-Posteingang. Achtung: TikTok erlaubt max. 5 offene API-Drafts pro 24h — täglich veröffentlichen!
