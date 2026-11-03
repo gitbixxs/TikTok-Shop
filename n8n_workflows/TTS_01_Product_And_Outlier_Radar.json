@@ -161,17 +161,6 @@
         ]
       ]
     },
-    "Apify DE TikTok Shop Search (country=DE)": {
-      "main": [
-        [
-          {
-            "node": "Map Product Links & Packshots",
-            "type": "main",
-            "index": 0
-          }
-        ]
-      ]
-    },
     "Route Stale-Pause vs Radar": {
       "main": [
         [
@@ -183,7 +172,40 @@
         ],
         [
           {
-            "node": "Apify DE TikTok Shop Search (country=DE)",
+            "node": "Apify US Bestseller Search (country=US)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apify US Bestseller Search (country=US)": {
+      "main": [
+        [
+          {
+            "node": "Score US Winners & Build DE Match Query",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Score US Winners & Build DE Match Query": {
+      "main": [
+        [
+          {
+            "node": "Apify DE Match Search (country=DE)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apify DE Match Search (country=DE)": {
+      "main": [
+        [
+          {
+            "node": "Map Product Links & Packshots",
             "type": "main",
             "index": 0
           }
@@ -267,7 +289,7 @@
       "parameters": {
         "mode": "runOnceForAllItems",
         "language": "javaScript",
-        "jsCode": "const products = $('Load Approved Products').all().map(i => i.json || {}).filter(p => p.product_key);\nconst htmlItem = $input.first()?.json || {};\nconst html = String(htmlItem.data || htmlItem.body || '');\nlet followers = 1607;\nconst m = html.match(/<script id=\"__UNIVERSAL_DATA_FOR_REHYDRATION__\"[^>]*>(.*?)<\\/script>/);\nif (m) {\n  try {\n    const parsed = JSON.parse(m[1]);\n    const ui = parsed?.__DEFAULT_SCOPE__?.['webapp.user-detail']?.userInfo || {};\n    followers = Number(ui?.stats?.followerCount || followers);\n  } catch (e) {}\n}\n\n// Only run the real Apify discovery when the weekly Sunday trigger (or manual run) fired —\n// the daily 07:00 radar only evaluates the account and must not scrape every day.\nlet weeklyRun = false;\ntry { weeklyRun = !!($('Sunday 06:30 Weekly Apify Trend Discovery').isExecuted || $('Manual Trigger').isExecuted); } catch (e) { weeklyRun = new Date().getDay() === 0; }\nif (!weeklyRun) return [];\n\n// Everything already in the catalog (by product_key and DE product_id) is excluded from discovery\nconst existingKeys = new Set(products.map(p => String(p.product_key)));\nconst existingIds = new Set();\nfor (const p of products) {\n  if (p.de_product_id) existingIds.add(String(p.de_product_id));\n  const idm = String(p.tiktok_shop_url || '').match(/(\\d{10,})/);\n  if (idm) existingIds.add(idm[1]);\n}\n// Stale candidates: auto-pause candidates older than 14 days (catalog hygiene) — flag for downstream\nconst staleCandidates = products.filter(p => String(p.status) === 'candidate' && p.createdAt && (Date.now() - new Date(p.createdAt).getTime()) > 14 * 86400000).map(p => p.product_key);\n\n// Weekly rotating German niche keyword batches — REAL discovery via Apify DE TikTok Shop scrape\nconst keywordGroups = [\n  ['tiktok gadget', 'küchen gadget', 'auto zubehör', 'handy zubehör', 'led licht', 'reinigung', 'organizer', 'smart home', 'praktisch', 'angebot'],\n  ['magsafe', 'powerbank', 'skincare', 'gesichtsmaske', 'beauty', 'haarpflege', 'wellness', 'pflege', 'schreibtisch', 'büro'],\n  ['haustier', 'fitness', 'reise gadget', 'outdoor', 'viral produkt', 'life hack', 'problem löser', 'genial', 'neuheit', 'küchenhelfer']\n];\nconst weekIdx = Math.floor(Date.now() / (7 * 24 * 3600 * 1000));\nconst keywords = keywordGroups[weekIdx % keywordGroups.length];\n\nconst items = staleCandidates.map(k => ({ json: { product_key: k, new_status: 'paused', stale_pause: true } }));\nitems.push({\n  json: {\n    de_keywords_json: JSON.stringify(keywords),\n    existing_ids_json: JSON.stringify([...existingIds]),\n    existing_keys_json: JSON.stringify([...existingKeys]),\n    stale_candidates_json: JSON.stringify(staleCandidates),\n    account_followers: followers,\n    radar_week: 'kw-group-' + (weekIdx % keywordGroups.length),\n    apify_custom_body: JSON.stringify({ country: 'DE', searchKeywords: keywords, maxProducts: 8, sortBySoldCount: 'highest_first', includeReviews: false })\n  }\n});\nreturn items;"
+        "jsCode": "const products = $('Load Approved Products').all().map(i => i.json || {}).filter(p => p.product_key);\nconst htmlItem = $input.first()?.json || {};\nconst html = String(htmlItem.data || htmlItem.body || '');\nlet followers = 1607;\nconst m = html.match(/<script id=\"__UNIVERSAL_DATA_FOR_REHYDRATION__\"[^>]*>(.*?)<\\/script>/);\nif (m) {\n  try {\n    const parsed = JSON.parse(m[1]);\n    const ui = parsed?.__DEFAULT_SCOPE__?.['webapp.user-detail']?.userInfo || {};\n    followers = Number(ui?.stats?.followerCount || followers);\n  } catch (e) {}\n}\n\n// Only run the real Apify discovery when the weekly Sunday trigger (or manual run) fired —\n// the daily 07:00 radar only evaluates the account and must not scrape every day.\nlet weeklyRun = false;\ntry { weeklyRun = !!($('Sunday 06:30 Weekly Apify Trend Discovery').isExecuted || $('Manual Trigger').isExecuted); } catch (e) { weeklyRun = new Date().getDay() === 0; }\nif (!weeklyRun) return [];\n\n// Everything already in the catalog (by product_key and DE product_id) is excluded from discovery\nconst existingKeys = new Set(products.map(p => String(p.product_key)));\nconst existingIds = new Set();\nfor (const p of products) {\n  if (p.de_product_id) existingIds.add(String(p.de_product_id));\n  const idm = String(p.tiktok_shop_url || '').match(/(\\d{10,})/);\n  if (idm) existingIds.add(idm[1]);\n}\n// Stale candidates: auto-pause candidates older than 14 days (catalog hygiene) — flag for downstream\nconst staleCandidates = products.filter(p => String(p.status) === 'candidate' && p.createdAt && (Date.now() - new Date(p.createdAt).getTime()) > 14 * 86400000).map(p => p.product_key);\n\n// Weekly rotating US TikTok Shop category batches — unrestricted bestseller browse (no keywords)\nconst categoryGroups = [\n  ['electronics', 'cell-phones-accessories', 'computers-office', 'smart-electronics'],\n  ['beauty-personal-care', 'health', 'hair-care-styling', 'skin-care'],\n  ['home-supplies', 'kitchen-dining', 'home-improvement', 'furniture'],\n  ['automotive-motorcycle', 'sports-outdoors', 'toys-hobbies', 'pet-supplies']\n];\nconst weekIdx = Math.floor(Date.now() / (7 * 24 * 3600 * 1000));\nconst catUrls = categoryGroups[weekIdx % categoryGroups.length].map(c => 'https://shop.tiktok.com/us/c/' + c);\n\nconst items = staleCandidates.map(k => ({ json: { product_key: k, new_status: 'paused', stale_pause: true } }));\nitems.push({\n  json: {\n    de_keywords_json: JSON.stringify(catUrls),\n    existing_ids_json: JSON.stringify([...existingIds]),\n    existing_keys_json: JSON.stringify([...existingKeys]),\n    stale_candidates_json: JSON.stringify(staleCandidates),\n    account_followers: followers,\n    radar_week: 'cat-group-' + (weekIdx % categoryGroups.length),\n    us_custom_body: JSON.stringify({ country: 'US', urls: catUrls, maxProducts: 20, sortBySoldCount: 'highest_first', includeReviews: false })\n  }\n});\nreturn items;"
       }
     },
     {
@@ -521,19 +543,19 @@
         160
       ],
       "parameters": {
-        "jsCode": "const meta = ($('Evaluate Account & Sunday Apify 5-Candidate Radar').first() || {}).json || {};\nconst existingIds = new Set(JSON.parse(meta.existing_ids_json || '[]'));\nconst existingKeys = new Set(JSON.parse(meta.existing_keys_json || '[]'));\nconst followers = meta.account_followers || 0;\n\nconst scraped = $input.all().map(i => i.json || {}).filter(x => x.product_id);\n\n// Dedupe by product_id (keep best sold_count), drop anything already in the catalog\nconst byId = new Map();\nfor (const s of scraped) {\n  const id = String(s.product_id);\n  if (existingIds.has(id)) continue;\n  const prev = byId.get(id);\n  if (!prev || Number(s.sold_count || 0) > Number(prev.sold_count || 0)) byId.set(id, s);\n}\n\nconst catOf = t => {\n  t = String(t || '').toLowerCase();\n  if (/haut|creme|serum|maske|beauty|kollagen|collagen|skincare|gesicht|haar|pflege/.test(t)) return 'beauty_skincare';\n  if (/auto|car |kfz|halterung|ladegerät|carplay|fahrzeug/.test(t)) return 'car_smart_accessories';\n  if (/lampe|licht|led|küche|reinigung|organizer|schrank|haushalt|aufbewahrung/.test(t)) return 'smart_home_everyday';\n  return 'tech_desk_gadgets';\n};\nconst slug = t => String(t || '').toLowerCase().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss').replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 38);\n\n// Selection score: DE sold_count primary, impulse price band bonus, packshot required-ish\nconst score = s => {\n  let sc = Number(s.sold_count || 0);\n  const price = Number(s.price || 0);\n  if (price >= 8 && price <= 35) sc *= 1.3;\n  else if (price < 5 || price > 60) sc *= 0.4;\n  if (!s.image_url) sc *= 0.4;\n  return sc;\n};\n\nconst ranked = [...byId.values()].sort((a, b) => score(b) - score(a)).slice(0, 5);\n\nconst out = [];\nfor (const s of ranked) {\n  const deId = String(s.product_id);\n  const title = String(s.title || 'TikTok Shop Produkt').slice(0, 250);\n  let key = 'prod_' + (slug(title) || ('item_' + deId));\n  if (existingKeys.has(key)) key = 'prod_' + deId;\n  const link = s.url ? String(s.url) : ('https://shop.tiktok.com/de/pdp/' + deId);\n  const price = Number(s.price || 0);\n  const sold = Number(s.sold_count || 0);\n  const seller = (s.seller && s.seller.name) ? String(s.seller.name) : 'TikTok Shop DE Händler';\n  const cat = catOf(title);\n  const packshot = String(s.image_url || '');\n  const appDeepLink = 'https://www.tiktok.com/view/product/' + deId;\n\n  const tg = [\n    '🇩🇪 <b>Neuer Radar-Kandidat (DE TikTok Shop)</b>',\n    '<b>Original-Titel (DE Shop):</b> ' + title,\n    '<b>DE Produkt-ID:</b> <code>' + deId + '</code> (' + seller + ')',\n    '<b>Preis & Verkäufe (DE):</b> ' + price + ' EUR | ' + sold + ' verkauft | ~20% Provision (Schätzung)',\n    '<b>Kategorie:</b> ' + cat + ' | <b>Keyword:</b> ' + String(s.search_query || ''),\n    '<b>DE Shop-Link (PDP):</b> <a href=\"' + link + '\">shop.tiktok.com/de/pdp/' + deId + '</a>',\n    '<b>In-App Produkt-Link:</b> <a href=\"' + appDeepLink + '\">tiktok.com/view/product/' + deId + '</a>',\n    '<b>Original-Produktbild:</b> <a href=\"' + packshot + '\">Packshot öffnen</a>',\n    '',\n    '<i>Tippe unten auf einen Button, um den Status in tts_products sofort zu steuern:</i>'\n  ].join('\n');\n\n  out.push({\n    json: {\n      product_key: key,\n      de_product_id: deId,\n      product_name: title,\n      category: cat,\n      search_keyword: String(s.search_query || ''),\n      tiktok_shop_url: link,\n      packshot_image_url: packshot,\n      price_eur: price,\n      commission_pct: 20,\n      sales_30d_est: sold,\n      problem_solved: title,\n      key_specs: title,\n      flop_alternatives_json: '[]',\n      status: 'candidate',\n      account_followers: followers,\n      cb_approve: 'tts_approve|' + key,\n      cb_pause: 'tts_pause|' + key,\n      cb_winner: 'tts_winner|' + key,\n      tg_text: tg\n    }\n  });\n}\nreturn out;",
+        "jsCode": "const meta = ($('Score US Winners & Build DE Match Query').first() || {}).json || {};\nconst usWinners = JSON.parse(meta.us_winners_json || '[]');\nconst existingIds = new Set(JSON.parse(meta.existing_ids_json || '[]'));\nconst existingKeys = new Set(JSON.parse(meta.existing_keys_json || '[]'));\nconst followers = meta.account_followers || 0;\n\nconst scraped = $input.all().map(i => i.json || {}).filter(x => x.product_id);\n\n// Dedupe by product_id (keep best sold_count), drop anything already in the catalog\nconst byId = new Map();\nfor (const s of scraped) {\n  const id = String(s.product_id);\n  if (existingIds.has(id)) continue;\n  const prev = byId.get(id);\n  if (!prev || Number(s.sold_count || 0) > Number(prev.sold_count || 0)) byId.set(id, s);\n}\n\nconst catOf = t => {\n  t = String(t || '').toLowerCase();\n  if (/haut|creme|serum|maske|beauty|kollagen|collagen|skincare|gesicht|haar|pflege/.test(t)) return 'beauty_skincare';\n  if (/auto|car |kfz|halterung|ladegerät|carplay|fahrzeug/.test(t)) return 'car_smart_accessories';\n  if (/lampe|licht|led|küche|reinigung|organizer|schrank|haushalt|aufbewahrung/.test(t)) return 'smart_home_everyday';\n  return 'tech_desk_gadgets';\n};\nconst slug = t => String(t || '').toLowerCase().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss').replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 38);\n\n// Selection score: DE sold_count primary, impulse price band bonus, packshot required-ish\nconst score = s => {\n  let sc = Number(s.sold_count || 0);\n  const price = Number(s.price || 0);\n  if (price >= 8 && price <= 35) sc *= 1.3;\n  else if (price < 5 || price > 60) sc *= 0.4;\n  if (!s.image_url) sc *= 0.4;\n  return sc;\n};\n\nconst ranked = [...byId.values()].sort((a, b) => score(b) - score(a)).slice(0, 5);\n\nconst out = [];\nfor (const s of ranked) {\n  const deId = String(s.product_id);\n  const title = String(s.title || 'TikTok Shop Produkt').slice(0, 250);\n  let key = 'prod_' + (slug(title) || ('item_' + deId));\n  if (existingKeys.has(key)) key = 'prod_' + deId;\n  const link = s.url ? String(s.url) : ('https://shop.tiktok.com/de/pdp/' + deId);\n  const price = Number(s.price || 0);\n  const sold = Number(s.sold_count || 0);\n  const seller = (s.seller && s.seller.name) ? String(s.seller.name) : 'TikTok Shop DE Händler';\n  const cat = catOf(title);\n  const packshot = String(s.image_url || '');\n  const appDeepLink = 'https://www.tiktok.com/view/product/' + deId;\n\n  const usw = usWinners.find(w => String(s.search_query || '') === w.kw) || {};\n  const usProof = usw.title ? (Number(usw.sold || 0).toLocaleString('de-DE') + ' US-Verkäufe | ' + String(usw.title).slice(0, 80)) : 'direkter DE-Treffer';\n\n  const tg = [\n    '🇩🇪 <b>Radar-Kandidat: international bewiesen → DE verfügbar</b>',\n    '<b>Original-Titel (DE Shop):</b> ' + title,\n    '<b>DE Produkt-ID:</b> <code>' + deId + '</code> (' + seller + ')',\n    '<b>Preis & Verkäufe (DE):</b> ' + price + ' EUR | ' + sold + ' verkauft | ~20% Provision (Schätzung)',\n    '<b>US-Beweis:</b> ' + usProof,\n    '<b>Kategorie:</b> ' + cat + ' | <b>Keyword:</b> ' + String(s.search_query || ''),\n    '<b>DE Shop-Link (PDP):</b> <a href=\"' + link + '\">shop.tiktok.com/de/pdp/' + deId + '</a>',\n    '<b>In-App Produkt-Link:</b> <a href=\"' + appDeepLink + '\">tiktok.com/view/product/' + deId + '</a>',\n    '<b>Original-Produktbild:</b> <a href=\"' + packshot + '\">Packshot öffnen</a>',\n    '',\n    '<i>Tippe unten auf einen Button, um den Status in tts_products sofort zu steuern:</i>'\n  ].join('\n');\n\n  out.push({\n    json: {\n      product_key: key,\n      de_product_id: deId,\n      product_name: title,\n      category: cat,\n      search_keyword: String(s.search_query || ''),\n      tiktok_shop_url: link,\n      packshot_image_url: packshot,\n      price_eur: price,\n      commission_pct: 20,\n      sales_30d_est: sold,\n      problem_solved: title,\n      key_specs: title,\n      flop_alternatives_json: '[]',\n      status: 'candidate',\n      account_followers: followers,\n      cb_approve: 'tts_approve|' + key,\n      cb_pause: 'tts_pause|' + key,\n      cb_winner: 'tts_winner|' + key,\n      tg_text: tg\n    }\n  });\n}\nreturn out;",
         "language": "javaScript",
         "mode": "runOnceForAllItems"
       }
     },
     {
       "id": "a7777777-7777-4777-8777-7777777777a7",
-      "name": "Apify DE TikTok Shop Search (country=DE)",
+      "name": "Apify US Bestseller Search (country=US)",
       "type": "@apify/n8n-nodes-apify.apify",
       "typeVersion": 1,
       "position": [
         944,
-        240
+        480
       ],
       "parameters": {
         "actorId": {
@@ -542,7 +564,7 @@
           "value": "d4BVOrNaXcXyEJ3c7"
         },
         "actorSource": "store",
-        "customBody": "={{ $json.apify_custom_body }}",
+        "customBody": "={{ $json.us_custom_body }}",
         "operation": "Run actor and get dataset",
         "resource": "Actors",
         "timeout": 240
@@ -625,6 +647,49 @@
         320
       ],
       "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const meta = ($('Evaluate Account & Sunday Apify 5-Candidate Radar').first() || {}).json || {};\nconst followers = meta.account_followers || 0;\n\nconst scraped = $input.all().map(i => i.json || {}).filter(x => x.product_id);\n\n// Dedupe US products, keep best sold_count\nconst byId = new Map();\nfor (const s of scraped) {\n  const id = String(s.product_id);\n  const prev = byId.get(id);\n  if (!prev || Number(s.sold_count || 0) > Number(prev.sold_count || 0)) byId.set(id, s);\n}\n\n// Score: US sold_count primary, impulse price band bonus, image required-ish\nconst score = s => {\n  let sc = Number(s.sold_count || 0);\n  const pr = Number(s.price || 0);\n  if (pr >= 8 && pr <= 40) sc *= 1.3;\n  else if (pr < 4 || pr > 80) sc *= 0.4;\n  if (!s.image_url) sc *= 0.4;\n  return sc;\n};\nconst top = [...byId.values()].sort((a, b) => score(b) - score(a)).slice(0, 8);\n\n// EN -> DE keyword derivation for the DE-shop match\nconst deMap = [\n  [/phone|handy|iphone|smartphone/i, 'handy zubehör'], [/car |auto|vehicle/i, 'auto zubehör'],\n  [/charger|charging/i, 'ladegerät'], [/holder|mount|stand/i, 'halterung'],\n  [/light|lamp|led/i, 'led licht'], [/mask|face mask/i, 'gesichtsmaske'],\n  [/clean|reinig/i, 'reinigung'], [/brush/i, 'bürste'], [/cream/i, 'creme'],\n  [/serum/i, 'serum'], [/kitchen/i, 'küche'], [/organizer|storage/i, 'organizer'],\n  [/pet|dog|cat/i, 'haustier'], [/headphone|earbud/i, 'kopfhörer'], [/speaker/i, 'lautsprecher'],\n  [/watch/i, 'uhr'], [/vacuum/i, 'staubsauger'], [/hair|scalp/i, 'haarpflege'],\n  [/skin|skincare|collagen/i, 'hautpflege'], [/lip/i, 'lippenpflege'], [/nail/i, 'nagel'],\n  [/massage/i, 'massagegerät'], [/projector/i, 'projektor'], [/printer/i, 'drucker'],\n  [/blanket/i, 'decke'], [/heater|winter|warm/i, 'winter gadget'], [/magsafe/i, 'magsafe'],\n  [/powerbank|power bank|battery/i, 'powerbank'], [/carplay/i, 'carplay'],\n  [/bottle|mug|cup/i, 'trinkflasche'], [/wallet/i, 'geldbörse'], [/backpack|bag/i, 'rucksack']\n];\n// Concrete-product DE query: brand token + product-type term (not a generic category keyword)\nconst generic = new Set(['the','a','an','for','with','and','pack','set','new','hot','sale','black','friday','top','picks','best','gift','women','men','kids','pcs','pcs','x','ml','g','w','2024','2025','2026','official','shop','free','shipping']);\nconst brandOf = t => {\n  const ws = String(t || '').replace(/[\\[\\]【】#()|\\/,-:;.]/g, ' ').split(/\\s+/).filter(w => w.length >= 3 && /[a-zA-Z]/.test(w) && !generic.has(w.toLowerCase()));\n  return (ws[0] || '').toLowerCase().replace(/[^a-z0-9]/g, '');\n};\nconst deKwFor = t => {\n  t = String(t || '');\n  const brand = brandOf(t);\n  let typeKw = '';\n  for (const [re, kw] of deMap) { if (re.test(t)) { typeKw = kw; break; } }\n  if (!typeKw) {\n    const words = t.toLowerCase().replace(/[^a-z ]/g, '').split(' ').filter(w => w.length > 4 && !generic.has(w));\n    typeKw = words.slice(0, 2).join(' ') || 'gadget';\n  }\n  // brand + type = searches the CONCRETE product in the DE shop (e.g. \"ugreen halterung\", \"medicube gesichtsmaske\")\n  return brand ? (brand + ' ' + typeKw) : typeKw;\n};\n\nconst winners = top.map(s => ({ kw: deKwFor(s.title), title: String(s.title || '').slice(0, 200), sold: Number(s.sold_count || 0), url: String(s.url || ''), price: Number(s.price || 0), rating: s.rating }));\nconst deKeywords = [...new Set(winners.map(w => w.kw))].slice(0, 10);\n\nreturn [{\n  json: {\n    de_custom_body: JSON.stringify({ country: 'DE', searchKeywords: deKeywords, maxProducts: 5, sortBySoldCount: 'highest_first', includeReviews: false }),\n    us_winners_json: JSON.stringify(winners),\n    existing_ids_json: meta.existing_ids_json || '[]',\n    existing_keys_json: meta.existing_keys_json || '[]',\n    account_followers: followers\n  }\n}];"
+      },
+      "id": "a1b2c3d4-3333-4444-8555-666677778888",
+      "name": "Score US Winners & Build DE Match Query",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1180,
+        480
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "Actors",
+        "operation": "Run actor and get dataset",
+        "actorId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "d4BVOrNaXcXyEJ3c7"
+        },
+        "actorSource": "store",
+        "customBody": "={{ $json.de_custom_body }}",
+        "timeout": 240
+      },
+      "id": "a1b2c3d4-4444-4555-8666-777788889999",
+      "name": "Apify DE Match Search (country=DE)",
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "credentials": {
+        "apifyApi": {
+          "id": "BPHmZMWDDszKQQ5C",
+          "name": "Apify account"
+        }
+      },
+      "position": [
+        1420,
+        480
+      ]
     }
   ],
   "nodeGroups": [
