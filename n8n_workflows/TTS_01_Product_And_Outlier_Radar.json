@@ -202,11 +202,49 @@
             "node": "Apify DE Match Search (country=DE)",
             "type": "main",
             "index": 0
+          },
+          {
+            "node": "Build Outlier Video Queries",
+            "type": "main",
+            "index": 0
           }
         ]
       ]
     },
     "Apify DE Match Search (country=DE)": {
+      "main": [
+        [
+          {
+            "node": "Map Product Links & Packshots",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Outlier Video Queries": {
+      "main": [
+        [
+          {
+            "node": "Apify US Outlier Video Scrape (clockworks)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Apify US Outlier Video Scrape (clockworks)": {
+      "main": [
+        [
+          {
+            "node": "Map Outlier Videos To Winners",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Map Outlier Videos To Winners": {
       "main": [
         [
           {
@@ -548,7 +586,7 @@
         160
       ],
       "parameters": {
-        "jsCode": "const meta = ($('Score US Winners & Build DE Match Query').first() || {}).json || {};\nconst usWinners = JSON.parse(meta.us_winners_json || '[]');\nconst existingIds = new Set(JSON.parse(meta.existing_ids_json || '[]'));\nconst existingKeys = new Set(JSON.parse(meta.existing_keys_json || '[]'));\nconst followers = meta.account_followers || 0;\n\nconst scraped = $input.all().map(i => i.json || {}).filter(x => x.product_id);\n\n// Dedupe by product_id (keep best sold_count), drop anything already in the catalog\nconst byId = new Map();\nfor (const s of scraped) {\n  const id = String(s.product_id);\n  if (existingIds.has(id)) continue;\n  const prev = byId.get(id);\n  if (!prev || Number(s.sold_count || 0) > Number(prev.sold_count || 0)) byId.set(id, s);\n}\n\nconst catOf = t => {\n  t = String(t || '').toLowerCase();\n  if (/haut|creme|serum|maske|beauty|kollagen|collagen|skincare|gesicht|haar|pflege/.test(t)) return 'beauty_skincare';\n  if (/auto|car |kfz|halterung|ladegerät|carplay|fahrzeug/.test(t)) return 'car_smart_accessories';\n  if (/lampe|licht|led|küche|reinigung|organizer|schrank|haushalt|aufbewahrung/.test(t)) return 'smart_home_everyday';\n  return 'tech_desk_gadgets';\n};\nconst slug = t => String(t || '').toLowerCase().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss').replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 38);\n\n// Selection score: DE sold_count primary, impulse price band bonus, packshot required-ish\nconst score = s => {\n  let sc = Number(s.sold_count || 0);\n  const price = Number(s.price || 0);\n  if (price >= 8 && price <= 35) sc *= 1.3;\n  else if (price < 5 || price > 60) sc *= 0.4;\n  if (!s.image_url) sc *= 0.4;\n  return sc;\n};\n\nconst ranked = [...byId.values()].sort((a, b) => score(b) - score(a)).slice(0, 5);\n\nconst out = [];\nfor (const s of ranked) {\n  const deId = String(s.product_id);\n  const title = String(s.title || 'TikTok Shop Produkt').slice(0, 250);\n  let key = 'prod_' + (slug(title) || ('item_' + deId));\n  if (existingKeys.has(key)) key = 'prod_' + deId;\n  const link = s.url ? String(s.url) : ('https://shop.tiktok.com/de/pdp/' + deId);\n  const price = Number(s.price || 0);\n  const sold = Number(s.sold_count || 0);\n  const seller = (s.seller && s.seller.name) ? String(s.seller.name) : 'TikTok Shop DE Händler';\n  const cat = catOf(title);\n  const packshot = String(s.image_url || '');\n  const appDeepLink = 'https://www.tiktok.com/view/product/' + deId;\n\n  const usw = usWinners.find(w => String(s.search_query || '') === w.kw) || {};\n  const usProof = usw.title ? (Number(usw.sold || 0).toLocaleString('de-DE') + ' US-Verkäufe | ' + String(usw.title).slice(0, 80)) : 'direkter DE-Treffer';\n\n  const tg = [\n    '🇩🇪 <b>Radar-Kandidat: international bewiesen → DE verfügbar</b>',\n    '<b>Original-Titel (DE Shop):</b> ' + title,\n    '<b>DE Produkt-ID:</b> <code>' + deId + '</code> (' + seller + ')',\n    '<b>Preis & Verkäufe (DE):</b> ' + price + ' EUR | ' + sold + ' verkauft | ~20% Provision (Schätzung)',\n    '<b>US-Beweis:</b> ' + usProof,\n    '<b>Kategorie:</b> ' + cat + ' | <b>Keyword:</b> ' + String(s.search_query || ''),\n    '<b>DE Shop-Link (PDP):</b> <a href=\"' + link + '\">shop.tiktok.com/de/pdp/' + deId + '</a>',\n    '<b>In-App Produkt-Link:</b> <a href=\"' + appDeepLink + '\">tiktok.com/view/product/' + deId + '</a>',\n    '<b>Original-Produktbild:</b> <a href=\"' + packshot + '\">Packshot öffnen</a>',\n    '',\n    '<i>Tippe unten auf einen Button, um den Status in tts_products sofort zu steuern:</i>'\n  ].join('\n');\n\n  out.push({\n    json: {\n      product_key: key,\n      de_product_id: deId,\n      product_name: title,\n      category: cat,\n      search_keyword: String(s.search_query || ''),\n      tiktok_shop_url: link,\n      packshot_image_url: packshot,\n      price_eur: price,\n      commission_pct: 20,\n      sales_30d_est: sold,\n      problem_solved: ({\n        beauty_skincare: 'müde, trockene Haut und teure Pflege, die nicht hält',\n        car_smart_accessories: 'Kabelsalat, Wackelkontakte und unpraktisches Zubehör im Auto',\n        smart_home_everyday: 'dunkle Ecken, Chaos und nervige Alltagsarbeiten im Haushalt',\n        tech_desk_gadgets: 'Kabelchaos und überteuerte Gadgets im Alltag'\n      })[cat] || 'dieses nervige Alltagsproblem',\n      key_specs: String(s.description || title).slice(0, 300),\n      flop_alternatives_json: '[]',\n      status: 'candidate',\n      account_followers: followers,\n      cb_approve: 'tts_approve|' + key,\n      cb_pause: 'tts_pause|' + key,\n      cb_winner: 'tts_winner|' + key,\n      outlier_key: 'outlier_ref_' + key,\n      ref_video_url: String(usw.vid || ''),\n      us_title: String(usw.title || ''),\n      us_sold: Number(usw.sold || 0),\n      us_url: String(usw.url || ''),\n      tg_text: tg\n    }\n  });\n}\nreturn out;",
+        "jsCode": "const meta = ($('Score US Winners & Build DE Match Query').first() || {}).json || {};\nconst usWinners = JSON.parse(meta.us_winners_json || '[]');\nconst existingIds = new Set(JSON.parse(meta.existing_ids_json || '[]'));\nconst existingKeys = new Set(JSON.parse(meta.existing_keys_json || '[]'));\nconst followers = meta.account_followers || 0;\n\nconst scraped = $input.all().map(i => i.json || {}).filter(x => x.product_id);\n\n// Dedupe by product_id (keep best sold_count), drop anything already in the catalog\nconst byId = new Map();\nfor (const s of scraped) {\n  const id = String(s.product_id);\n  if (existingIds.has(id)) continue;\n  const prev = byId.get(id);\n  if (!prev || Number(s.sold_count || 0) > Number(prev.sold_count || 0)) byId.set(id, s);\n}\n\nconst catOf = t => {\n  t = String(t || '').toLowerCase();\n  if (/haut|creme|serum|maske|beauty|kollagen|collagen|skincare|gesicht|haar|pflege/.test(t)) return 'beauty_skincare';\n  if (/auto|car |kfz|halterung|ladegerät|carplay|fahrzeug/.test(t)) return 'car_smart_accessories';\n  if (/lampe|licht|led|küche|reinigung|organizer|schrank|haushalt|aufbewahrung/.test(t)) return 'smart_home_everyday';\n  return 'tech_desk_gadgets';\n};\nconst slug = t => String(t || '').toLowerCase().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss').replace(/[^a-z0-9]+/g, '_').replace(/^_+|_+$/g, '').slice(0, 38);\n\n// Selection score: DE sold_count primary, impulse price band bonus, packshot required-ish\nconst score = s => {\n  let sc = Number(s.sold_count || 0);\n  const price = Number(s.price || 0);\n  if (price >= 8 && price <= 35) sc *= 1.3;\n  else if (price < 5 || price > 60) sc *= 0.4;\n  if (!s.image_url) sc *= 0.4;\n  return sc;\n};\n\nconst ranked = [...byId.values()].sort((a, b) => score(b) - score(a)).slice(0, 5);\n\nconst out = [];\nfor (const s of ranked) {\n  const deId = String(s.product_id);\n  const title = String(s.title || 'TikTok Shop Produkt').slice(0, 250);\n  let key = 'prod_' + (slug(title) || ('item_' + deId));\n  if (existingKeys.has(key)) key = 'prod_' + deId;\n  const link = s.url ? String(s.url) : ('https://shop.tiktok.com/de/pdp/' + deId);\n  const price = Number(s.price || 0);\n  const sold = Number(s.sold_count || 0);\n  const seller = (s.seller && s.seller.name) ? String(s.seller.name) : 'TikTok Shop DE Händler';\n  const cat = catOf(title);\n  const packshot = String(s.image_url || '');\n  const appDeepLink = 'https://www.tiktok.com/view/product/' + deId;\n\n  const vidMeta = ($('Map Outlier Videos To Winners').first() || {}).json || {};\nconst winnerVids = JSON.parse(vidMeta.winner_videos_json || '[]');\nconst usw = usWinners.find(w => String(s.search_query || '') === w.kw) || {};\n  const usProof = usw.title ? (Number(usw.sold || 0).toLocaleString('de-DE') + ' US-Verkäufe | ' + String(usw.title).slice(0, 80)) : 'direkter DE-Treffer';\n\n  // HARD RULE (per spec): products without a real viral reference video are NOT used\n  const vEntry = winnerVids.find(v => v.kw === usw.kw) || {};\n  const refVid = String(vEntry.video_url || '');\n  if (!refVid) continue;\n\n  const tg = [\n    '🇩🇪 <b>Radar-Kandidat: international bewiesen → DE verfügbar</b>',\n    '<b>Original-Titel (DE Shop):</b> ' + title,\n    '<b>DE Produkt-ID:</b> <code>' + deId + '</code> (' + seller + ')',\n    '<b>Preis & Verkäufe (DE):</b> ' + price + ' EUR | ' + sold + ' verkauft | ~20% Provision (Schätzung)',\n    '<b>US-Beweis:</b> ' + usProof,\n    '<b>Kategorie:</b> ' + cat + ' | <b>Keyword:</b> ' + String(s.search_query || ''),\n    '<b>DE Shop-Link (PDP):</b> <a href=\"' + link + '\">shop.tiktok.com/de/pdp/' + deId + '</a>',\n    '<b>In-App Produkt-Link:</b> <a href=\"' + appDeepLink + '\">tiktok.com/view/product/' + deId + '</a>',\n    '<b>Original-Produktbild:</b> <a href=\"' + packshot + '\">Packshot öffnen</a>',\n    '',\n    '<i>Tippe unten auf einen Button, um den Status in tts_products sofort zu steuern:</i>'\n  ].join('\n');\n\n  out.push({\n    json: {\n      product_key: key,\n      de_product_id: deId,\n      product_name: title,\n      category: cat,\n      search_keyword: String(s.search_query || ''),\n      tiktok_shop_url: link,\n      packshot_image_url: packshot,\n      price_eur: price,\n      commission_pct: 20,\n      sales_30d_est: sold,\n      problem_solved: ({\n        beauty_skincare: 'müde, trockene Haut und teure Pflege, die nicht hält',\n        car_smart_accessories: 'Kabelsalat, Wackelkontakte und unpraktisches Zubehör im Auto',\n        smart_home_everyday: 'dunkle Ecken, Chaos und nervige Alltagsarbeiten im Haushalt',\n        tech_desk_gadgets: 'Kabelchaos und überteuerte Gadgets im Alltag'\n      })[cat] || 'dieses nervige Alltagsproblem',\n      key_specs: String(s.description || title).slice(0, 300),\n      flop_alternatives_json: '[]',\n      status: 'candidate',\n      account_followers: followers,\n      cb_approve: 'tts_approve|' + key,\n      cb_pause: 'tts_pause|' + key,\n      cb_winner: 'tts_winner|' + key,\n      outlier_key: 'outlier_ref_' + key,\n      ref_video_url: refVid,\n      ref_web_url: String(vEntry.web_url || ''),\n      ref_transcript: String(vEntry.transcript || ''),\n      ref_plays: Number(vEntry.plays || 0),\n      ref_author: String(vEntry.author || ''),\n      us_title: String(vEntry.hook || usw.title || ''),\n      us_sold: Number(usw.sold || 0),\n      us_url: String(usw.url || ''),\n      tg_text: tg\n    }\n  });\n}\nreturn out;",
         "language": "javaScript",
         "mode": "runOnceForAllItems"
       }
@@ -579,8 +617,8 @@
       "executeOnce": true,
       "credentials": {
         "apifyApi": {
-          "id": "BPHmZMWDDszKQQ5C",
-          "name": "Apify account"
+          "id": "N70IE3iHJGwljo2E",
+          "name": "Apify account DS24"
         }
       }
     },
@@ -657,7 +695,7 @@
       "parameters": {
         "mode": "runOnceForAllItems",
         "language": "javaScript",
-        "jsCode": "const meta = ($('Evaluate Account & Sunday Apify 5-Candidate Radar').all().map(i => i.json || {}).find(j => j.existing_ids_json)) || {};\nconst followers = meta.account_followers || 0;\n\nconst scraped = $input.all().map(i => i.json || {}).filter(x => x.product_id);\n\n// Dedupe US products, keep best sold_count\nconst byId = new Map();\nfor (const s of scraped) {\n  const id = String(s.product_id);\n  const prev = byId.get(id);\n  if (!prev || Number(s.sold_count || 0) > Number(prev.sold_count || 0)) byId.set(id, s);\n}\n\n// Score: US sold_count primary, impulse price band bonus, image required-ish\nconst score = s => {\n  let sc = Number(s.sold_count || 0);\n  const pr = Number(s.price || 0);\n  if (pr >= 8 && pr <= 40) sc *= 1.3;\n  else if (pr < 4 || pr > 80) sc *= 0.4;\n  if (!s.image_url) sc *= 0.4;\n  return sc;\n};\nconst top = [...byId.values()].sort((a, b) => score(b) - score(a)).slice(0, 8);\n\n// EN -> DE keyword derivation for the DE-shop match\nconst deMap = [\n  [/phone|handy|iphone|smartphone/i, 'handy zubehör'], [/car |auto|vehicle/i, 'auto zubehör'],\n  [/charger|charging/i, 'ladegerät'], [/holder|mount|stand/i, 'halterung'],\n  [/light|lamp|led/i, 'led licht'], [/mask|face mask/i, 'gesichtsmaske'],\n  [/clean|reinig/i, 'reinigung'], [/brush/i, 'bürste'], [/cream/i, 'creme'],\n  [/serum/i, 'serum'], [/kitchen/i, 'küche'], [/organizer|storage|rack|shelf/i, 'organizer'],\n  [/pet|dog|cat/i, 'haustier'], [/headphone|earbud/i, 'kopfhörer'], [/speaker/i, 'lautsprecher'],\n  [/watch/i, 'uhr'], [/vacuum/i, 'staubsauger'], [/hair|scalp/i, 'haarpflege'],\n  [/skin|skincare|collagen/i, 'hautpflege'], [/lip/i, 'lippenpflege'], [/nail/i, 'nagel'],\n  [/massage/i, 'massagegerät'], [/projector/i, 'projektor'], [/printer/i, 'drucker'],\n  [/blanket/i, 'decke'], [/heater|winter|warm/i, 'winter gadget'], [/magsafe/i, 'magsafe'],\n  [/powerbank|power bank|battery/i, 'powerbank'], [/carplay/i, 'carplay'],\n  [/bottle|mug|cup/i, 'trinkflasche'], [/wallet/i, 'geldbörse'], [/backpack|bag/i, 'rucksack'],\n  [/dish|sink/i, 'abtropfgestell'], [/flashlight|work light|torch/i, 'arbeitsleuchte'],\n  [/ring|scroller|page turner|remote/i, 'fernbedienung'], [/utensil|shredder|slicer|dicer|cutter/i, 'küchenhelfer'],\n  [/strap|vest|chest/i, 'halterung'], [/food storage|container|meal prep/i, 'aufbewahrungsbox']\n];\n// Concrete-product DE query: brand token + product-type term (not a generic category keyword)\nconst generic = new Set(['the','a','an','for','with','and','pack','set','new','hot','sale','black','friday','top','picks','best','gift','women','men','kids','pcs','pcs','x','ml','g','w','2024','2025','2026','official','shop','free','shipping','true','wireless','mini','pro','plus']);\nconst brandOf = t => {\n  const ws = String(t || '').replace(/[\\[\\]【】#()|\\/,-:;.]/g, ' ').split(/\\s+/).filter(w => w.length >= 3 && /[a-zA-Z]/.test(w) && !generic.has(w.toLowerCase()));\n  return (ws[0] || '').toLowerCase().replace(/[^a-z0-9]/g, '');\n};\nconst deKwFor = t => {\n  t = String(t || '');\n  const brand = brandOf(t);\n  let typeKw = '';\n  for (const [re, kw] of deMap) { if (re.test(t)) { typeKw = kw; break; } }\n  if (!typeKw) {\n    const words = t.toLowerCase().replace(/[^a-z ]/g, '').split(' ').filter(w => w.length > 4 && !generic.has(w));\n    typeKw = words.slice(0, 2).join(' ') || 'gadget';\n  }\n  // brand + type = searches the CONCRETE product in the DE shop (e.g. \"ugreen halterung\", \"medicube gesichtsmaske\")\n  return brand ? (brand + ' ' + typeKw) : typeKw;\n};\n\n// Extract the viral product VIDEO URL from the raw Apify item (any depth) - needed for the 1:1 clone pipeline\nconst findVid = (o, d) => {\n  if (!o || d > 4) return '';\n  if (typeof o === 'string') return /\\.(mp4|mov|webm|m3u8)(\\?|$)/i.test(o) ? o : '';\n  if (Array.isArray(o)) { for (const v of o) { const r = findVid(v, d + 1); if (r) return r; } return ''; }\n  if (typeof o === 'object') { for (const k of Object.keys(o)) { const r = findVid(o[k], d + 1); if (r) return r; } }\n  return '';\n};\n\nconst winners = top.map(s => ({ kw: deKwFor(s.title), title: String(s.title || '').slice(0, 200), sold: Number(s.sold_count || 0), url: String(s.url || ''), price: Number(s.price || 0), rating: s.rating, vid: findVid(s) }));\nconst deKeywords = [...new Set(winners.map(w => w.kw))].slice(0, 10);\n\nreturn [{\n  json: {\n    de_custom_body: JSON.stringify({ country: 'DE', searchKeywords: deKeywords, maxProducts: 5, sortBySoldCount: 'highest_first', includeReviews: false }),\n    us_winners_json: JSON.stringify(winners),\n    existing_ids_json: meta.existing_ids_json || '[]',\n    existing_keys_json: meta.existing_keys_json || '[]',\n    account_followers: followers\n  }\n}];"
+        "jsCode": "const meta = ($('Evaluate Account & Sunday Apify 5-Candidate Radar').all().map(i => i.json || {}).find(j => j.existing_ids_json)) || {};\nconst followers = meta.account_followers || 0;\n\nconst scraped = $input.all().map(i => i.json || {}).filter(x => x.product_id);\n\n// Dedupe US products, keep best sold_count\nconst byId = new Map();\nfor (const s of scraped) {\n  const id = String(s.product_id);\n  const prev = byId.get(id);\n  if (!prev || Number(s.sold_count || 0) > Number(prev.sold_count || 0)) byId.set(id, s);\n}\n\n// Score: US sold_count primary, impulse price band bonus, image required-ish\nconst score = s => {\n  let sc = Number(s.sold_count || 0);\n  const pr = Number(s.price || 0);\n  if (pr >= 8 && pr <= 40) sc *= 1.3;\n  else if (pr < 4 || pr > 80) sc *= 0.4;\n  if (!s.image_url) sc *= 0.4;\n  return sc;\n};\nconst top = [...byId.values()].sort((a, b) => score(b) - score(a)).slice(0, 8);\n\n// EN -> DE keyword derivation for the DE-shop match\nconst deMap = [\n  [/phone|handy|iphone|smartphone/i, 'handy zubehör'], [/car |auto|vehicle/i, 'auto zubehör'],\n  [/charger|charging/i, 'ladegerät'], [/holder|mount|stand/i, 'halterung'],\n  [/light|lamp|led/i, 'led licht'], [/mask|face mask/i, 'gesichtsmaske'],\n  [/clean|reinig/i, 'reinigung'], [/brush/i, 'bürste'], [/cream/i, 'creme'],\n  [/serum/i, 'serum'], [/kitchen/i, 'küche'], [/organizer|storage|rack|shelf/i, 'organizer'],\n  [/pet|dog|cat/i, 'haustier'], [/headphone|earbud/i, 'kopfhörer'], [/speaker/i, 'lautsprecher'],\n  [/watch/i, 'uhr'], [/vacuum/i, 'staubsauger'], [/hair|scalp/i, 'haarpflege'],\n  [/skin|skincare|collagen/i, 'hautpflege'], [/lip/i, 'lippenpflege'], [/nail/i, 'nagel'],\n  [/massage/i, 'massagegerät'], [/projector/i, 'projektor'], [/printer/i, 'drucker'],\n  [/blanket/i, 'decke'], [/heater|winter|warm/i, 'winter gadget'], [/magsafe/i, 'magsafe'],\n  [/powerbank|power bank|battery/i, 'powerbank'], [/carplay/i, 'carplay'],\n  [/bottle|mug|cup/i, 'trinkflasche'], [/wallet/i, 'geldbörse'], [/backpack|bag/i, 'rucksack'],\n  [/dish|sink/i, 'abtropfgestell'], [/flashlight|work light|torch/i, 'arbeitsleuchte'],\n  [/ring|scroller|page turner|remote/i, 'fernbedienung'], [/utensil|shredder|slicer|dicer|cutter/i, 'küchenhelfer'],\n  [/strap|vest|chest/i, 'halterung'], [/food storage|container|meal prep/i, 'aufbewahrungsbox']\n];\n// Concrete-product DE query: brand token + product-type term (not a generic category keyword)\nconst generic = new Set(['the','a','an','for','with','and','pack','set','new','hot','sale','black','friday','top','picks','best','gift','women','men','kids','pcs','pcs','x','ml','g','w','2024','2025','2026','official','shop','free','shipping','true','wireless','mini','pro','plus']);\nconst brandOf = t => {\n  const ws = String(t || '').replace(/[\\[\\]【】#()|\\/,-:;.]/g, ' ').split(/\\s+/).filter(w => w.length >= 3 && /[a-zA-Z]/.test(w) && !generic.has(w.toLowerCase()));\n  return (ws[0] || '').toLowerCase().replace(/[^a-z0-9]/g, '');\n};\nconst deKwFor = t => {\n  t = String(t || '');\n  const brand = brandOf(t);\n  let typeKw = '';\n  for (const [re, kw] of deMap) { if (re.test(t)) { typeKw = kw; break; } }\n  if (!typeKw) {\n    const words = t.toLowerCase().replace(/[^a-z ]/g, '').split(' ').filter(w => w.length > 4 && !generic.has(w));\n    typeKw = words.slice(0, 2).join(' ') || 'gadget';\n  }\n  // brand + type = searches the CONCRETE product in the DE shop (e.g. \"ugreen halterung\", \"medicube gesichtsmaske\")\n  return brand ? (brand + ' ' + typeKw) : typeKw;\n};\n\n// Extract the viral product VIDEO URL from the raw Apify item (any depth) - needed for the 1:1 clone pipeline\nconst findVid = (o, d) => {\n  if (!o || d > 4) return '';\n  if (typeof o === 'string') return /\\.(mp4|mov|webm|m3u8)(\\?|$)/i.test(o) ? o : '';\n  if (Array.isArray(o)) { for (const v of o) { const r = findVid(v, d + 1); if (r) return r; } return ''; }\n  if (typeof o === 'object') { for (const k of Object.keys(o)) { const r = findVid(o[k], d + 1); if (r) return r; } }\n  return '';\n};\n\n// EN query for the outlier video scrape (brand + type words from the US title)\nconst enKwOf = t => {\n  const ws = String(t || '').toLowerCase().replace(/[^a-z0-9 ]/g, '').split(/\\s+/).filter(w => w.length > 3 && !generic.has(w));\n  return [...new Set(ws)].slice(0, 4).join(' ') || String(t || '').slice(0, 40);\n};\n\nconst winners = top.map(s => ({ enKw: enKwOf(s.title), kw: deKwFor(s.title), title: String(s.title || '').slice(0, 200), sold: Number(s.sold_count || 0), url: String(s.url || ''), price: Number(s.price || 0), rating: s.rating, vid: findVid(s) }));\nconst deKeywords = [...new Set(winners.map(w => w.kw))].slice(0, 10);\n\nreturn [{\n  json: {\n    de_custom_body: JSON.stringify({ country: 'DE', searchKeywords: deKeywords, maxProducts: 5, sortBySoldCount: 'highest_first', includeReviews: false }),\n    us_winners_json: JSON.stringify(winners),\n    existing_ids_json: meta.existing_ids_json || '[]',\n    existing_keys_json: meta.existing_keys_json || '[]',\n    account_followers: followers\n  }\n}];"
       },
       "id": "a1b2c3d4-3333-4444-8555-666677778888",
       "name": "Score US Winners & Build DE Match Query",
@@ -687,8 +725,8 @@
       "typeVersion": 1,
       "credentials": {
         "apifyApi": {
-          "id": "BPHmZMWDDszKQQ5C",
-          "name": "Apify account"
+          "id": "N70IE3iHJGwljo2E",
+          "name": "Apify account DS24"
         }
       },
       "position": [
@@ -709,14 +747,14 @@
           "mappingMode": "defineBelow",
           "value": {
             "outlier_key": "={{ $json.outlier_key }}",
-            "source_url": "={{ $json.ref_video_url || $json.us_url }}",
-            "creator_handle": "radar_us_bestseller",
+            "source_url": "={{ $json.ref_video_url }}",
+            "creator_handle": "={{ $json.ref_author || \"radar_us_bestseller\" }}",
             "language": "en",
-            "views": "={{ $json.us_sold }}",
+            "views": "={{ $json.ref_plays || $json.us_sold }}",
             "likes": 0,
             "duration_sec": 0,
             "hook_text": "={{ $json.us_title }}",
-            "transcript_raw": "",
+            "transcript_raw": "={{ $json.ref_transcript }}",
             "scene_breakdown_json": "[]",
             "matched_product_key": "={{ $json.product_key }}",
             "status": "matched"
@@ -736,6 +774,65 @@
         480
       ],
       "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const meta = ($('Score US Winners & Build DE Match Query').first() || {}).json || {};\nconst winners = JSON.parse(meta.us_winners_json || '[]');\n\n// One item per US winner -> the Apify node runs ONE most-liked video search per product\nreturn winners.map((w, idx) => ({\n  json: {\n    wIdx: idx,\n    kw: w.kw,\n    wTitle: w.title,\n    video_custom_body: JSON.stringify({\n      searchQueries: [w.enKw || String(w.title || '').slice(0, 60)],\n      searchSection: '/video',\n      videoSearchSorting: 'MOST_LIKED',\n      resultsPerPage: 2,\n      shouldDownloadVideos: true,\n      videoKvStoreIdOrName: 'bizpunk72-ref-videos',\n      downloadSubtitlesOptions: 'DOWNLOAD_SUBTITLES',\n      proxyCountryCode: 'US'\n    })\n  }\n}));"
+      },
+      "id": "2564c023-a22f-492e-b651-b81bb0d49c00",
+      "name": "Build Outlier Video Queries",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2360,
+        840
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "Actors",
+        "operation": "Run actor and get dataset",
+        "actorId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "GdWCkxBtKWOsKjdch"
+        },
+        "actorSource": "store",
+        "customBody": "={{ $json.video_custom_body }}",
+        "timeout": 240
+      },
+      "id": "8ffc2235-d856-4670-9a2f-9420d32c4375",
+      "name": "Apify US Outlier Video Scrape (clockworks)",
+      "type": "@apify/n8n-nodes-apify.apify",
+      "typeVersion": 1,
+      "position": [
+        2580,
+        840
+      ],
+      "credentials": {
+        "apifyApi": {
+          "id": "N70IE3iHJGwljo2E",
+          "name": "Apify account DS24"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const meta = ($('Score US Winners & Build DE Match Query').first() || {}).json || {};\nconst winners = JSON.parse(meta.us_winners_json || '[]');\nconst items = $input.all();\n\nconst findStr = (o, d, test) => {\n  if (!o || d > 4) return '';\n  if (typeof o === 'string') return test(o) ? o : '';\n  if (Array.isArray(o)) { for (const v of o) { const r = findStr(v, d + 1, test); if (r) return r; } return ''; }\n  if (typeof o === 'object') { for (const k of Object.keys(o)) { const r = findStr(o[k], d + 1, test); if (r) return r; } }\n  return '';\n};\nconst isVidUrl = s => /key-value-stores\\/records\\/video|\\.(mp4|mov|webm)(\\?|$)/i.test(s) && /^https?:\\/\\//.test(s);\n\nconst videos = items.map(i => {\n  const j = i.json || {};\n  let pairIdx = -1;\n  const pi = i.pairedItem;\n  if (typeof pi === 'number') pairIdx = pi;\n  else if (pi && typeof pi.item === 'number') pairIdx = pi.item;\n  else if (Array.isArray(pi) && pi[0] && typeof pi[0].item === 'number') pairIdx = pi[0].item;\n  return {\n    pairIdx,\n    text: String(j.text || j.desc || j.description || ''),\n    vidUrl: findStr(j, 0, isVidUrl),\n    web: String(j.webVideoUrl || ''),\n    plays: Number(j.playCount || 0),\n    diggs: Number(j.diggCount || 0),\n    author: String((j.authorMeta && j.authorMeta.name) || j.author || ''),\n    transcript: String((j.videoMeta && (j.videoMeta.transcript || j.videoMeta.subtitles)) || j.subtitles || '').slice(0, 800)\n  };\n});\n\nconst result = winners.map((w, idx) => {\n  let pool = videos.filter(v => v.pairIdx === idx && v.vidUrl);\n  if (!pool.length) {\n    const brand = String(w.enKw || '').split(' ')[0] || '';\n    pool = videos.filter(v => v.vidUrl && brand.length > 2 && v.text.toLowerCase().includes(brand));\n  }\n  pool.sort((a, b) => (b.plays + b.diggs) - (a.plays + a.diggs));\n  const v = pool[0] || {};\n  return { kw: w.kw, video_url: v.vidUrl || '', web_url: v.web || '', hook: v.text.slice(0, 300) || String(w.title || ''), transcript: v.transcript || '', plays: v.plays || 0, author: v.author || '' };\n});\n\nreturn [{ json: { winner_videos_json: JSON.stringify(result) } }];"
+      },
+      "id": "1d4cd2f8-a73b-4d24-97ca-b890365a83b5",
+      "name": "Map Outlier Videos To Winners",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2800,
+        840
+      ]
     }
   ],
   "nodeGroups": [
