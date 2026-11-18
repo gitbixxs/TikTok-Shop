@@ -541,7 +541,7 @@
       "parameters": {
         "mode": "runOnceForAllItems",
         "language": "javaScript",
-        "jsCode": "const spec = $('Build Reel Spec').first().json;\nconst clips = {};\nfor (const it of $('Attach Clip URL').all()) clips[it.json.scene_id] = it.json.video_url;\nconst auds = {};\nfor (const it of $('Attach Audio URL').all()) auds[it.json.scene_id] = it.json.audio_url;\nconst scenes = [];\nfor (const s of spec.scenes) {\n  if (s.kind === 'presenter') {\n    const v = s.video_url || clips[s.id];\n    if (!v) throw new Error('Missing presenter clip for scene ' + s.id);\n    scenes.push({ type: 'video', url: v, text: s.text, cropTo916: true });\n  } else {\n    const a = s.audio_url || auds[s.id];\n    if (!a) throw new Error('Missing narration audio for scene ' + s.id);\n    scenes.push({ type: 'images', urls: s.images, audioUrl: a, text: s.text });\n  }\n}\nreturn [{ json: { scenes, reel_id: spec.reel_id, caption_de: spec.caption_de, product_id: spec.product_id, pack_quantity: spec.pack_quantity } }];"
+        "jsCode": "const spec = $('Build Reel Spec').first().json;\nconst imgMap = {};\nfor (const it of $('Attach Asset Key').all()) imgMap[it.json.key] = it.json.file_url;\nconst clips = {};\nfor (const it of $('Attach Clip URL').all()) clips[it.json.scene_id] = it.json.video_url;\nconst auds = {};\nfor (const it of $('Attach Audio URL').all()) auds[it.json.scene_id] = it.json.audio_url;\nconst scenes = [];\nfor (const s of spec.scenes) {\n  if (s.kind === 'presenter') {\n    const v = s.video_url || clips[s.id];\n    if (!v) throw new Error('Missing presenter clip for scene ' + s.id);\n    scenes.push({ type: 'video', url: v, text: s.text, cropTo916: true });\n  } else {\n    const a = s.audio_url || auds[s.id];\n    if (!a) throw new Error('Missing narration audio for scene ' + s.id);\n    const urls = (s.images || []).map(u => imgMap[u] || u);\n    scenes.push({ type: 'images', urls, audioUrl: a, text: s.text });\n  }\n}\nreturn [{ json: { scenes, reel_id: spec.reel_id, caption_de: spec.caption_de, product_id: spec.product_id, pack_quantity: spec.pack_quantity } }];"
       },
       "typeVersion": 2
     },
@@ -740,6 +740,87 @@
           "name": "Telegram account"
         }
       }
+    },
+    {
+      "id": "Collect Image Assets",
+      "name": "Collect Image Assets",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -1800,
+        560
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const spec = $('Build Reel Spec').first().json;\nconst seen = new Set();\nconst items = [];\nfor (const s of spec.scenes) {\n  for (const u of (s.images || [])) {\n    if (!seen.has(u)) { seen.add(u); items.push({ json: { key: u } }); }\n  }\n}\nreturn items;"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "Fetch Asset Binary",
+      "name": "Fetch Asset Binary",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -1550,
+        560
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.key }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "asset"
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "typeVersion": 4.5
+    },
+    {
+      "id": "Store Asset",
+      "name": "Store Asset",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -1300,
+        560
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://ffmpeg.mafrapi.eu/api/ffmpeg/store",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "file",
+              "parameterType": "formBinaryData",
+              "inputDataFieldName": "asset"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "typeVersion": 4.5
+    },
+    {
+      "id": "Attach Asset Key",
+      "name": "Attach Asset Key",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -1050,
+        560
+      ],
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "language": "javaScript",
+        "jsCode": "const key = $('Collect Image Assets').item.json.key;\nconst file_url = $('Store Asset').item.json.file_url;\nreturn [{ json: { key, file_url } }];"
+      },
+      "typeVersion": 2
     }
   ],
   "connections": {
@@ -769,7 +850,7 @@
       "main": [
         [
           {
-            "node": "Fetch Luisa Ref MP3",
+            "node": "Collect Image Assets",
             "type": "main",
             "index": 0
           }
@@ -1074,6 +1155,50 @@
         [
           {
             "node": "Send Telegram Notice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Collect Image Assets": {
+      "main": [
+        [
+          {
+            "node": "Fetch Asset Binary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Asset Binary": {
+      "main": [
+        [
+          {
+            "node": "Store Asset",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Asset": {
+      "main": [
+        [
+          {
+            "node": "Attach Asset Key",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attach Asset Key": {
+      "main": [
+        [
+          {
+            "node": "Fetch Luisa Ref MP3",
             "type": "main",
             "index": 0
           }
