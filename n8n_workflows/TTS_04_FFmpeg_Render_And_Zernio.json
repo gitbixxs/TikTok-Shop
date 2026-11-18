@@ -314,7 +314,7 @@
         "specifyBody": "json",
         "jsonBody": "={{ $json.slideshow_body }}"
       },
-      "onError": "continueRegularOutput"
+      "onError": "stopWorkflow"
     },
     {
       "id": "ca6d9c42-8cc7-4df3-b8df-e50bcf5a8f39",
@@ -377,7 +377,7 @@
           }
         }
       },
-      "onError": "continueRegularOutput"
+      "onError": "stopWorkflow"
     },
     {
       "id": "aa001faa-aa86-41e2-9856-eef86c47b7fb",
@@ -429,7 +429,7 @@
           }
         }
       },
-      "onError": "continueRegularOutput"
+      "onError": "stopWorkflow"
     },
     {
       "id": "691172f9-ab18-4df7-a95e-88dda680cc9e",
@@ -493,7 +493,7 @@
           }
         }
       },
-      "onError": "continueRegularOutput"
+      "onError": "stopWorkflow"
     },
     {
       "id": "5683035e-fcc2-4485-8412-fa8c7e5cccbd",
@@ -547,7 +547,7 @@
         "contentType": "binaryData",
         "inputDataFieldName": "video"
       },
-      "onError": "continueRegularOutput"
+      "onError": "stopWorkflow"
     },
     {
       "id": "e2501c90-9278-4b86-a750-51f35815ab9d",
@@ -592,7 +592,7 @@
         "specifyBody": "json",
         "jsonBody": "={{ $json.zernio_body }}"
       },
-      "onError": "continueRegularOutput",
+      "onError": "stopWorkflow",
       "credentials": {
         "lateApi": {
           "id": "mBmoLHXu5hb3qPZv",
@@ -612,7 +612,7 @@
       "parameters": {
         "mode": "runOnceForAllItems",
         "language": "javaScript",
-        "jsCode": "const prev = $('Prepare Zernio TikTok Draft Payload').first()?.json || {};\nconst zResp = $input.first()?.json || {};\nconst postObj = zResp.post || zResp.data || zResp || {};\nconst zernioId = String(postObj._id || zResp.post_id || zResp.id || 'draft_uploaded');\nconst status = zResp.error ? 'failed: ' + String(zResp.error) : 'draft_in_inbox';\n\nreturn [{\n  json: {\n    ...prev,\n    zernio_post_id: zernioId,\n    publish_status: status\n  }\n}];"
+        "jsCode": "const prev = $('Prepare Zernio TikTok Draft Payload').first()?.json || {};\nconst zResp = $input.first()?.json || {};\nconst postObj = zResp.post || zResp.data?.post || zResp.data || {};\nif (zResp.error || !postObj._id) throw new Error('Zernio draft creation failed or returned no post ID');\nconst platform = (Array.isArray(postObj.platforms) ? postObj.platforms : []).find(p => p.platform === 'tiktok' && p.status === 'published' && String(p.platformPostId || '').startsWith('v_inbox_url') && p.platformSpecificData?.isDraft === true && p.platformSpecificData?.tiktokSettings?.draft === true && p.platformSpecificData?.tiktokSettings?.is_ai_generated === true);\nif (!platform) throw new Error('Zernio response does not confirm an AI-disclosed TikTok Creator Inbox draft');\nconst zernioId = String(postObj._id);\nconst status = 'draft_in_inbox';\n\nreturn [{\n  json: {\n    ...prev,\n    zernio_post_id: zernioId,\n    publish_status: status\n  }\n}];"
       }
     },
     {

@@ -18,6 +18,21 @@ async function main() {
     }
   }
 
+  const render = workflow('TTS_04_FFmpeg_Render_And_Zernio');
+  const extractDraft = new AsyncFunction('$input', '$', render.nodes.find(n => n.name === 'Extract Zernio Post ID').parameters.jsCode);
+  const extract = response => extractDraft({ first: () => ({ json: response }) }, () => ({ first: () => ({ json: { video_key: 'pilot' } }) }));
+  for (const invalid of [{}, { error: 'upload failed' }, { post: { _id: 'post', platforms: [] } }, { post: { _id: 'post', platforms: [{ platform: 'tiktok', status: 'published', platformPostId: 'public-post' }] } }]) {
+    await assert.rejects(() => extract(invalid));
+  }
+  const acceptedDraft = await extract({ post: { _id: 'post', platforms: [{ platform: 'tiktok', status: 'published', platformPostId: 'v_inbox_url~v2.test', platformSpecificData: { isDraft: true, tiktokSettings: { draft: true, is_ai_generated: true } } }] } });
+  assert.equal(acceptedDraft[0].json.publish_status, 'draft_in_inbox');
+  assert.equal(acceptedDraft[0].json.zernio_post_id, 'post');
+  for (const name of ['FFmpeg Stitch 38s Video', 'FFmpeg Mux HF Voiceover Into Video', 'FFmpeg Mix Voiceover (100%) + BGM (10%)', 'FFmpeg Burn Clean ASS Subtitles', 'Upload MP4 To Zernio CDN', 'Zernio TikTok Draft API (@bizpunk72)']) {
+    const node = render.nodes.find(n => n.name === name);
+    assert.notEqual(node.onError, 'continueRegularOutput', name);
+    assert.notEqual(node.continueOnFail, true, name);
+  }
+
   const evaluate = new Function('$input', '$', code('Evaluate Account & Sunday Apify 5-Candidate Radar'));
   const discovery = evaluate({ first: () => ({ json: {} }) }, name => ({ all: () => [], isExecuted: name.startsWith('Sunday') }));
   const batches = discovery.filter(i => !i.json.stale_pause);

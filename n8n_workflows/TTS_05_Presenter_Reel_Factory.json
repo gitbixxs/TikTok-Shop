@@ -1,0 +1,1090 @@
+{
+  "name": "TTS_05_Presenter_Reel_Factory",
+  "nodes": [
+    {
+      "id": "Manual Trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "position": [
+        -2400,
+        300
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "Build Reel Spec",
+      "name": "Build Reel Spec",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -2200,
+        300
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "// ==== OPERATOR INPUTS (edit before each run) ====\n// Paste a FRESH ZeroGPU quota snapshot from https://huggingface.co/api/spaces/zero-gpu/quota\nconst QUOTA = {\"base\":2400,\"current\":0,\"overquotaUsed\":0,\"observed_at\":\"1970-01-01T00:00:00.000Z\"};\n// =================================================\n\nconst spec = {\n  reel_id: 'presenter_reel_1729964288705272356_v1',\n  product_id: '1729964288705272356',\n  pack_quantity: '1 Packung',\n  presenter_image_url: 'https://files.catbox.moe/zaisoi.png',\n  quota: QUOTA,\n  caption_de: 'Gesichtsreinigung mit integriertem Bürstenkopf — dieses Angebot von MomoTek1 wird als Reiniger mit Kurkuma beworben. Anwendung laut Händler: anfeuchten, Schaum verteilen, gründlich abspülen. Erhältlich als 1er-, 2er- oder 3er-Pack. Details im verlinkten Shop. #gesichtsreinigung #skincarede #tiktokshopde #bizpunk72',\n  scenes: [\n    {id:'hook', kind:'presenter',\n     text:'Du suchst Gesichtsreinigung mit Bürstenkopf?',\n     prompt:'The same woman from the reference image speaks naturally to the camera in the same bright room. Preserve her identity, hairstyle, clothing and facial features. Restrained, realistic articulation with modest jaw openings and relaxed lips. Subtle head movements and natural blinking. After the spoken sentence ends, she rests with her mouth gently closed. Static camera, no cuts, no new objects.'},\n    {id:'product', kind:'images',\n     text:'Dieses Angebot von MomoTek1 zeigt eine Reinigerflasche mit integriertem Bürstenkopf. Beworben wird sie als Gesichtsreiniger mit Kurkuma.',\n     images:['https://files.catbox.moe/dx6685.png','https://files.catbox.moe/n85f6w.png']},\n    {id:'usage', kind:'images',\n     text:'Die Anwendung laut Händler: Gesicht anfeuchten, Reinigungsschaum sanft verteilen und anschließend gründlich abspülen.',\n     images:['https://files.catbox.moe/kbl8cd.png','https://files.catbox.moe/n85f6w.png']},\n    {id:'selection', kind:'images',\n     text:'Du kannst zwischen einer, zwei oder drei Packungen wählen. Schau vor dem Kauf auf die vollständige Inhaltsstoffliste und die genaue Variante.',\n     images:['https://files.catbox.moe/i5rmyl.png','https://files.catbox.moe/dx6685.png']},\n    {id:'cta', kind:'presenter',\n     text:'Die Produktdetails findest du im verlinkten TikTok Shop.',\n     prompt:'The same woman from the reference image speaks naturally to the camera in the same bright room. Preserve her identity, hairstyle, clothing and facial features. Restrained, realistic articulation with modest jaw openings and relaxed lips. Subtle head movements and natural blinking. After the spoken sentence ends, she rests with her mouth gently closed. Static camera, no cuts, no new objects.'}\n  ]\n};\n// Rerun overrides (partial-failure recovery): presenter scene -> video_url, images scene -> audio_url\nreturn [{json: spec}];"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "Quota Guard",
+      "name": "Quota Guard",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -2000,
+        300
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const spec = $input.first()?.json || {};\nconst q = spec.quota || {};\nconst ageMs = Date.now() - Date.parse(String(q.observed_at || ''));\nif (!Number.isFinite(ageMs) || ageMs < 0 || ageMs > 120000) {\n  throw new Error('Quota evidence missing or older than 120s - paste a fresh snapshot into Build Reel Spec');\n}\nif (!(Number(q.current) >= 1200)) {\n  throw new Error('ZeroGPU quota too low for two LongCat submits (need >=1200s, got ' + q.current + ')');\n}\nif (Number(q.overquotaUsed) !== 0) {\n  throw new Error('Overquota already used - included-quota-only policy blocks submission');\n}\nreturn [{json: spec}];"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "Fetch Luisa Ref MP3",
+      "name": "Fetch Luisa Ref MP3",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -1800,
+        300
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "https://files.catbox.moe/b76w25.mp3",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          },
+          "timeout": 20000
+        }
+      },
+      "typeVersion": 4.5
+    },
+    {
+      "id": "Upload Luisa Ref To HF",
+      "name": "Upload Luisa Ref To HF",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -1600,
+        300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://resembleai-chatterbox-multilingual-tts.hf.space/gradio_api/upload",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.HF_TOKEN}}"
+            }
+          ]
+        },
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "upload_id",
+              "value": "tts_{{$execution.id}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "files",
+              "parameterType": "formBinaryData",
+              "inputDataFieldName": "data"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "typeVersion": 4.5
+    },
+    {
+      "id": "Fetch Mia Crop",
+      "name": "Fetch Mia Crop",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -1400,
+        300
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $(\"Build Reel Spec\").first().json.presenter_image_url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file"
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "typeVersion": 4.5
+    },
+    {
+      "id": "Generate TTS Segments",
+      "name": "Generate TTS Segments",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -1200,
+        300
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const spec = $('Build Reel Spec').first().json;\nconst HF_AUTH = { Authorization: 'Bearer ' + ($env.HF_TOKEN || '') };\nconst sp = 'resembleai-chatterbox-multilingual-tts.hf.space';\nconst T = (p, ms) => Promise.race([p, new Promise(r => setTimeout(() => r(null), ms))]);\n\nlet refFileObj = null;\ntry {\n  const upResp = $('Upload Luisa Ref To HF').first().json;\n  const upArr = typeof upResp === 'string' ? JSON.parse(upResp) : upResp;\n  const upPath = Array.isArray(upArr) ? upArr[0] : (upArr && upArr.files && upArr.files[0]);\n  if (upPath && String(upPath).startsWith('/')) {\n    refFileObj = { path: String(upPath), url: 'https://' + sp + '/gradio_api/file=' + String(upPath),\n      orig_name: 'luisa_ref.mp3', mime_type: 'audio/mpeg', size: null, is_stream: false,\n      meta: { _type: 'gradio.FileData' } };\n  }\n} catch (e) {}\nif (!refFileObj) throw new Error('Luisa reference upload path missing');\n\nconst chatterboxWav = async (text) => {\n  const callResp = await T(this.helpers.httpRequest({\n    method: 'POST', url: 'https://' + sp + '/gradio_api/call/generate_tts_audio',\n    headers: { 'Content-Type': 'application/json', ...HF_AUTH },\n    body: JSON.stringify({ data: [text, 'de', refFileObj, 0.72, 0.8, 42, 0.05] }),\n    timeout: 8000 }), 15000);\n  const callObj = typeof callResp === 'string' ? JSON.parse(callResp) : callResp;\n  if (!callObj || !callObj.event_id) return null;\n  const sseText = await T(this.helpers.httpRequest({\n    method: 'GET', url: 'https://' + sp + '/gradio_api/call/generate_tts_audio/' + callObj.event_id,\n    headers: HF_AUTH, timeout: 60000 }), 90000);\n  if (!sseText) return null;\n  for (const line of String(sseText).split('\\n')) {\n    if (line.startsWith('data: ') && line.trim() !== 'data: null') {\n      const d = JSON.parse(line.slice(6));\n      if (Array.isArray(d) && d[0] && d[0].url) {\n        const wavBuf = Buffer.from(await T(this.helpers.httpRequest({\n          method: 'GET', url: d[0].url, headers: HF_AUTH, encoding: 'arraybuffer', timeout: 15000 }), 20000));\n        if (wavBuf && wavBuf.length > 44 && wavBuf.length < 2000000) return wavBuf;\n      }\n    }\n  }\n  return null;\n};\n\nconst items = [];\nfor (const scene of spec.scenes) {\n  if (scene.video_url || scene.audio_url) {\n    items.push({ json: { scene, kind: 'ready' } });\n    continue;\n  }\n  const wav = await chatterboxWav(scene.text);\n  if (!wav) throw new Error('Chatterbox TTS failed for scene ' + scene.id + ' - aborting, no silent audio');\n  const bin = await this.helpers.prepareBinaryData(wav, scene.id + '.wav', 'audio/wav');\n  items.push({ json: { scene, kind: scene.kind }, binary: { voice: bin } });\n}\nreturn items;"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "Route By Scene Kind",
+      "name": "Route By Scene Kind",
+      "type": "n8n-nodes-base.switch",
+      "position": [
+        -950,
+        300
+      ],
+      "parameters": {
+        "rules": {
+          "rules": [
+            {
+              "operation": "equals",
+              "value": "presenter",
+              "output": 0,
+              "renameOutput": true,
+              "outputKey": "presenter"
+            },
+            {
+              "operation": "equals",
+              "value": "images",
+              "output": 1,
+              "renameOutput": true,
+              "outputKey": "images"
+            }
+          ],
+          "value1": "={{ $json.kind }}",
+          "dataType": "string"
+        }
+      },
+      "typeVersion": 3
+    },
+    {
+      "id": "Store Narration WAV",
+      "name": "Store Narration WAV",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -700,
+        140
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://ffmpeg.mafrapi.eu/api/ffmpeg/store",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "file",
+              "parameterType": "formBinaryData",
+              "inputDataFieldName": "voice"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "typeVersion": 4.5
+    },
+    {
+      "id": "Normalize Narration",
+      "name": "Normalize Narration",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -450,
+        140
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://ffmpeg.mafrapi.eu/api/ffmpeg/normalize-audio",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"audioUrl\": \"{{ $json.file_url }}\", \"maxSeconds\": 4.8}",
+        "options": {
+          "timeout": 90000
+        }
+      },
+      "typeVersion": 4.5
+    },
+    {
+      "id": "Fetch Normalized WAV",
+      "name": "Fetch Normalized WAV",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -200,
+        140
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.file_url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "voice16"
+            }
+          },
+          "timeout": 30000
+        }
+      },
+      "typeVersion": 4.5
+    },
+    {
+      "id": "Attach Scene And Mia",
+      "name": "Attach Scene And Mia",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        50,
+        140
+      ],
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "language": "javaScript",
+        "jsCode": "const scene = $('Generate TTS Segments').item.json.scene;\nconst mia = $('Fetch Mia Crop').first().binary.data;\nconst voice16 = $input.item.binary.voice16;\nconst normUrl = $('Normalize Narration').item.json.file_url;\nreturn [{ json: { scene, narration_16k_url: normUrl },\n         binary: { voice16, image: mia } }];"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "Upload To LongCat",
+      "name": "Upload To LongCat",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        300,
+        140
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://bizpunk-tiktok-longcat-worker.hf.space/gradio_api/upload",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.HF_CREATIVE_TOKEN}}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "files",
+              "parameterType": "formBinaryData",
+              "inputDataFieldName": "image"
+            },
+            {
+              "name": "files",
+              "parameterType": "formBinaryData",
+              "inputDataFieldName": "voice16"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "typeVersion": 4.5
+    },
+    {
+      "id": "Submit LongCat Job",
+      "name": "Submit LongCat Job",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        550,
+        140
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://bizpunk-tiktok-longcat-worker.hf.space/gradio_api/call/generate",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.HF_CREATIVE_TOKEN}}"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({data:[{path:$('Upload To LongCat').item.json[0],meta:{_type:'gradio.FileData'}},{path:$('Upload To LongCat').item.json[1],meta:{_type:'gradio.FileData'}},$('Attach Scene And Mia').item.json.scene.prompt,'480p',72,'Clean speech (fast)','Exact 8-step']}) }}",
+        "options": {
+          "timeout": 30000
+        }
+      },
+      "typeVersion": 4.5
+    },
+    {
+      "id": "Poll LongCat Result",
+      "name": "Poll LongCat Result",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        800,
+        140
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ 'https://bizpunk-tiktok-longcat-worker.hf.space/gradio_api/call/generate/' + $json.event_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.HF_CREATIVE_TOKEN}}"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 290000,
+          "response": {
+            "response": {
+              "responseFormat": "text"
+            }
+          }
+        }
+      },
+      "typeVersion": 4.5
+    },
+    {
+      "id": "Parse LongCat Result",
+      "name": "Parse LongCat Result",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1050,
+        140
+      ],
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "language": "javaScript",
+        "jsCode": "const scene = $('Attach Scene And Mia').item.json.scene;\nconst body = String($input.item.json || $input.item.body || '');\nlet url = '';\nlet ev = '';\nfor (const raw of body.split('\\n')) {\n  const line = raw.trimEnd();\n  if (line.startsWith('event:')) ev = line.slice(6).trim();\n  else if (line.startsWith('data:') && ev === 'complete') {\n    const d = JSON.parse(line.slice(5).trim());\n    const v = (d[0] && (d[0].video || d[0])) || {};\n    url = v.url || ('https://bizpunk-tiktok-longcat-worker.hf.space/gradio_api/file=' + (v.path || ''));\n  } else if (line.startsWith('data:') && ev === 'error') {\n    throw new Error('LongCat provider rejected the job for scene ' + scene.id + ' - no automatic retry');\n  }\n}\nif (!url.startsWith('https://bizpunk-tiktok-longcat-worker.hf.space/gradio_api/file=/tmp/gradio/') || !url.endsWith('.mp4')) {\n  throw new Error('LongCat result missing/invalid for scene ' + scene.id + ' - do not resubmit without checking job state');\n}\nreturn [{ json: { scene, hf_clip_url: url } }];"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "Download LongCat MP4",
+      "name": "Download LongCat MP4",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1300,
+        140
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.hf_clip_url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "=Bearer {{$env.HF_CREATIVE_TOKEN}}"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "clip"
+            }
+          },
+          "timeout": 120000
+        }
+      },
+      "typeVersion": 4.5
+    },
+    {
+      "id": "Store Clip MP4",
+      "name": "Store Clip MP4",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        1550,
+        140
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://ffmpeg.mafrapi.eu/api/ffmpeg/store",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "file",
+              "parameterType": "formBinaryData",
+              "inputDataFieldName": "clip"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 120000
+        }
+      },
+      "typeVersion": 4.5
+    },
+    {
+      "id": "Attach Clip URL",
+      "name": "Attach Clip URL",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        1800,
+        140
+      ],
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "language": "javaScript",
+        "jsCode": "const scene = $('Parse LongCat Result').item.json.scene;\nreturn [{ json: { scene_id: scene.id, kind: 'video', video_url: $input.item.json.file_url, scene } }];"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "Store Scene WAV",
+      "name": "Store Scene WAV",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        -700,
+        460
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://ffmpeg.mafrapi.eu/api/ffmpeg/store",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "name": "file",
+              "parameterType": "formBinaryData",
+              "inputDataFieldName": "voice"
+            }
+          ]
+        },
+        "options": {
+          "timeout": 60000
+        }
+      },
+      "typeVersion": 4.5
+    },
+    {
+      "id": "Attach Audio URL",
+      "name": "Attach Audio URL",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        -450,
+        460
+      ],
+      "parameters": {
+        "mode": "runOnceForEachItem",
+        "language": "javaScript",
+        "jsCode": "const scene = $('Generate TTS Segments').item.json.scene;\nreturn [{ json: { scene_id: scene.id, kind: 'images', audio_url: $input.item.json.file_url, scene } }];"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "Assemble Render Spec",
+      "name": "Assemble Render Spec",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        2050,
+        300
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const spec = $('Build Reel Spec').first().json;\nconst clips = {};\nfor (const it of $('Attach Clip URL').all()) clips[it.json.scene_id] = it.json.video_url;\nconst auds = {};\nfor (const it of $('Attach Audio URL').all()) auds[it.json.scene_id] = it.json.audio_url;\nconst scenes = [];\nfor (const s of spec.scenes) {\n  if (s.kind === 'presenter') {\n    const v = s.video_url || clips[s.id];\n    if (!v) throw new Error('Missing presenter clip for scene ' + s.id);\n    scenes.push({ type: 'video', url: v, text: s.text, cropTo916: true });\n  } else {\n    const a = s.audio_url || auds[s.id];\n    if (!a) throw new Error('Missing narration audio for scene ' + s.id);\n    scenes.push({ type: 'images', urls: s.images, audioUrl: a, text: s.text });\n  }\n}\nreturn [{ json: { scenes, reel_id: spec.reel_id, caption_de: spec.caption_de, product_id: spec.product_id, pack_quantity: spec.pack_quantity } }];"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "Render Presenter Reel",
+      "name": "Render Presenter Reel",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2300,
+        300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://ffmpeg.mafrapi.eu/api/ffmpeg/presenter-reel",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({scenes: $json.scenes}) }}",
+        "options": {
+          "timeout": 280000
+        }
+      },
+      "typeVersion": 4.5
+    },
+    {
+      "id": "Fetch Rendered Reel",
+      "name": "Fetch Rendered Reel",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        2550,
+        300
+      ],
+      "parameters": {
+        "method": "GET",
+        "url": "={{ $json.reel_url }}",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "video"
+            }
+          },
+          "timeout": 120000
+        }
+      },
+      "typeVersion": 4.5
+    },
+    {
+      "id": "Zernio Presign Video",
+      "name": "Zernio Presign Video",
+      "type": "n8n-nodes-late.late",
+      "position": [
+        2800,
+        300
+      ],
+      "parameters": {
+        "resource": "media",
+        "operation": "presign",
+        "filename": "presenter_reel.mp4"
+      },
+      "typeVersion": 1,
+      "credentials": {
+        "lateApi": {
+          "id": "mBmoLHXu5hb3qPZv",
+          "name": "Zernio account"
+        }
+      }
+    },
+    {
+      "id": "Combine Video Binary & Presign URL",
+      "name": "Combine Video Binary & Presign URL",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        3050,
+        300
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const presign = $input.first()?.json || {};\nconst reel = $('Fetch Rendered Reel').first() || {};\nreturn [{ json: presign, binary: reel.binary || {} }];"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "Upload MP4 To Zernio CDN",
+      "name": "Upload MP4 To Zernio CDN",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        3300,
+        300
+      ],
+      "parameters": {
+        "method": "PUT",
+        "url": "={{ $json.uploadUrl }}",
+        "sendBody": true,
+        "contentType": "binaryData",
+        "inputDataFieldName": "video"
+      },
+      "typeVersion": 4.5,
+      "onError": "stopWorkflow"
+    },
+    {
+      "id": "Prepare Zernio Draft Payload",
+      "name": "Prepare Zernio Draft Payload",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        3550,
+        300
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const spec = $('Assemble Render Spec').first()?.json || {};\nconst presign = $('Zernio Presign Video').first()?.json || {};\nconst reelUrl = String(presign.publicUrl || presign.url || '');\nconst zernioBody = {\n  content: String(spec.caption_de || ''),\n  publishNow: true,\n  platforms: [{ platform: 'tiktok', accountId: '6a99599b77555aae01ce4ec4' }],\n  mediaItems: reelUrl ? [{ type: 'video', url: reelUrl }] : [],\n  tiktokSettings: {\n    draft: true,\n    is_ai_generated: true,\n    privacy_level: 'PUBLIC_TO_EVERYONE',\n    allow_comment: true,\n    allow_duet: true,\n    allow_stitch: true,\n    content_preview_confirmed: true,\n    express_consent_given: true\n  }\n};\nreturn [{ json: { ...spec, final_video_url: reelUrl, zernio_body: JSON.stringify(zernioBody) } }];"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "Zernio TikTok Draft API (@bizpunk72)",
+      "name": "Zernio TikTok Draft API (@bizpunk72)",
+      "type": "n8n-nodes-base.httpRequest",
+      "position": [
+        3800,
+        300
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://zernio.com/api/v1/posts",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "lateApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.zernio_body }}"
+      },
+      "typeVersion": 4.5,
+      "credentials": {
+        "lateApi": {
+          "id": "mBmoLHXu5hb3qPZv",
+          "name": "Zernio account"
+        }
+      },
+      "onError": "stopWorkflow"
+    },
+    {
+      "id": "Validate Draft Receipt",
+      "name": "Validate Draft Receipt",
+      "type": "n8n-nodes-base.code",
+      "position": [
+        4050,
+        300
+      ],
+      "parameters": {
+        "mode": "runOnceForAllItems",
+        "language": "javaScript",
+        "jsCode": "const prev = $('Prepare Zernio Draft Payload').first()?.json || {};\nconst zResp = $input.first()?.json || {};\nconst postObj = zResp.post || zResp.data?.post || zResp.data || {};\nif (zResp.error || !postObj._id) throw new Error('Zernio draft creation failed or returned no post ID');\nconst platform = (Array.isArray(postObj.platforms) ? postObj.platforms : []).find(p => p.platform === 'tiktok' && p.status === 'published' && String(p.platformPostId || '').startsWith('v_inbox_url') && p.platformSpecificData?.isDraft === true && p.platformSpecificData?.tiktokSettings?.draft === true && p.platformSpecificData?.tiktokSettings?.is_ai_generated === true);\nif (!platform) throw new Error('Zernio response does not confirm an AI-disclosed TikTok Creator Inbox draft');\nreturn [{ json: { ...prev, zernio_post_id: String(postObj._id), publish_status: 'draft_in_inbox' } }];"
+      },
+      "typeVersion": 2
+    },
+    {
+      "id": "Send Telegram Notice",
+      "name": "Send Telegram Notice",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        4300,
+        300
+      ],
+      "parameters": {
+        "resource": "message",
+        "operation": "sendMessage",
+        "chatId": "={{ $env.TELEGRAM_CHAT_ID }}",
+        "text": "={{ 'Presenter-Reel Draft in der TikTok Creator Inbox\nReel: ' + $json.reel_id + '\nProdukt: ' + $json.product_id + ' (1 Packung)\nZernio-Post: ' + $json.zernio_post_id + '\nVideo: ' + $json.final_video_url + '\n\nBitte Draft prüfen, Warenkorb mit Produkt ' + $json.product_id + ' anhängen und manuell veröffentlichen.' }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "typeVersion": 1,
+      "credentials": {
+        "telegramApi": {
+          "id": "tYWDsHPvzMA9ATGu",
+          "name": "Telegram account"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Build Reel Spec",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Reel Spec": {
+      "main": [
+        [
+          {
+            "node": "Quota Guard",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Quota Guard": {
+      "main": [
+        [
+          {
+            "node": "Fetch Luisa Ref MP3",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Luisa Ref MP3": {
+      "main": [
+        [
+          {
+            "node": "Upload Luisa Ref To HF",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload Luisa Ref To HF": {
+      "main": [
+        [
+          {
+            "node": "Fetch Mia Crop",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Mia Crop": {
+      "main": [
+        [
+          {
+            "node": "Generate TTS Segments",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Generate TTS Segments": {
+      "main": [
+        [
+          {
+            "node": "Route By Scene Kind",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Route By Scene Kind": {
+      "main": [
+        [
+          {
+            "node": "Store Narration WAV",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Store Scene WAV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Narration WAV": {
+      "main": [
+        [
+          {
+            "node": "Normalize Narration",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize Narration": {
+      "main": [
+        [
+          {
+            "node": "Fetch Normalized WAV",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Normalized WAV": {
+      "main": [
+        [
+          {
+            "node": "Attach Scene And Mia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attach Scene And Mia": {
+      "main": [
+        [
+          {
+            "node": "Upload To LongCat",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload To LongCat": {
+      "main": [
+        [
+          {
+            "node": "Submit LongCat Job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Submit LongCat Job": {
+      "main": [
+        [
+          {
+            "node": "Poll LongCat Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Poll LongCat Result": {
+      "main": [
+        [
+          {
+            "node": "Parse LongCat Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse LongCat Result": {
+      "main": [
+        [
+          {
+            "node": "Download LongCat MP4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download LongCat MP4": {
+      "main": [
+        [
+          {
+            "node": "Store Clip MP4",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Clip MP4": {
+      "main": [
+        [
+          {
+            "node": "Attach Clip URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Scene WAV": {
+      "main": [
+        [
+          {
+            "node": "Attach Audio URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attach Clip URL": {
+      "main": [
+        [
+          {
+            "node": "Assemble Render Spec",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Attach Audio URL": {
+      "main": [
+        [
+          {
+            "node": "Assemble Render Spec",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Assemble Render Spec": {
+      "main": [
+        [
+          {
+            "node": "Render Presenter Reel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Render Presenter Reel": {
+      "main": [
+        [
+          {
+            "node": "Fetch Rendered Reel",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fetch Rendered Reel": {
+      "main": [
+        [
+          {
+            "node": "Zernio Presign Video",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zernio Presign Video": {
+      "main": [
+        [
+          {
+            "node": "Combine Video Binary & Presign URL",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine Video Binary & Presign URL": {
+      "main": [
+        [
+          {
+            "node": "Upload MP4 To Zernio CDN",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload MP4 To Zernio CDN": {
+      "main": [
+        [
+          {
+            "node": "Prepare Zernio Draft Payload",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Zernio Draft Payload": {
+      "main": [
+        [
+          {
+            "node": "Zernio TikTok Draft API (@bizpunk72)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Zernio TikTok Draft API (@bizpunk72)": {
+      "main": [
+        [
+          {
+            "node": "Validate Draft Receipt",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Draft Receipt": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram Notice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveExecutionProgress": true
+  },
+  "active": false,
+  "description": "Isolated presenter-led reel factory: Chatterbox TTS -> LongCat presenter clips -> presenter-reel render -> AI-disclosed Zernio TikTok draft. Manual trigger only; requires a fresh ZeroGPU quota snapshot in Build Reel Spec. Never publishes automatically."
+}
