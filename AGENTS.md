@@ -237,3 +237,42 @@ Every video description (`caption_de`) is automatically generated via Hugging Fa
 - Proof-of-concept render: `output/example_geedel_hybrid_14s.mp4` (14.2s, 1080x1920, Edge-TTS Florian +6%, ASS subs, local ffmpeg via `imageio-ffmpeg`). Findings: works visually, but embedded original comment sticker and leftover turquoise accessory remain visible — overlay detection is an open requirement.
 - **HF token incident resolved:** the Coolify n8n env `HF_TOKEN` was invalid (401 everywhere). User created a new fine-grained token (`08112026`, Inference Providers scope) and redeployed; verified live via whoami → `BizPunk`, Pro account. **Gotcha discovered:** this n8n build does NOT resolve embedded `{{$env.X}}` inside plain header strings — always use full-expression form `=Bearer {{$env.HF_TOKEN}}` (production already does). Test workflow `TMP HF Token Check` (`9G1WuZHXMAykvdwO`, inactive) remains for re-verification.
 
+
+
+## TTS_05 End-to-End via n8n MCP (2026-11-18)
+
+- Workflow `U4KJpBjh3UUKyRHc` (36 nodes, manual/inactive) ran fully through via MCP executions. Execution 14269 SUCCESS: render 31.56s, 5 scenes, draft_in_inbox validated (zernio_post_id 6afe0daef6da752c1818e914), Telegram notice sent. Earlier success 14268 (post 6afe0c48a71f289b8a900f3f). Older drafts (incl. 42s audio-broken version from 14267) should be deleted in the Creator Inbox.
+- Bug found and fixed in ffmpeg-service presenter-reel (commits 4979ded, 8b3180c): concat demuxer joins part streams WITHOUT resampling — mixed audio sample rates (fresh 24kHz Chatterbox WAVs vs 16kHz normalized assets) corrupted timing (42.5s video, audio dead after ~25s). All parts now encode uniformly: -pix_fmt yuv420p -ar 16000 -ac 1. Subtitles: one textfile+drawtext PER LINE (embedded newlines render as glyph boxes on the deployed build), sanitize NBSP/control chars, pitch 36px, TikTok-style white/border. Verified locally reproduced + fixed before deploy.
+- Ops notes: Coolify redeploy WIPES /temp — re-stage override assets via /store after each deploy. n8n MCP needs executionMode (not mode) and includeData+nodeNames for filtered node outputs. Clock skew n8n-server ~ -100s vs local: write observed_at as local-now; guard allows <=300s future skew.
+
+
+## TTS_05 Hardening (2026-11-19)
+
+- Execution 14278 SUCCESS (38 nodes): reel_id now per-execution ($execution.id), draft 6afed6cff86f37a2370ea15b. Live workflow re-exported to n8n_workflows/TTS_05_Presenter_Reel_Factory.json.
+- Durable-media design added: external video_url/audio_url overrides are auto-staged through the Collect->Store chain (only non-/temp URLs), so CATBOX or other durable URLs work across redeploys. Generated clips/WAVs get a fail-soft catbox backup (Backup Clip/WAV To Catbox, reqtype=urlupload, catbox_url captured in Attach nodes) for durable rerun references.
+- CATBOX INCIDENT: files.catbox.moe served 0 bytes for all NEW uploads on 2026-11-19 (old files still fine) - catbox-side storage issue, retry later. If it persists, replace backup target with Baserow user-files or a Coolify persistent volume for /temp (infra decision pending).
+
+
+## TTS_05 Queue Integration (2026-11-19, later)
+
+- n8n Data Table `tts05_presenter_queue` (id uBsGRr1ADYBjtC35, project gt3ZfIs4gxoFTKxG): columns reel_key, spec_json, status (queued/rendered), zernio_post_id, error.
+- Execution 14279 SUCCESS (40 nodes): workflow consumed queue row skincare_pilot_queue_test_1 -> draft 6afedf2b73c4704a850c1040, row auto-marked rendered with post id. Fallback spec still applies when no queued row exists.
+- Queue workflow: insert row status=queued with spec_json (product_id, pack_quantity, presenter_image_url, caption_de, scenes[]; NO quota - operator pastes fresh QUOTA into Build Reel Spec per run).
+- Backups: generated clips/WAVs get fail-soft catbox urlupload backup -> catbox_url in Attach items (for durable rerun overrides, since /temp is wiped on redeploy).
+
+
+## TTS_06 Presenter Spec Builder (2026-11-19)
+
+- New workflow TTS_06_Presenter_Spec_Builder (FqFKRu8U0oTPzuF4, 6 nodes, inactive/manual): Load Products (approved|winner) -> Load Presenter Queue -> Build Presenter Spec Row -> Insert Into tts05_presenter_queue -> Telegram note.
+- Picks the approved/winner product with fewest presenter reels (<4), builds hedged spec_json (product name, price "laut Angebot", problem_solved as "Laut Anbieter", generic variant hint). Uses packshot_image_url as scene image, Mia constant as presenter. reel_key = pre_<product_key>_v<n>.
+- Execution 14280 verified: queued row 2 for prod_redhut_tragbarer_multifunktionaler_dam (REDHUT steam cleaner, ~45.98 EUR). NOTE: its packshot is a TikTok CDN webp URL - the Fetch Asset Binary staging will fetch it at run time.
+- Full-auto path now: TTS_06 queues spec -> TTS_05 consumes queued row (TTS via Chatterbox + LongCat presenter) -> draft -> row marked rendered. Quota is fetched live inside n8n via $env.HF_TOKEN (Fetch ZeroGPU Quota node); no manual paste needed.
+
+## TTS_05/TTS_06 Fixes + Copy Rules (2026-11-19, evening)
+
+- Execution 14284 (first full-auto REDHUT run) failed at Assemble Render Spec: "Missing narration audio for scene product". ROOT CAUSE: both scene branches fed Assemble directly; under executionOrder v1 Assemble fired as soon as the presenter branch delivered, before Attach Audio URL ran. FIX: new `Merge Scene Branches` node (n8n-nodes-base.merge v3, mode append) — Attach Clip URL -> input 0, Attach Audio URL -> input 1, Merge -> Assemble Render Spec. Assemble can no longer run before both branch tails complete. 42 nodes total.
+- Execution 14287 SUCCESS: REDHUT row patched (reused LongCat clips from 14284 as video_url overrides via TMP_Queue_Row_Patch helper, since MCP has no row-update tool — helper workflow archived after use; same trick works via a dataTable update node filtered by reel_key). Draft 6afef39b21cb8ea1c5cbf1b9, row auto-marked rendered.
+- NEW SPOKEN-TEXT RULE (user decision 2026-11-19): scene.text must contain NO brand names and NO prices. TTS_06 Build Presenter Spec Row now uses category (lowercased) as spoken term fallback 'ein praktisches Produkt', strips product name + EUR patterns from problem_solved. Written caption still carries product name + hashtags (SEO).
+- Zernio draft-only is enforced by tiktokSettings.draft:true + is_ai_generated:true and verified by Validate Draft Receipt (requires platformSpecificData.isDraft + v_inbox_url). publishNow:true in the Zernio payload only means "deliver to creator inbox now"; the draft flag keeps it unpublished. Verified pattern reused from TTS_04.
+- Subtitle line pitch increased 36 -> 40 px in ffmpeg-service presenter-reel endpoint (user feedback: TikTok lines slightly looser); commit 41a1b04 pushed, Coolify auto-deploy. NOTE: redeploy wipes /temp — restage override assets after deploys.
+- SEO captions in TTS_06: product name + '#tiktokshopde #tiktokmademebuyit #<category> #bizpunk72'.
