@@ -1,5 +1,4 @@
 {
-  "name": "Rewired connections",
   "nodes": [
     {
       "id": "8736c9f7-3d98-4b51-9f4c-be58358d378f",
@@ -399,7 +398,7 @@
       "parameters": {
         "mode": "runOnceForEachItem",
         "language": "javaScript",
-        "jsCode": "const scene = $('Generate TTS Segments').item.json.scene;\nconst mia = $('Fetch Mia Crop').first().binary.data;\nconst voice16 = $input.item.binary.voice16;\nconst normUrl = $('Normalize Narration').item.json.file_url;\nreturn { json: { scene, narration_16k_url: normUrl },\n         binary: { voice16, image: mia } };"
+        "jsCode": "const scene = $('Generate TTS Segments').item.json.scene;\nconst presenterImg = $('Fetch Scene Presenter Image').item.binary.presenter_img;\nconst voice16 = $input.item.binary.voice16;\nconst normUrl = $('Normalize Narration').item.json.file_url;\nreturn { json: { scene, narration_16k_url: normUrl },\n         binary: { voice16, image: presenterImg } };"
       }
     },
     {
@@ -1025,6 +1024,38 @@
       "parameters": {
         "mode": "append"
       }
+    },
+    {
+      "id": "ee51ddec-fc48-47fc-9fd4-0cf92a805158",
+      "name": "Fetch Scene Presenter Image",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.5,
+      "position": [
+        3000,
+        384
+      ],
+      "parameters": {
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "User-Agent",
+              "value": "Mozilla/5.0"
+            }
+          ]
+        },
+        "method": "GET",
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "file",
+              "outputPropertyName": "presenter_img"
+            }
+          },
+          "timeout": 30000
+        },
+        "sendHeaders": true,
+        "url": "={{ $('Generate TTS Segments').item.json.scene.presenter_image_url || $('Build Reel Spec').first().json.presenter_image_url }}"
+      }
     }
   ],
   "connections": {
@@ -1193,7 +1224,7 @@
       "main": [
         [
           {
-            "node": "Attach Scene And Mia",
+            "node": "Fetch Scene Presenter Image",
             "type": "main",
             "index": 0
           }
@@ -1485,7 +1516,19 @@
           }
         ]
       ]
+    },
+    "Fetch Scene Presenter Image": {
+      "main": [
+        [
+          {
+            "node": "Attach Scene And Mia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
+  "name": "TTS_05_Presenter_Reel_Factory",
   "settings": {}
 }
