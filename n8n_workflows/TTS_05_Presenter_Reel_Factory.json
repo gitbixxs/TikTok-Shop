@@ -133,7 +133,7 @@
       ],
       "parameters": {
         "method": "GET",
-        "url": "https://files.catbox.moe/b76w25.mp3",
+        "url": "={{ $('Build Reel Spec').first().json.voice_ref_url || 'https://files.catbox.moe/b76w25.mp3' }}",
         "sendHeaders": true,
         "headerParameters": {
           "parameters": [
