@@ -1,4 +1,5 @@
 {
+  "name": "TTS_05_Presenter_Reel_Factory",
   "nodes": [
     {
       "id": "8736c9f7-3d98-4b51-9f4c-be58358d378f",
@@ -9,7 +10,9 @@
         0,
         96
       ],
-      "parameters": {}
+      "parameters": {},
+      "credentials": null,
+      "onError": null
     },
     {
       "id": "72a2d496-c0c4-444f-a5d2-9c58f9f1a8d2",
@@ -24,7 +27,9 @@
         "mode": "runOnceForAllItems",
         "language": "javaScript",
         "jsCode": "// Quota snapshot is fetched live by the 'Fetch ZeroGPU Quota' node.\nconst quotaRaw = $('Fetch ZeroGPU Quota').first().json || {};\nconst QUOTA = { base: Number(quotaRaw.base), current: Number(quotaRaw.current), overquotaUsed: Number(quotaRaw.overquotaUsed), resetsAt: quotaRaw.resetsAt || null, observed_at: new Date().toISOString() };\n\nconst FALLBACK = {\n  product_id: '1729964288705272356',\n  pack_quantity: '1 Packung',\n  presenter_image_url: 'https://files.catbox.moe/zaisoi.png',\n  caption_de: 'Gesichtsreinigung mit integriertem Bürstenkopf — dieses Angebot von MomoTek1 wird als Reiniger mit Kurkuma beworben. Anwendung laut Händler: anfeuchten, Schaum verteilen, gründlich abspülen. Erhältlich als 1er-, 2er- oder 3er-Pack. Details im verlinkten Shop. #gesichtsreinigung #skincarede #tiktokshopde #bizpunk72',\n  scenes: [\n    {id:'hook', kind:'presenter',\n     text:'Du suchst Gesichtsreinigung mit Bürstenkopf?',\n     prompt:'The same woman from the reference image speaks naturally to the camera in the same bright room. Preserve her identity, hairstyle, clothing and facial features. Restrained, realistic articulation with modest jaw openings and relaxed lips. Subtle head movements and natural blinking. After the spoken sentence ends, she rests with her mouth gently closed. Static camera, no cuts, no new objects.',\n     video_url:'https://ffmpeg.mafrapi.eu/temp/370f1ee234d5bb6f_hook.mp4'},\n    {id:'product', kind:'images',\n     text:'Dieses Angebot von MomoTek1 zeigt eine Reinigerflasche mit integriertem Bürstenkopf. Beworben wird sie als Gesichtsreiniger mit Kurkuma.',\n     images:['https://files.catbox.moe/dx6685.png','https://files.catbox.moe/n85f6w.png'],\n     audio_url:'https://ffmpeg.mafrapi.eu/temp/7a183618e698eec2_product.wav'},\n    {id:'usage', kind:'images',\n     text:'Die Anwendung laut Händler: Gesicht anfeuchten, Reinigungsschaum sanft verteilen und anschließend gründlich abspülen.',\n     images:['https://files.catbox.moe/kbl8cd.png','https://files.catbox.moe/n85f6w.png'],\n     audio_url:'https://ffmpeg.mafrapi.eu/temp/ec1bf96907bbe3ef_usage.wav'},\n    {id:'selection', kind:'images',\n     text:'Du kannst zwischen einer, zwei oder drei Packungen wählen. Schau vor dem Kauf auf die vollständige Inhaltsstoffliste und die genaue Variante.',\n     images:['https://files.catbox.moe/i5rmyl.png','https://files.catbox.moe/dx6685.png']},\n    {id:'cta', kind:'presenter',\n     text:'Die Produktdetails findest du im verlinkten TikTok Shop.',\n     prompt:'The same woman from the reference image speaks naturally to the camera in the same bright room. Preserve her identity, hairstyle, clothing and facial features. Restrained, realistic articulation with modest jaw openings and relaxed lips. Subtle head movements and natural blinking. After the spoken sentence ends, she rests with her mouth gently closed. Static camera, no cuts, no new objects.',\n     video_url:'https://ffmpeg.mafrapi.eu/temp/bba8679e49c60215_cta.mp4'}\n  ]\n};\n\n// Queue mode: first row in tts05_presenter_queue with status='queued' wins.\nconst rows = $('Load Queue Rows').all();\nlet spec = null;\nlet queueReelKey = '';\nfor (const it of rows) {\n  const r = it.json || {};\n  if (String(r.status || '').toLowerCase() === 'queued' && r.spec_json) {\n    try { spec = JSON.parse(String(r.spec_json)); queueReelKey = String(r.reel_key || ''); break; }\n    catch (e) { throw new Error('Queue row ' + (r.reel_key || '?') + ' has invalid spec_json: ' + e.message); }\n  }\n}\nif (!spec) spec = FALLBACK;\nspec.quota = QUOTA;\nspec.reel_id = 'presenter_reel_' + spec.product_id + '_' + $execution.id;\nspec.queue_reel_key = queueReelKey;\nreturn [{json: spec}];"
-      }
+      },
+      "credentials": null,
+      "onError": null
     },
     {
       "id": "b9fcc7d0-f623-4786-acb9-47d6b18d4ec1",
@@ -38,8 +43,10 @@
       "parameters": {
         "mode": "runOnceForAllItems",
         "language": "javaScript",
-        "jsCode": "const spec = $input.first()?.json || {};\nconst q = spec.quota || {};\nconst ageMs = Date.now() - Date.parse(String(q.observed_at || ''));\n// tolerate operator/server clock skew up to 5min in the future; >120s stale fails\nif (!Number.isFinite(ageMs) || ageMs < -300000 || ageMs > 120000) {\n  throw new Error('Quota evidence missing or stale/future-dated - paste a fresh snapshot into Build Reel Spec (ageMs=' + ageMs + ')');\n}\nif (!(Number(q.current) >= 1200)) {\n  throw new Error('ZeroGPU quota too low for two LongCat submits (need >=1200s, got ' + q.current + ')');\n}\nif (Number(q.overquotaUsed) !== 0) {\n  throw new Error('Overquota already used - included-quota-only policy blocks submission');\n}\nreturn [{json: spec}];"
-      }
+        "jsCode": "const spec = $input.first()?.json || {};\nconst q = spec.quota || {};\nconst ageMs = Date.now() - Date.parse(String(q.observed_at || ''));\nif (!Number.isFinite(ageMs) || ageMs < -300000 || ageMs > 120000) {\n  throw new Error('Quota evidence missing or stale/future-dated (ageMs=' + ageMs + ')');\n}\nconst scenes = Array.isArray(spec.scenes) ? spec.scenes : [];\nconst presenterJobs = scenes.filter(s => s && s.kind === 'presenter' && !s.video_url).length;\nconst need = Math.max(600, presenterJobs * 600);\nif (!(Number(q.current) >= need)) {\n  throw new Error('ZeroGPU quota too low for ' + presenterJobs + ' LongCat submits (need >=' + need + 's, got ' + q.current + ')');\n}\nif (Number(q.overquotaUsed) !== 0) {\n  throw new Error('Overquota already used - included-quota-only policy blocks submission');\n}\nreturn [{json: spec}];"
+      },
+      "credentials": null,
+      "onError": null
     },
     {
       "id": "3602593a-88d6-4b8e-bea1-44106caa25cd",
@@ -54,7 +61,9 @@
         "mode": "runOnceForAllItems",
         "language": "javaScript",
         "jsCode": "const spec = $('Build Reel Spec').first().json;\nconst OWN_TEMP = 'https://ffmpeg.mafrapi.eu/temp/';\nconst seen = new Set();\nconst items = [];\nconst add = (u) => { if (u && !u.startsWith(OWN_TEMP) && !seen.has(u)) { seen.add(u); items.push({ json: { key: u } }); } };\nfor (const s of spec.scenes) {\n  for (const u of (s.images || [])) add(u);\n  add(s.video_url);\n  add(s.audio_url);\n}\nreturn items;"
-      }
+      },
+      "credentials": null,
+      "onError": null
     },
     {
       "id": "626a188d-0154-45d5-a566-65080d7d737e",
@@ -77,7 +86,9 @@
           },
           "timeout": 30000
         }
-      }
+      },
+      "credentials": null,
+      "onError": null
     },
     {
       "id": "9ebb4ae5-a6c3-4b5e-9e26-f6ffb344a081",
@@ -105,7 +116,9 @@
         "options": {
           "timeout": 60000
         }
-      }
+      },
+      "credentials": null,
+      "onError": null
     },
     {
       "id": "a82104af-c513-45ef-b3cc-2a29639d7015",
@@ -120,7 +133,9 @@
         "mode": "runOnceForEachItem",
         "language": "javaScript",
         "jsCode": "const key = $('Collect Image Assets').item.json.key;\nconst file_url = $('Store Asset').item.json.file_url;\nreturn { json: { key, file_url } };"
-      }
+      },
+      "credentials": null,
+      "onError": null
     },
     {
       "id": "684b5e18-d951-43ec-b15d-30ef132ecaa1",
@@ -152,7 +167,8 @@
           "timeout": 20000
         }
       },
-      "executeOnce": true
+      "credentials": null,
+      "onError": null
     },
     {
       "id": "cc23ffa8-8e0a-459f-addd-41250c2004b4",
@@ -199,7 +215,8 @@
           "timeout": 30000
         }
       },
-      "executeOnce": true
+      "credentials": null,
+      "onError": null
     },
     {
       "id": "13f28351-b018-4e06-9943-b8e781f4094d",
@@ -231,7 +248,8 @@
           "timeout": 30000
         }
       },
-      "executeOnce": true
+      "credentials": null,
+      "onError": null
     },
     {
       "id": "691db88c-12a5-4d8f-8e69-2ebb55fa6041",
@@ -246,7 +264,9 @@
         "mode": "runOnceForAllItems",
         "language": "javaScript",
         "jsCode": "const spec = $('Build Reel Spec').first().json;\nconst HF_AUTH = { Authorization: 'Bearer ' + ($env.HF_TOKEN || '') };\nconst sp = 'resembleai-chatterbox-multilingual-tts.hf.space';\nconst T = (p, ms) => Promise.race([p, new Promise(r => setTimeout(() => r(null), ms))]);\n\nlet refFileObj = null;\ntry {\n  const upResp = $('Upload Luisa Ref To HF').first().json;\n  let upPath = null;\n  if (typeof upResp === 'string') {\n    upPath = upResp.trim();\n  } else {\n    const upArr = typeof upResp === 'string' ? JSON.parse(upResp) : upResp;\n    upPath = Array.isArray(upArr) ? upArr[0] : (upArr && upArr.files && upArr.files[0]);\n  }\n  if (upPath && String(upPath).startsWith('/')) {\n    refFileObj = { path: String(upPath), url: 'https://' + sp + '/gradio_api/file=' + String(upPath),\n      orig_name: 'luisa_ref.mp3', mime_type: 'audio/mpeg', size: null, is_stream: false,\n      meta: { _type: 'gradio.FileData' } };\n  }\n} catch (e) {}\nif (!refFileObj) throw new Error('Luisa reference upload path missing');\n\nconst chatterboxWav = async (text) => {\n  const callResp = await T(this.helpers.httpRequest({\n    method: 'POST', url: 'https://' + sp + '/gradio_api/call/generate_tts_audio',\n    headers: { 'Content-Type': 'application/json', ...HF_AUTH },\n    body: JSON.stringify({ data: [text, 'de', refFileObj, 0.72, 0.8, 42, 0.05] }),\n    timeout: 8000 }), 15000);\n  const callObj = typeof callResp === 'string' ? JSON.parse(callResp) : callResp;\n  if (!callObj || !callObj.event_id) return null;\n  const sseText = await T(this.helpers.httpRequest({\n    method: 'GET', url: 'https://' + sp + '/gradio_api/call/generate_tts_audio/' + callObj.event_id,\n    headers: HF_AUTH, timeout: 60000 }), 90000);\n  if (!sseText) return null;\n  for (const line of String(sseText).split('\\n')) {\n    if (line.startsWith('data: ') && line.trim() !== 'data: null') {\n      const d = JSON.parse(line.slice(6));\n      if (Array.isArray(d) && d[0] && d[0].url) {\n        const wavBuf = Buffer.from(await T(this.helpers.httpRequest({\n          method: 'GET', url: d[0].url, headers: HF_AUTH, encoding: 'arraybuffer', timeout: 15000 }), 20000));\n        if (wavBuf && wavBuf.length > 44 && wavBuf.length < 2000000) return wavBuf;\n      }\n    }\n  }\n  return null;\n};\n\nconst items = [];\nfor (const scene of spec.scenes) {\n  if (scene.video_url || scene.audio_url) {\n    items.push({ json: { scene, kind: 'ready' } });\n    continue;\n  }\n  const wav = await chatterboxWav(scene.text);\n  if (!wav) throw new Error('Chatterbox TTS failed for scene ' + scene.id + ' - aborting, no silent audio');\n  const bin = await this.helpers.prepareBinaryData(wav, scene.id + '.wav', 'audio/wav');\n  items.push({ json: { scene, kind: scene.kind }, binary: { voice: bin } });\n}\nreturn items;"
-      }
+      },
+      "credentials": null,
+      "onError": null
     },
     {
       "id": "c08ff125-7e12-4ea0-b386-50270b7b77c2",
@@ -304,7 +324,9 @@
             }
           ]
         }
-      }
+      },
+      "credentials": null,
+      "onError": null
     },
     {
       "id": "b811311d-59d5-47c6-9471-f31aae2ca530",
@@ -332,7 +354,9 @@
         "options": {
           "timeout": 60000
         }
-      }
+      },
+      "credentials": null,
+      "onError": null
     },
     {
       "id": "5b723cf0-e8ce-419b-854a-541c7ad2970e",
@@ -361,7 +385,9 @@
         "options": {
           "timeout": 90000
         }
-      }
+      },
+      "credentials": null,
+      "onError": null
     },
     {
       "id": "43f2d16a-429a-4f13-84e3-d8a10713655d",
@@ -384,7 +410,9 @@
           },
           "timeout": 30000
         }
-      }
+      },
+      "credentials": null,
+      "onError": null
     },
     {
       "id": "608d168c-8a57-4fb9-b556-a6edf728cf02",
@@ -399,7 +427,9 @@
         "mode": "runOnceForEachItem",
         "language": "javaScript",
         "jsCode": "const scene = $('Generate TTS Segments').item.json.scene;\nconst presenterImg = $('Fetch Scene Presenter Image').item.binary.presenter_img;\nconst voice16 = $input.item.binary.voice16;\nconst normUrl = $('Normalize Narration').item.json.file_url;\nreturn { json: { scene, narration_16k_url: normUrl },\n         binary: { voice16, image: presenterImg } };"
-      }
+      },
+      "credentials": null,
+      "onError": null
     },
     {
       "id": "e30cc2dc-b86b-4eaa-95e3-04d27c5dfaee",
@@ -441,7 +471,9 @@
         "options": {
           "timeout": 180000
         }
-      }
+      },
+      "credentials": null,
+      "onError": null
     },
     {
       "id": "5294b3ca-97c8-4a5e-92e1-3a7de93564dc",
@@ -474,7 +506,9 @@
         "options": {
           "timeout": 60000
         }
-      }
+      },
+      "credentials": null,
+      "onError": null
     },
     {
       "id": "0e5e6613-4f7d-41f3-8ad3-0adb743e8dcf",
@@ -505,7 +539,9 @@
             }
           }
         }
-      }
+      },
+      "credentials": null,
+      "onError": null
     },
     {
       "id": "7b35b807-bbce-447d-96b5-1826b0a98a79",
@@ -520,7 +556,9 @@
         "mode": "runOnceForEachItem",
         "language": "javaScript",
         "jsCode": "const scene = $('Build LongCat Payloads').item.json.scene;\nconst raw = $input.item.json;\nconst body = String((raw && raw.data) ? raw.data : (typeof raw === 'string' ? raw : ($input.item.body || '')));\nlet url = '';\nlet ev = '';\nfor (const rawLine of body.split('\\n')) {\n  const line = rawLine.trimEnd();\n  if (line.startsWith('event:')) ev = line.slice(6).trim();\n  else if (line.startsWith('data:') && ev === 'complete') {\n    const d = JSON.parse(line.slice(5).trim());\n    const v = (d[0] && (d[0].video || d[0])) || {};\n    url = v.url || ('https://bizpunk-tiktok-longcat-worker.hf.space/gradio_api/file=' + (v.path || ''));\n  } else if (line.startsWith('data:') && ev === 'error') {\n    throw new Error('LongCat provider rejected the job for scene ' + scene.id + ' - no automatic retry');\n  }\n}\nif (!url.startsWith('https://bizpunk-tiktok-longcat-worker.hf.space/gradio_api/file=/tmp/gradio/') || !url.endsWith('.mp4')) {\n  throw new Error('LongCat result missing/invalid for scene ' + scene.id + ' - do not resubmit without checking job state');\n}\nreturn { json: { scene, hf_clip_url: url } };"
-      }
+      },
+      "credentials": null,
+      "onError": null
     },
     {
       "id": "076daa81-98b2-43e7-bdf6-8c558e19564c",
@@ -552,7 +590,9 @@
           },
           "timeout": 120000
         }
-      }
+      },
+      "credentials": null,
+      "onError": null
     },
     {
       "id": "6c5b6a26-cc76-4ce6-8b7d-b237a6c88fea",
@@ -580,7 +620,9 @@
         "options": {
           "timeout": 120000
         }
-      }
+      },
+      "credentials": null,
+      "onError": null
     },
     {
       "id": "47df002b-1700-4198-b036-67ce4b274c76",
@@ -595,7 +637,9 @@
         "mode": "runOnceForEachItem",
         "language": "javaScript",
         "jsCode": "const scene = $('Parse LongCat Result').item.json.scene;\nconst raw = $input.item.json;\nconst catbox = typeof raw === 'string' ? raw : (raw && (raw.data || raw.result)) || '';\nreturn { json: { scene_id: scene.id, kind: 'video', video_url: $('Store Clip MP4').item.json.file_url, catbox_url: String(catbox), scene } };"
-      }
+      },
+      "credentials": null,
+      "onError": null
     },
     {
       "id": "5f0ff269-dc05-47fd-b002-5647758e25d1",
@@ -610,7 +654,9 @@
         "mode": "runOnceForAllItems",
         "language": "javaScript",
         "jsCode": "const spec = $('Build Reel Spec').first().json;\nconst imgMap = {};\ntry { for (const it of $('Attach Asset Key').all()) imgMap[it.json.key] = it.json.file_url; } catch (e) {}\nconst clips = {};\ntry { for (const it of $('Attach Clip URL').all()) clips[it.json.scene_id] = it.json.video_url; } catch (e) {}\nconst auds = {};\ntry { for (const it of $('Attach Audio URL').all()) auds[it.json.scene_id] = it.json.audio_url; } catch (e) {}\nconst staged = (u) => imgMap[u] || u;\nconst scenes = [];\nfor (const s of spec.scenes) {\n  if (s.kind === 'presenter') {\n    const v = staged(s.video_url || clips[s.id]);\n    if (!v) throw new Error('Missing presenter clip for scene ' + s.id);\n    scenes.push({ type: 'video', url: v, text: s.text, cropTo916: true });\n  } else {\n    const a = staged(s.audio_url || auds[s.id]);\n    if (!a) throw new Error('Missing narration audio for scene ' + s.id);\n    const urls = (s.images || []).map(staged);\n    scenes.push({ type: 'images', urls, audioUrl: a, text: s.text });\n  }\n}\nreturn [{ json: { scenes, reel_id: spec.reel_id, queue_reel_key: spec.queue_reel_key || '', caption_de: spec.caption_de, product_id: spec.product_id, pack_quantity: spec.pack_quantity } }];"
-      }
+      },
+      "credentials": null,
+      "onError": null
     },
     {
       "id": "47f4fff7-3c7d-4d0a-93e6-e25c51eee264",
@@ -638,7 +684,9 @@
         "options": {
           "timeout": 60000
         }
-      }
+      },
+      "credentials": null,
+      "onError": null
     },
     {
       "id": "19136661-e6c3-4ac5-86d4-4b717710cb03",
@@ -653,7 +701,9 @@
         "mode": "runOnceForEachItem",
         "language": "javaScript",
         "jsCode": "const scene = $('Generate TTS Segments').item.json.scene;\nconst raw = $input.item.json;\nconst catbox = typeof raw === 'string' ? raw : (raw && (raw.data || raw.result)) || '';\nreturn { json: { scene_id: scene.id, kind: 'images', audio_url: $('Store Scene WAV').item.json.file_url, catbox_url: String(catbox), scene } };"
-      }
+      },
+      "credentials": null,
+      "onError": null
     },
     {
       "id": "7ddad6fb-3323-4b5b-8100-2663846cea57",
@@ -682,7 +732,9 @@
         "options": {
           "timeout": 280000
         }
-      }
+      },
+      "credentials": null,
+      "onError": null
     },
     {
       "id": "ceb450da-c144-4820-9ce3-7e495b47037c",
@@ -705,7 +757,9 @@
           },
           "timeout": 120000
         }
-      }
+      },
+      "credentials": null,
+      "onError": null
     },
     {
       "id": "21ed8215-745a-4522-9c8e-1171be850d51",
@@ -726,7 +780,8 @@
           "id": "mBmoLHXu5hb3qPZv",
           "name": "Zernio account"
         }
-      }
+      },
+      "onError": null
     },
     {
       "id": "5c39101d-15ce-4e11-81d8-45b2811bac60",
@@ -741,7 +796,9 @@
         "mode": "runOnceForAllItems",
         "language": "javaScript",
         "jsCode": "const presign = $input.first()?.json || {};\nconst reel = $('Fetch Rendered Reel').first() || {};\nreturn [{ json: presign, binary: reel.binary || {} }];"
-      }
+      },
+      "credentials": null,
+      "onError": null
     },
     {
       "id": "14e59342-3cdd-440e-97da-f49f2ff35686",
@@ -758,7 +815,9 @@
         "sendBody": true,
         "contentType": "binaryData",
         "inputDataFieldName": "video"
-      }
+      },
+      "credentials": null,
+      "onError": null
     },
     {
       "id": "59fe7eed-0139-4da7-8dff-159619055a41",
@@ -773,7 +832,9 @@
         "mode": "runOnceForAllItems",
         "language": "javaScript",
         "jsCode": "const spec = $('Assemble Render Spec').first()?.json || {};\nconst presign = $('Zernio Presign Video').first()?.json || {};\nconst reelUrl = String(presign.publicUrl || presign.url || '');\nconst zernioBody = {\n  content: String(spec.caption_de || ''),\n  publishNow: true,\n  platforms: [{ platform: 'tiktok', accountId: '6a99599b77555aae01ce4ec4' }],\n  mediaItems: reelUrl ? [{ type: 'video', url: reelUrl }] : [],\n  tiktokSettings: {\n    draft: true,\n    is_ai_generated: true,\n    privacy_level: 'PUBLIC_TO_EVERYONE',\n    allow_comment: true,\n    allow_duet: true,\n    allow_stitch: true,\n    content_preview_confirmed: true,\n    express_consent_given: true\n  }\n};\nreturn [{ json: { ...spec, final_video_url: reelUrl, zernio_body: JSON.stringify(zernioBody) } }];"
-      }
+      },
+      "credentials": null,
+      "onError": null
     },
     {
       "id": "2b1eb16d-8fba-483c-94f4-c0990345e230",
@@ -807,7 +868,8 @@
           "id": "mBmoLHXu5hb3qPZv",
           "name": "Zernio account"
         }
-      }
+      },
+      "onError": null
     },
     {
       "id": "6362db67-a722-4235-8f46-f994beff4f9d",
@@ -822,7 +884,9 @@
         "mode": "runOnceForAllItems",
         "language": "javaScript",
         "jsCode": "const prev = $('Prepare Zernio Draft Payload').first()?.json || {};\nconst zResp = $input.first()?.json || {};\nconst postObj = zResp.post || zResp.data?.post || zResp.data || {};\nif (zResp.error || !postObj._id) throw new Error('Zernio draft creation failed or returned no post ID');\nconst platform = (Array.isArray(postObj.platforms) ? postObj.platforms : []).find(p => p.platform === 'tiktok' && p.status === 'published' && String(p.platformPostId || '').startsWith('v_inbox_url') && p.platformSpecificData?.isDraft === true && p.platformSpecificData?.tiktokSettings?.draft === true && p.platformSpecificData?.tiktokSettings?.is_ai_generated === true);\nif (!platform) throw new Error('Zernio response does not confirm an AI-disclosed TikTok Creator Inbox draft');\nreturn [{ json: { ...prev, zernio_post_id: String(postObj._id), publish_status: 'draft_in_inbox' } }];"
-      }
+      },
+      "credentials": null,
+      "onError": null
     },
     {
       "id": "fd0df11a-d799-435f-9058-af7b5de14378",
@@ -837,7 +901,9 @@
         "mode": "runOnceForAllItems",
         "language": "javaScript",
         "jsCode": "const ups = $('Upload To LongCat').all();\nconst mias = $('Attach Scene And Mia').all();\nconst items = [];\nfor (let i = 0; i < mias.length; i++) {\n  const img = ups[i * 2].json;\n  const wav = ups[i * 2 + 1].json;\n  const scene = mias[i].json.scene;\n  const body = JSON.stringify({ data: [\n    { path: img, meta: { _type: 'gradio.FileData' } },\n    { path: wav, meta: { _type: 'gradio.FileData' } },\n    scene.prompt, '480p', 72, 'Clean speech (fast)', 'Exact 8-step'\n  ]});\n  items.push({ json: { scene, submit_body: body } });\n}\nreturn items;"
-      }
+      },
+      "credentials": null,
+      "onError": null
     },
     {
       "id": "05daea8c-034b-4649-bf30-ae84054668c9",
@@ -857,13 +923,13 @@
           "appendAttribution": false
         }
       },
-      "webhookId": "77f22ba9-edd4-4ef3-929f-17012f070a2a",
       "credentials": {
         "telegramApi": {
           "id": "tYWDsHPvzMA9ATGu",
           "name": "Telegram account"
         }
-      }
+      },
+      "onError": null
     },
     {
       "id": "9ba665c6-92a7-46e3-b7b8-8f8a2ecb6321",
@@ -895,6 +961,7 @@
         "sendBody": true,
         "url": "https://catbox.moe/user/api.php"
       },
+      "credentials": null,
       "onError": "continueRegularOutput"
     },
     {
@@ -927,6 +994,7 @@
         "sendBody": true,
         "url": "https://catbox.moe/user/api.php"
       },
+      "credentials": null,
       "onError": "continueRegularOutput"
     },
     {
@@ -947,7 +1015,9 @@
         "operation": "get",
         "resource": "row",
         "returnAll": true
-      }
+      },
+      "credentials": null,
+      "onError": null
     },
     {
       "id": "b183f45e-070e-4979-8aa1-30e826a8e2f9",
@@ -983,7 +1053,9 @@
         },
         "operation": "update",
         "resource": "row"
-      }
+      },
+      "credentials": null,
+      "onError": null
     },
     {
       "id": "d608a590-c464-4127-b398-685e26bbfc02",
@@ -1010,7 +1082,9 @@
         "sendHeaders": true,
         "specifyHeaders": "keypair",
         "url": "https://huggingface.co/api/spaces/zero-gpu/quota"
-      }
+      },
+      "credentials": null,
+      "onError": null
     },
     {
       "id": "b268b893-8fe2-48a2-94f6-1e0bb50d70bf",
@@ -1023,7 +1097,9 @@
       ],
       "parameters": {
         "mode": "append"
-      }
+      },
+      "credentials": null,
+      "onError": null
     },
     {
       "id": "ee51ddec-fc48-47fc-9fd4-0cf92a805158",
@@ -1055,7 +1131,45 @@
         },
         "sendHeaders": true,
         "url": "={{ $('Generate TTS Segments').item.json.scene.presenter_image_url || $('Build Reel Spec').first().json.presenter_image_url }}"
-      }
+      },
+      "credentials": null,
+      "onError": null
+    },
+    {
+      "id": "d36795c3-65fe-4190-85d6-208d2ac1fb6d",
+      "name": "3x Daily Presenter Reels (08:30/14:00/20:00)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        0,
+        288
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "daysInterval": 1,
+              "field": "days",
+              "triggerAtHour": 8,
+              "triggerAtMinute": 30
+            },
+            {
+              "daysInterval": 1,
+              "field": "days",
+              "triggerAtHour": 14,
+              "triggerAtMinute": 0
+            },
+            {
+              "daysInterval": 1,
+              "field": "days",
+              "triggerAtHour": 20,
+              "triggerAtMinute": 0
+            }
+          ]
+        }
+      },
+      "credentials": null,
+      "onError": null
     }
   ],
   "connections": {
@@ -1527,8 +1641,22 @@
           }
         ]
       ]
+    },
+    "3x Daily Presenter Reels (08:30/14:00/20:00)": {
+      "main": [
+        [
+          {
+            "node": "Load Queue Rows",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
     }
   },
-  "name": "TTS_05_Presenter_Reel_Factory",
-  "settings": {}
+  "settings": {
+    "executionOrder": "v1",
+    "availableInMCP": true
+  },
+  "pinData": {}
 }
